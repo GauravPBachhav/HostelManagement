@@ -21,6 +21,15 @@ public class UserController {
     public String home() {
         return "index";
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     // Show login form
     @GetMapping("/login")
@@ -28,15 +37,9 @@ public class UserController {
         model.addAttribute("user", new User());  // Add empty user object for Thymeleaf
         return "login";
     }
-
-    // Show registration form
-    @GetMapping("/register")
-    public String showRegisterForm(Model model) {
-        model.addAttribute("user", new User());  // Add empty user object for Thymeleaf
-        return "register";
-    }
-
-    // Handle login form submission
+    
+    
+    
     @PostMapping("/loginForm")
     public String loginUser(@ModelAttribute User user, Model model) {
         // Validate user using service (implement this in UserService)
@@ -49,8 +52,29 @@ public class UserController {
             return "login";       // Return to login page with error
         }
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
-    // Handle registration form submission
+    // Show registration form
+    @GetMapping("/register")
+    public String showRegisterForm(Model model) {
+        model.addAttribute("user", new User());  // Add empty user object for Thymeleaf
+        return "register";
+    }
+    
+    
+    
+    
     @PostMapping("/regForm")
     public String registerUser(@ModelAttribute User user, Model model) {
         // Save the user using service
@@ -58,6 +82,17 @@ public class UserController {
         model.addAttribute("success", "Registration successful. Please login.");
         return "login";  // Redirect to login page after successful registration
     }
+    
+    
+    
+    
+    
+
+    // Handle login form submission
+   
+
+    // Handle registration form submission
+   
 
     // Dashboard page
     @GetMapping("/dashboard")
