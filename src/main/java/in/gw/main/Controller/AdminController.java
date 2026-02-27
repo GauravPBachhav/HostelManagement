@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import in.gw.main.Entity.ProfileStatus;
 import in.gw.main.Entity.StudentProfile;
@@ -23,7 +24,6 @@ public class AdminController {
     @Autowired
     private StudentProfileService studentProfileService;
 
-
     // =========================
     // COMMON ADMIN CHECK
     // =========================
@@ -32,56 +32,49 @@ public class AdminController {
         return user != null && "ADMIN".equals(user.getRole());
     }
 
-
     // =========================
-    // ADMIN DASHBOARD
+    // ADMIN DASHBOARD — shows ALL pending profiles
     // =========================
     @GetMapping("/dashboard")
     public String adminDashboard(HttpSession session, Model model) {
 
-        if (!isAdmin(session)) {
-            return "redirect:/login";
-        }
+        if (!isAdmin(session)) return "redirect:/login";
 
+        // ✅ Show pending profiles for approval
         List<StudentProfile> pendingProfiles =
                 studentProfileService.getPendingProfiles();
 
         model.addAttribute("profiles", pendingProfiles);
-
-        return "admin-dashboard";
+        return "admin-dashboard"; // → admin-dashboard.html (admin view)
     }
-
 
     // =========================
     // APPROVE
     // =========================
     @PostMapping("/approve/{id}")
     public String approveProfile(@PathVariable Long id,
-                                 HttpSession session) {
+                                 HttpSession session,
+                                 RedirectAttributes redirectAttributes) {
 
-        if (!isAdmin(session)) {
-            return "redirect:/login";
-        }
+        if (!isAdmin(session)) return "redirect:/login";
 
         studentProfileService.updateStatus(id, ProfileStatus.APPROVED);
-
+        redirectAttributes.addFlashAttribute("success", "Profile approved!");
         return "redirect:/admin/dashboard";
     }
-
 
     // =========================
     // REJECT
     // =========================
     @PostMapping("/reject/{id}")
     public String rejectProfile(@PathVariable Long id,
-                                HttpSession session) {
+                                HttpSession session,
+                                RedirectAttributes redirectAttributes) {
 
-        if (!isAdmin(session)) { 
-            return "redirect:/login";
-        }
+        if (!isAdmin(session)) return "redirect:/login";
 
         studentProfileService.updateStatus(id, ProfileStatus.REJECTED);
-
+        redirectAttributes.addFlashAttribute("success", "Profile rejected.");
         return "redirect:/admin/dashboard";
     }
 }

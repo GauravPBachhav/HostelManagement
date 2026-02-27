@@ -1,77 +1,45 @@
+
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>User Dashboard - Hostel Management</title>
+    <title>Admin Dashboard - Hostel Management</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             background-color: #f5f5f5;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            display: flex; flex-direction: column; min-height: 100vh;
         }
+        main { flex: 1; }
+        .wrapper {
+            max-width: 1000px;
+            margin: 40px auto; padding: 25px;
+            background: #fff; border-radius: 8px;
+            box-shadow: 0 0 12px rgba(0,0,0,0.1);
+        }
+        h2 { text-align: center; margin-bottom: 25px; }
 
-        main {
-            flex: 1;
-        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px 14px; border: 1px solid #ddd; text-align: left; font-size: 14px; }
+        th { background-color: #3498db; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
 
-        .dashboard-wrapper {
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 25px;
-            border-radius: 6px;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
+        .btn { padding: 6px 14px; border: none; border-radius: 4px; cursor: pointer; color: white; font-size: 13px; }
+        .btn-approve { background: #27ae60; }
+        .btn-approve:hover { background: #219a52; }
+        .btn-reject  { background: #e74c3c; }
+        .btn-reject:hover  { background: #c0392b; }
 
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
+        .btn-logout {
+            display: inline-block; margin-top: 20px; padding: 8px 16px;
+            background: #e74c3c; color: white;
+            text-decoration: none; border-radius: 4px;
         }
-
-        .status-box {
-            text-align: center;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-
-        .pending {
-            background-color: #f39c12;
-            color: white;
-        }
-
-        .approved {
-            background-color: #2ecc71;
-            color: white;
-        }
-
-        .rejected {
-            background-color: #e74c3c;
-            color: white;
-        }
-
-        .info-section {
-            margin-top: 20px;
-        }
-
-        .btn {
-            padding: 8px 15px;
-            border-radius: 4px;
-            text-decoration: none;
-            color: white;
-            background-color: #3498db;
-        }
-
-        .btn:hover {
-            background-color: #2980b9;
-        }
+        .alert { padding: 10px; border-radius: 4px; margin-bottom: 15px; text-align: center; }
+        .alert-success { background: #d4edda; color: #155724; }
+        .no-data { text-align: center; padding: 30px; color: #888; font-size: 16px; }
     </style>
 </head>
 <body>
@@ -79,42 +47,68 @@
 <div th:replace="fragments/header :: header"></div>
 
 <main>
-    <div class="dashboard-wrapper">
-        <h2>Welcome, <span th:text="${profile.user.name}"></span></h2>
+<div class="wrapper">
 
-        <!-- STATUS SECTION -->
-        <div th:if="${profile.status == 'PENDING'}" 
-             class="status-box pending">
-            Your admission is under review. Please wait for admin approval.
-        </div>
+    <h2>⚙️ Admin Dashboard — Pending Admissions</h2>
 
-        <div th:if="${profile.status == 'APPROVED'}" 
-             class="status-box approved">
-            Your admission has been approved 🎉
-        </div>
+    <!-- Flash success message after approve/reject -->
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
 
-        <div th:if="${profile.status == 'REJECTED'}" 
-             class="status-box rejected">
-            Your admission has been rejected. Please contact support.
-        </div>
-
-        <!-- PROFILE INFO -->
-        <div class="info-section">
-            <p><strong>College:</strong> <span th:text="${profile.collegeName}"></span></p>
-            <p><strong>Course:</strong> <span th:text="${profile.course}"></span></p>
-            <p><strong>Year:</strong> <span th:text="${profile.yearOfStudy}"></span></p>
-        </div>
-
-        <!-- RENT BUTTON (Only if Approved) -->
-        <div th:if="${profile.status == 'APPROVED'}" 
-             style="margin-top:20px; text-align:center;">
-            <a href="#" class="btn">Pay Rent</a>
-        </div>
-
+    <!-- TABLE: show all pending profiles -->
+    <div th:if="${profiles != null and !#lists.isEmpty(profiles)}">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Student Name</th>
+                    <th>Email</th>
+                    <th>College</th>
+                    <th>Course</th>
+                    <th>Year</th>
+                    <th>Phone</th>
+                    <th>Parent</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="p, stat : ${profiles}">
+                    <td th:text="${stat.count}"></td>
+                    <td th:text="${p.user != null ? p.user.name : 'N/A'}"></td>
+                    <td th:text="${p.user != null ? p.user.email : 'N/A'}"></td>
+                    <td th:text="${p.collegeName}"></td>
+                    <td th:text="${p.course}"></td>
+                    <td th:text="${p.yearOfStudy}"></td>
+                    <td th:text="${p.phoneNumber}"></td>
+                    <td th:text="${p.parentName}"></td>
+                    <td>
+                        <!-- APPROVE button -->
+                        <form th:action="@{/admin/approve/{id}(id=${p.id})}"
+                              method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-approve">✅ Approve</button>
+                        </form>
+                        <!-- REJECT button -->
+                        <form th:action="@{/admin/reject/{id}(id=${p.id})}"
+                              method="post" style="display:inline; margin-left:5px;">
+                            <button type="submit" class="btn btn-reject">❌ Reject</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
+
+    <!-- No pending profiles message -->
+    <div th:if="${profiles == null or #lists.isEmpty(profiles)}" class="no-data">
+        🎉 No pending admissions at this time.
+    </div>
+
+    <br/>
+    <a th:href="@{/logout}" class="btn-logout">Logout</a>
+
+</div>
 </main>
 
 <div th:replace="fragments/footer :: footer"></div>
-
 </body>
 </html>
+```

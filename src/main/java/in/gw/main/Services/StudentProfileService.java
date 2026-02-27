@@ -16,7 +16,7 @@ public class StudentProfileService {
     private StudentProfileRepository studentProfileRepository;
 
     public List<StudentProfile> getPendingProfiles() {
-        return studentProfileRepository.findByStatus(ProfileStatus.PENDING);
+        return studentProfileRepository.findByStatusWithUser(ProfileStatus.PENDING);
     }
 
     public void updateStatus(Long id, ProfileStatus status) {

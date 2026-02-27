@@ -1,17 +1,19 @@
 package in.gw.main.Controller;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import in.gw.main.Entity.ProfileStatus;
 import in.gw.main.Entity.StudentProfile;
 import in.gw.main.Entity.User;
 import in.gw.main.Services.StudentProfileService;
 import in.gw.main.Services.UserService;
 import jakarta.servlet.http.HttpSession;
-import in.gw.main.Entity.ProfileStatus;
 
 @Controller
 public class UserController {
@@ -41,6 +43,7 @@ public class UserController {
         model.addAttribute("user", new User());
         return "login";
     }
+
     @PostMapping("/loginForm")
     public String loginUser(@ModelAttribute User user,
                             Model model,
@@ -52,25 +55,26 @@ public class UserController {
         );
 
         if (validUser != null) {
-
             session.setAttribute("loggedUser", validUser);
 
-            // 🔥 ADMIN LOGIN CHECK
-            if (validUser.getRole().equals("ADMIN")) {
+            // ADMIN LOGIN
+            if ("ADMIN".equals(validUser.getRole())) {
                 return "redirect:/admin/dashboard";
             }
 
-            // 🔥 USER LOGIN FLOW
+            // USER: profile not filled yet → go to admission
             if (!validUser.isProfileCompleted()) {
                 return "redirect:/admission";
             }
 
+            // USER: profile already filled → go to dashboard
             return "redirect:/dashboard";
         }
 
-        model.addAttribute("error", "Invalid email or password");
+        model.addAttribute("error", "Invalid email or password!");
         return "login";
     }
+
 
     // =========================
     // REGISTER
@@ -83,14 +87,18 @@ public class UserController {
 
     @PostMapping("/regForm")
     public String registerUser(@ModelAttribute User user,
-                               Model model) {
-
-        userService.registerUser(user);
-
-        model.addAttribute("success",
-                "Registration successful. Please login.");
-
-        return "login";
+                               RedirectAttributes redirectAttributes) {
+        try {
+            userService.registerUser(user);
+            // ✅ FIX: Use RedirectAttributes so message survives redirect
+            redirectAttributes.addFlashAttribute("success",
+                    "Registration successful! Please login.");
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/register";
+        }
+        // ✅ FIX: Redirect to login (not forward) so form is clean
+        return "redirect:/login";
     }
 
 
@@ -101,39 +109,45 @@ public class UserController {
     public String admissionForm(HttpSession session, Model model) {
 
         User user = (User) session.getAttribute("loggedUser");
+        if (user == null) return "redirect:/login";
 
-        if (user == null) {
-            return "redirect:/login";
-        }
-
-        StudentProfile existingProfile =
-                studentProfileService.findByUser(user);
+        StudentProfile existingProfile = studentProfileService.findByUser(user);
 
         if (existingProfile != null) {
+            // Profile already submitted → show it (read-only view)
             model.addAttribute("profile", existingProfile);
+            model.addAttribute("alreadySubmitted", true);
         } else {
             model.addAttribute("profile", new StudentProfile());
+            model.addAttribute("alreadySubmitted", false);
         }
 
         return "admission";
     }
+
     @PostMapping("/admission")
     public String saveAdmission(@ModelAttribute StudentProfile profile,
-                                HttpSession session) {
+                                HttpSession session,
+                                RedirectAttributes redirectAttributes) {
 
         User user = (User) session.getAttribute("loggedUser");
+        if (user == null) return "redirect:/login";
 
-        if (user == null) {
-            return "redirect:/login";
+        try {
+            profile.setUser(user);
+            profile.setStatus(ProfileStatus.PENDING);
+            studentProfileService.saveProfile(profile);
+
+            // ✅ FIX: Mark profile completed and REFRESH session user
+            user.setProfileCompleted(true);
+            userService.updateUser(user);
+            session.setAttribute("loggedUser", user); // refresh session
+
+            redirectAttributes.addFlashAttribute("success",
+                    "Admission form submitted! Waiting for admin approval.");
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
-
-        profile.setUser(user);
-        profile.setStatus(ProfileStatus.PENDING);
-
-        studentProfileService.saveProfile(profile);
-
-        user.setProfileCompleted(true);
-        userService.updateUser(user);
 
         return "redirect:/dashboard";
     }
@@ -146,197 +160,12 @@ public class UserController {
     public String dashboard(HttpSession session, Model model) {
 
         User user = (User) session.getAttribute("loggedUser");
+        if (user == null) return "redirect:/login";
 
-        if (user == null) {
-            return "redirect:/login";
-        }
-
-        StudentProfile profile =
-                studentProfileService.findByUser(user);
-
+        // ✅ FIX: Fetch latest profile and pass to model
+        StudentProfile profile = studentProfileService.findByUser(user);
         model.addAttribute("profile", profile);
 
         return "dashboard";
     }
-
-
-    // =========================
-    // VIEW PROFILE
-    // =========================
-    @GetMapping("/profile")
-    public String viewProfile(HttpSession session, Model model) {
-
-        User user = (User) session.getAttribute("loggedUser");
-
-        if (user == null) {
-            return "redirect:/login";
-        }
-
-        StudentProfile profile =
-                studentProfileService.findByUser(user);
-
-        model.addAttribute("profile", profile);
-
-        return "profile";
-    }
 }
-
-
-
-
-
-
-
-//package in.gw.main.Controller;
-//
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.stereotype.Controller;
-//import org.springframework.ui.Model;
-//import org.springframework.web.bind.annotation.GetMapping;
-//import org.springframework.web.bind.annotation.ModelAttribute;
-//import org.springframework.web.bind.annotation.PostMapping;
-//
-//import in.gw.main.Entity.StudentProfile;
-//import in.gw.main.Entity.User;
-//import in.gw.main.Services.StudentProfileService;
-//import in.gw.main.Services.UserService;
-//import jakarta.servlet.http.HttpSession;
-//
-//@Controller
-//public class UserController {
-//
-//    @Autowired
-//    private UserService userService;
-//    @Autowired
-//    private StudentProfileService studentProfileService;
-//    
-//    // Home page
-//    @GetMapping({"/","/logout"})
-//    public String home() {
-//        return "index";
-//    }
-//    
-//    
-//    
-//    
-//    
-//    
-//    
-//    
-//
-//    // Show login form
-//    @GetMapping("/login")
-//    public String showLoginForm(Model model) {
-//        model.addAttribute("user", new User());  // Add empty user object for Thymeleaf
-//        return "login";
-//    }
-//    
-//    
-//    
-//    @PostMapping("/loginForm")
-//    public String loginUser(@ModelAttribute User user, Model model) {
-//        // Validate user using service (implement this in UserService)
-//        boolean isValid = userService.validateUser(user.getEmail(), user.getPassword());
-//
-//        if (isValid) {
-//            return "dashboard";  // Go to dashboard if login successful
-//        } else {
-//            model.addAttribute("error", "Invalid email or password");
-//            return "login";       // Return to login page with error
-//        }
-//    }
-//    
-//    
-//    
-//    
-//    
-//    
-//    
-//    
-//    
-//    
-//    
-//    
-//
-//    // Show registration form
-//    @GetMapping("/register")
-//    public String showRegisterForm(Model model) {
-//        model.addAttribute("user", new User());  // Add empty user object for Thymeleaf
-//        return "register";
-//    }
-//    
-//    @PostMapping("/regForm")
-//    public String registerUser(@ModelAttribute User user, Model model) {
-//        // Save the user using service
-//        userService.registerUser(user);
-//        model.addAttribute("success", "Registration successful. Please login.");
-//        return "index";  // Redirect to login page after successful registration
-//    }
-//    
-//    
-//    
-//    
-//    
-//    
-//    
-//    
-//    
-//
-//    @GetMapping("/admission")
-//    public String admissionForm(Model model) {
-//        model.addAttribute("profile", new StudentProfile());
-//        return "admission";
-//    }
-//
-////    @PostMapping("/admission")
-////    public String saveAdmission(@ModelAttribute StudentProfile profile) {
-////        studentProfileService.saveProfile(profile);
-////        return "redirect:/dashboard";
-////    }
-////    
-//
-//    
-//    
-//    @PostMapping("/admission")
-//    public String saveAdmission(@ModelAttribute StudentProfile profile,
-//                                HttpSession session) {
-//
-//        User user = (User) session.getAttribute("loggedUser");
-//
-//        profile.setUser(user);        // 🔥 Link with user
-//        profile.setStatus("PENDING"); // default
-//
-//        studentProfileService.saveProfile(profile);
-//
-//        user.setProfileCompleted(true);
-//        userService.updateUser(user); // make sure update method exists
-//
-//        return "redirect:/dashboard";
-//    }
-//    
-//    
-//    
-//    
-//    
-//    @GetMapping("/profile")
-//    public String userProfile() {
-//        return "profile";
-//    }
-//    
-//    
-//    
-//    
-//    
-//    
-//    // Handle login form submission
-//   
-//
-//    // Handle registration form submission
-//   
-//
-//    // Dashboard page
-//    @GetMapping("/dashboard")
-//    public String dashboard() {
-//        return "dashboard";
-//    }
-//}

@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+
 @Entity
 @Table(name = "student_profiles")
 public class StudentProfile {
@@ -27,30 +28,23 @@ public class StudentProfile {
     private String parentName;
     private String parentContact;
 
-//    @Enumerated(EnumType.STRING)
-//    @Column(nullable = false)
-//    private  ProfileStatus status = ProfileStatus.PENDING;
+    // ✅ FIXED: Only ONE status field declared (removed duplicate)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProfileStatus status = ProfileStatus.PENDING;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
+
     // =====================
     // GETTERS & SETTERS
     // =====================
 
     public Long getId() { return id; }
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ProfileStatus status = ProfileStatus.PENDING;
-
-    public ProfileStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(ProfileStatus status) {
-        this.status = status;
-    }
+    public ProfileStatus getStatus() { return status; }
+    public void setStatus(ProfileStatus status) { this.status = status; }
 
     public String getPhoneNumber() { return phoneNumber; }
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
@@ -77,6 +71,6 @@ public class StudentProfile {
 
     public void setUser(User user) {
         this.user = user;
-        user.setStudentProfile(this);  // 🔥 sync both sides
+        user.setStudentProfile(this); // sync both sides
     }
 }

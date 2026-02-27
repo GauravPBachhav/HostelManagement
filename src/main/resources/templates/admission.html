@@ -4,65 +4,38 @@
     <title>Admission Form - Hostel Management</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
+            font-family: Arial, sans-serif; margin: 0; padding: 0;
             background-color: #f5f5f5;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            display: flex; flex-direction: column; min-height: 100vh;
         }
-
-        main {
-            flex: 1;
-        }
-
+        main { flex: 1; }
         .form-wrapper {
-            max-width: 500px;
-            margin: 50px auto;
-            padding: 25px;
-            border-radius: 6px;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 520px; margin: 50px auto; padding: 30px;
+            background: #fff; border-radius: 8px;
+            box-shadow: 0 0 12px rgba(0,0,0,0.1);
         }
-
-        .form-wrapper h2 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
+        .form-wrapper h2 { text-align: center; margin-bottom: 10px; }
         .form-wrapper input {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
+            width: 100%; padding: 9px; margin-bottom: 14px;
+            border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box;
         }
-
         .form-wrapper button {
-            width: 100%;
-            padding: 10px;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            background-color: #3498db;
-            color: white;
-            font-size: 15px;
+            width: 100%; padding: 10px; background: #3498db;
+            color: white; border: none; border-radius: 4px;
+            font-size: 15px; cursor: pointer;
         }
-
-        .form-wrapper button:hover {
-            background-color: #2980b9;
-        }
-
-        .info-text {
-            text-align: center;
-            font-size: 14px;
-            margin-bottom: 15px;
-            color: #555;
+        .form-wrapper button:hover { background: #2980b9; }
+        .info-text { text-align: center; font-size: 14px; margin-bottom: 15px; color: #555; }
+        .alert { padding: 10px; border-radius: 4px; margin-bottom: 15px; text-align: center; font-weight: bold; }
+        .alert-warning  { background: #fff3cd; color: #856404; }
+        .read-only-info { background: #f8f9fa; padding: 15px; border-radius: 6px; margin-top: 10px; }
+        .read-only-info p { margin: 6px 0; }
+        .btn-link {
+            display: inline-block; margin-top: 15px; padding: 8px 15px;
+            background: #3498db; color: white; border-radius: 4px;
+            text-decoration: none;
         }
     </style>
 </head>
@@ -71,35 +44,49 @@
 <div th:replace="fragments/header :: header"></div>
 
 <main>
-    <div class="form-wrapper">
+<div class="form-wrapper">
+    <h2>Hostel Admission Form</h2>
 
-        <h2>Hostel Admission Form</h2>
+    <!-- ✅ If profile already submitted → show read-only view -->
+    <div th:if="${alreadySubmitted}">
+        <div class="alert alert-warning">
+            You have already submitted your admission form.<br/>
+            Current Status: <strong th:text="${profile.status}"></strong>
+        </div>
+        <div class="read-only-info">
+            <p><strong>Phone:</strong>          <span th:text="${profile.phoneNumber}"></span></p>
+            <p><strong>Address:</strong>        <span th:text="${profile.address}"></span></p>
+            <p><strong>College:</strong>        <span th:text="${profile.collegeName}"></span></p>
+            <p><strong>Course:</strong>         <span th:text="${profile.course}"></span></p>
+            <p><strong>Year of Study:</strong>  <span th:text="${profile.yearOfStudy}"></span></p>
+            <p><strong>Parent Name:</strong>    <span th:text="${profile.parentName}"></span></p>
+            <p><strong>Parent Contact:</strong> <span th:text="${profile.parentContact}"></span></p>
+        </div>
+        <a th:href="@{/dashboard}" class="btn-link">Go to Dashboard</a>
+    </div>
 
+    <!-- ✅ Fresh form for new submission -->
+    <div th:unless="${alreadySubmitted}">
         <div class="info-text">
-            Please fill all details carefully. Your admission will be reviewed by admin.
+            Fill all details carefully. Your admission will be reviewed by admin.
         </div>
 
-        <form th:action="@{/admission}" 
-              th:object="${profile}" 
-              method="post">
-
-            <input type="text" th:field="*{phoneNumber}" placeholder="Mobile Number" required />
-            <input type="text" th:field="*{address}" placeholder="Permanent Address" required />
-
-            <input type="text" th:field="*{collegeName}" placeholder="College Name" required />
-            <input type="text" th:field="*{course}" placeholder="Course" required />
-            <input type="text" th:field="*{yearOfStudy}" placeholder="Year of Study" required />
-
-            <input type="text" th:field="*{parentName}" placeholder="Parent Name" required />
-            <input type="text" th:field="*{parentContact}" placeholder="Parent Contact" required />
-
-            <button type="submit">Submit Admission</button>
+        <form th:action="@{/admission}" th:object="${profile}" method="post">
+            <input type="text" th:field="*{phoneNumber}"  placeholder="Mobile Number"    required />
+            <input type="text" th:field="*{address}"      placeholder="Permanent Address" required />
+            <input type="text" th:field="*{collegeName}"  placeholder="College Name"      required />
+            <input type="text" th:field="*{course}"       placeholder="Course"            required />
+            <input type="text" th:field="*{yearOfStudy}"  placeholder="Year of Study"     required />
+            <input type="text" th:field="*{parentName}"   placeholder="Parent Name"       required />
+            <input type="text" th:field="*{parentContact}" placeholder="Parent Contact"   required />
+            <button type="submit">Submit Admission Form</button>
         </form>
-
     </div>
+
+</div>
 </main>
 
 <div th:replace="fragments/footer :: footer"></div>
-
 </body>
 </html>
+```
