@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>User Dashboard - Hostel Management</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1;
+        }
+
+        .dashboard-wrapper {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 25px;
+            border-radius: 6px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .status-box {
+            text-align: center;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .pending {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        .approved {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .rejected {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .info-section {
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            color: white;
+            background-color: #3498db;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<main>
+    <div class="dashboard-wrapper">
+        <h2>Welcome, <span th:text="${profile.user.name}"></span></h2>
+
+        <!-- STATUS SECTION -->
+        <div th:if="${profile.status == 'PENDING'}" 
+             class="status-box pending">
+            Your admission is under review. Please wait for admin approval.
+        </div>
+
+        <div th:if="${profile.status == 'APPROVED'}" 
+             class="status-box approved">
+            Your admission has been approved 🎉
+        </div>
+
+        <div th:if="${profile.status == 'REJECTED'}" 
+             class="status-box rejected">
+            Your admission has been rejected. Please contact support.
+        </div>
+
+        <!-- PROFILE INFO -->
+        <div class="info-section">
+            <p><strong>College:</strong> <span th:text="${profile.collegeName}"></span></p>
+            <p><strong>Course:</strong> <span th:text="${profile.course}"></span></p>
+            <p><strong>Year:</strong> <span th:text="${profile.yearOfStudy}"></span></p>
+        </div>
+
+        <!-- RENT BUTTON (Only if Approved) -->
+        <div th:if="${profile.status == 'APPROVED'}" 
+             style="margin-top:20px; text-align:center;">
+            <a href="#" class="btn">Pay Rent</a>
+        </div>
+
+    </div>
+</main>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+</body>
+</html>

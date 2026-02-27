@@ -1,187 +1,101 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>User Dashboard</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
         body {
-            display: flex;
-            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            margin: 0;
             background-color: #f4f6f9;
         }
 
-        /* Sidebar */
-        .sidebar {
-            width: 240px;
-            background: #1f2937;
-            color: white;
-            padding: 20px;
-        }
-
-        .sidebar h2 {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 20px;
-        }
-
-        .sidebar a {
-            display: block;
-            color: #cbd5e1;
-            text-decoration: none;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            transition: 0.3s;
-        }
-
-        .sidebar a:hover {
-            background-color: #374151;
-            color: white;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Topbar */
-        .topbar {
-            background: white;
-            padding: 15px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .topbar h3 {
-            color: #1f2937;
-        }
-
-        .logout-btn {
-            text-decoration: none;
-            padding: 8px 16px;
-            background: #ef4444;
-            color: white;
-            border-radius: 6px;
-            transition: 0.3s;
-        }
-
-        .logout-btn:hover {
-            background: #dc2626;
-        }
-
-        /* Dashboard Cards */
-        .dashboard {
+        .container {
+            max-width: 800px;
+            margin: 60px auto;
             padding: 30px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-        }
-
-        .card {
             background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-            transition: 0.3s;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
 
-        .card:hover {
-            transform: translateY(-5px);
+        h2 {
+            margin-bottom: 20px;
         }
 
-        .card h4 {
-            margin-bottom: 10px;
-            color: #374151;
+        .status-box {
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: center;
         }
 
-        .card p {
-            font-size: 24px;
-            font-weight: 600;
-            color: #111827;
+        .pending { background: #fff3cd; color: #856404; }
+        .approved { background: #d4edda; color: #155724; }
+        .rejected { background: #f8d7da; color: #721c24; }
+
+        .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 8px 15px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
         }
 
-        @media (max-width: 768px) {
-            .sidebar {
-                display: none;
-            }
+        .btn:hover {
+            background: #2980b9;
         }
     </style>
 </head>
 
 <body>
-	
-	
-	<div th:replace="fragments/header :: header"></div>
-
-	
-	
-
-<!-- Sidebar -->
-<div class="sidebar">
-    <h2>🏨 Hostel Panel</h2>
-    <a href="#">Dashboard</a>
-    <a href="#">My Profile</a>
-    <a href="#">Room Details</a>
-    <a href="#">Payment History</a>
-    <a href="#">Support</a>
-</div>
-
-<!-- Main Content -->
-<div class="main-content">
-
-    <!-- Topbar -->
-    <div class="topbar">
-        <h3>Welcome to User Dashboard</h3>
-        <a href="/logout" class="logout-btn">Logout</a>
-    </div>
-
-    <!-- Dashboard Cards -->
-    <div class="dashboard">
-
-        <div class="card">
-            <h4>Total Bookings</h4>
-            <p>03</p>
-        </div>
-
-        <div class="card">
-            <h4>Room Number</h4>
-            <p>202</p>
-        </div>
-
-        <div class="card">
-            <h4>Pending Payments</h4>
-            <p>$120</p>
-        </div>
-
-        <div class="card">
-            <h4>Notices</h4>
-            <p>02</p>
-        </div>
-
-    </div>
-
-	
-</div>
-
 
 <div th:replace="fragments/header :: header"></div>
 
+<div class="container">
+
+    <h2>Welcome, <span th:text="${session.loggedUser.name}"></span></h2>
+
+    <!-- If profile not completed -->
+    <div th:if="${profile == null}">
+        <p>You have not submitted your admission form yet.</p>
+        <a th:href="@{/admission}" class="btn">Fill Admission Form</a>
+    </div>
+
+    <!-- If profile exists -->
+    <div th:if="${profile != null}">
+
+        <p><strong>Admission Status:</strong></p>
+
+        <div th:if="${profile.status == 'PENDING'}"
+             class="status-box pending">
+            Your admission request is pending approval.
+        </div>
+
+        <div th:if="${profile.status == 'APPROVED'}"
+             class="status-box approved">
+            Congratulations! Your admission is approved.
+        </div>
+
+        <div th:if="${profile.status == 'REJECTED'}"
+             class="status-box rejected">
+            Sorry, your admission request was rejected.
+        </div>
+
+    </div>
+
+    <br>
+    <a th:href="@{/logout}" class="btn" 
+       style="background:#e74c3c;">Logout</a>
+
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
 
 </body>
 </html>

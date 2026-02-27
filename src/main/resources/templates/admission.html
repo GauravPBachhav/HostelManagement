@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Admission Form - Hostel Management</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1;
+        }
+
+        .form-wrapper {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 25px;
+            border-radius: 6px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .form-wrapper h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-wrapper input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        .form-wrapper button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            background-color: #3498db;
+            color: white;
+            font-size: 15px;
+        }
+
+        .form-wrapper button:hover {
+            background-color: #2980b9;
+        }
+
+        .info-text {
+            text-align: center;
+            font-size: 14px;
+            margin-bottom: 15px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<main>
+    <div class="form-wrapper">
+
+        <h2>Hostel Admission Form</h2>
+
+        <div class="info-text">
+            Please fill all details carefully. Your admission will be reviewed by admin.
+        </div>
+
+        <form th:action="@{/admission}" 
+              th:object="${profile}" 
+              method="post">
+
+            <input type="text" th:field="*{phoneNumber}" placeholder="Mobile Number" required />
+            <input type="text" th:field="*{address}" placeholder="Permanent Address" required />
+
+            <input type="text" th:field="*{collegeName}" placeholder="College Name" required />
+            <input type="text" th:field="*{course}" placeholder="Course" required />
+            <input type="text" th:field="*{yearOfStudy}" placeholder="Year of Study" required />
+
+            <input type="text" th:field="*{parentName}" placeholder="Parent Name" required />
+            <input type="text" th:field="*{parentContact}" placeholder="Parent Contact" required />
+
+            <button type="submit">Submit Admission</button>
+        </form>
+
+    </div>
+</main>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+</body>
+</html>
