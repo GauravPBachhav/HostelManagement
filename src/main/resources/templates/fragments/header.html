@@ -1,49 +1,70 @@
+
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-</head>
+<head></head>
 <body>
 
 <header th:fragment="header">
-	
-	<style>
-	        header {
-	            display: flex;
-	            justify-content: space-between;
-	            align-items: center;
-	            background-color: #2c3e50;
-	            padding: 15px 30px;
-	            color: white;
-	        }
+    <style>
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #2c3e50;
+            padding: 14px 30px;
+            color: white;
+        }
+        .logo a {
+            font-size: 20px;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+        }
+        .nav-buttons a {
+            text-decoration: none;
+            margin-left: 12px;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            color: white;
+        }
+        .btn-login    { background-color: #3498db; }
+        .btn-register { background-color: #27ae60; }
+        .btn-logout   { background-color: #e74c3c; }
+        .btn-dash     { background-color: #8e44ad; }
+        .nav-buttons a:hover { opacity: 0.85; }
+        .user-info { font-size: 14px; color: #bdc3c7; margin-right: 5px; }
+    </style>
 
-	        .logo {
-	            font-size: 22px;
-	            font-weight: bold;
-	        }
-
-	        .nav-buttons a {
-	            text-decoration: none;
-	            margin-left: 15px;
-	            padding: 8px 15px;
-	            background-color: #3498db;
-	            color: white;
-	            border-radius: 5px;
-	        }
-
-	        .nav-buttons a:hover {
-	            background-color: #2980b9;
-	        }
-	    </style>
-	
     <div class="logo">
-         <a href="/" style="text-decoration:none; color:white;">🏨 Hostel Management</a>
+        <a href="/">🏨 Hostel Management</a>
     </div>
 
     <div class="nav-buttons">
-        <a href="/login">Login</a>
-        <a href="/register">Register</a>
+
+        <!-- NOT logged in: show Login + Register -->
+        <th:block th:if="${session.loggedUser == null}">
+            <a href="/login"    class="btn-login">Login</a>
+            <a href="/register" class="btn-register">Register</a>
+        </th:block>
+
+        <!-- Logged in as ADMIN -->
+        <th:block th:if="${session.loggedUser != null and session.loggedUser.role == 'ADMIN'}">
+            <span class="user-info">👤 Admin</span>
+            <a href="/admin/dashboard" class="btn-dash">Dashboard</a>
+            <a href="/logout"          class="btn-logout">Logout</a>
+        </th:block>
+
+        <!-- Logged in as USER -->
+        <th:block th:if="${session.loggedUser != null and session.loggedUser.role == 'USER'}">
+            <span class="user-info" th:text="'👤 ' + ${session.loggedUser.name}"></span>
+            <a href="/dashboard" class="btn-dash">My Dashboard</a>
+            <a href="/logout"    class="btn-logout">Logout</a>
+        </th:block>
+
     </div>
 </header>
 
 </body>
 </html>
+```

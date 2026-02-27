@@ -1,5 +1,7 @@
 package in.gw.main.Entity;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -28,49 +30,64 @@ public class StudentProfile {
     private String parentName;
     private String parentContact;
 
-    // ✅ FIXED: Only ONE status field declared (removed duplicate)
+    // ✅ Track when form was submitted (for month-wise admin view)
+    private LocalDate submittedAt;
+
+    // ✅ Track rent payment status
+    private boolean rentPaid = false;
+
+    // ✅ Query/complaint text from student
+    private String queryText;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ProfileStatus status = ProfileStatus.PENDING;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
     // =====================
     // GETTERS & SETTERS
     // =====================
-
     public Long getId() { return id; }
 
     public ProfileStatus getStatus() { return status; }
     public void setStatus(ProfileStatus status) { this.status = status; }
 
     public String getPhoneNumber() { return phoneNumber; }
-    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+    public void setPhoneNumber(String v) { this.phoneNumber = v; }
 
     public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
+    public void setAddress(String v) { this.address = v; }
 
     public String getCollegeName() { return collegeName; }
-    public void setCollegeName(String collegeName) { this.collegeName = collegeName; }
+    public void setCollegeName(String v) { this.collegeName = v; }
 
     public String getCourse() { return course; }
-    public void setCourse(String course) { this.course = course; }
+    public void setCourse(String v) { this.course = v; }
 
     public String getYearOfStudy() { return yearOfStudy; }
-    public void setYearOfStudy(String yearOfStudy) { this.yearOfStudy = yearOfStudy; }
+    public void setYearOfStudy(String v) { this.yearOfStudy = v; }
 
     public String getParentName() { return parentName; }
-    public void setParentName(String parentName) { this.parentName = parentName; }
+    public void setParentName(String v) { this.parentName = v; }
 
     public String getParentContact() { return parentContact; }
-    public void setParentContact(String parentContact) { this.parentContact = parentContact; }
+    public void setParentContact(String v) { this.parentContact = v; }
+
+    public LocalDate getSubmittedAt() { return submittedAt; }
+    public void setSubmittedAt(LocalDate v) { this.submittedAt = v; }
+
+    public boolean isRentPaid() { return rentPaid; }
+    public void setRentPaid(boolean v) { this.rentPaid = v; }
+
+    public String getQueryText() { return queryText; }
+    public void setQueryText(String v) { this.queryText = v; }
 
     public User getUser() { return user; }
-
     public void setUser(User user) {
         this.user = user;
-        user.setStudentProfile(this); // sync both sides
+        user.setStudentProfile(this);
     }
 }

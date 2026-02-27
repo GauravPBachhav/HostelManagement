@@ -3,48 +3,123 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>My Dashboard - Hostel Management</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <style>
         body {
-            font-family: Arial, sans-serif; margin: 0;
-            background-color: #f4f6f9;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f0f2f5;
             display: flex; flex-direction: column; min-height: 100vh;
         }
         main { flex: 1; }
         .container {
-            max-width: 800px; margin: 50px auto; padding: 30px;
-            background: white; border-radius: 8px;
-            box-shadow: 0 0 12px rgba(0,0,0,0.1);
+            max-width: 700px;
+            margin: 30px auto;
+            padding: 0 15px;
         }
-        h2 { margin-bottom: 20px; }
-        .status-box {
-            padding: 15px; border-radius: 6px;
-            font-weight: bold; text-align: center; margin-bottom: 20px;
+        h2 { color: #2c3e50; margin-bottom: 5px; }
+        .sub-title { color: #777; font-size: 14px; margin-bottom: 20px; }
+
+        /* ===== WHATSAPP-STYLE TAB BAR ===== */
+        .tab-bar {
+            display: flex;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
         }
-        .pending  { background: #fff3cd; color: #856404; }
-        .approved { background: #d4edda; color: #155724; }
-        .rejected { background: #f8d7da; color: #721c24; }
-
-        .profile-info { background: #f8f9fa; padding: 20px; border-radius: 6px; margin: 20px 0; }
-        .profile-info p { margin: 6px 0; }
-
-        .feature-section { margin-top: 25px; }
-        .feature-section h3 { margin-bottom: 10px; color: #333; }
-
-        .btn {
-            display: inline-block; padding: 10px 20px;
-            border-radius: 5px; text-decoration: none;
-            color: white; font-size: 14px; margin-right: 10px; margin-top: 8px;
+        .tab-item {
+            flex: 1;
+            padding: 14px 5px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            border-bottom: 3px solid transparent;
+            color: #aaa;
+            cursor: default;
         }
-        .btn-blue   { background: #3498db; }
-        .btn-green  { background: #27ae60; }
-        .btn-red    { background: #e74c3c; }
-        .btn:hover  { opacity: 0.88; }
+        .tab-item .tab-icon { font-size: 22px; display: block; margin-bottom: 4px; }
 
-        .alert { padding: 10px; border-radius: 4px; margin-bottom: 15px; text-align: center; }
+        /* ACTIVE (current step) */
+        .tab-active {
+            color: #3498db;
+            border-bottom: 3px solid #3498db;
+        }
+        /* COMPLETED (green) */
+        .tab-done {
+            color: #27ae60;
+            border-bottom: 3px solid #27ae60;
+        }
+        /* LOCKED (grey) */
+        .tab-locked {
+            color: #ccc;
+            background: #fafafa;
+        }
+        /* REJECTED (red) */
+        .tab-rejected {
+            color: #e74c3c;
+            border-bottom: 3px solid #e74c3c;
+        }
+
+        /* ===== CONTENT CARDS ===== */
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .badge-pending  { background: #fff3cd; color: #856404; }
+        .badge-approved { background: #d4edda; color: #155724; }
+        .badge-rejected { background: #f8d7da; color: #721c24; }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 20px;
+            margin-top: 15px;
+        }
+        .profile-grid p { margin: 4px 0; font-size: 14px; color: #555; }
+        .profile-grid strong { color: #333; }
+
+        /* locked feature box */
+        .locked-box {
+            background: #f8f9fa;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            color: #bbb;
+            font-size: 15px;
+        }
+        .locked-box .lock-icon { font-size: 30px; }
+
+        /* feature buttons (only when approved) */
+        .feature-buttons { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+        .btn-feat {
+            padding: 11px 20px;
+            border-radius: 7px;
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn-green { background: #27ae60; }
+        .btn-blue  { background: #3498db; }
+        .btn-red   { background: #e74c3c; }
+        .btn-feat:hover { opacity: 0.85; }
+
+        .alert { padding: 12px; border-radius: 6px; margin-bottom: 16px; }
         .alert-success { background: #d4edda; color: #155724; }
-        .alert-info    { background: #d1ecf1; color: #0c5460; }
     </style>
 </head>
 <body>
@@ -55,39 +130,120 @@
 <div class="container">
 
     <h2>Welcome, <span th:text="${session.loggedUser.name}"></span> 👋</h2>
+    <p class="sub-title" th:text="${session.loggedUser.email}"></p>
 
-    <!-- ✅ Flash success message (e.g. after admission submit) -->
+    <!-- Flash message -->
     <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
 
-    <!-- ========================
-         CASE 1: No profile yet
-         ======================== -->
+    <!-- =============================================
+         WHATSAPP-STYLE TAB/STEP BAR
+         Steps: Register → Admission Form → Pending → Approved
+    ============================================= -->
+
+    <!-- CASE A: Profile NOT submitted yet -->
     <div th:if="${profile == null}">
-        <div class="alert alert-info">
-            You haven't submitted your admission form yet.
+        <div class="tab-bar">
+            <div class="tab-item tab-done">
+                <span class="tab-icon">✅</span>Registered
+            </div>
+            <div class="tab-item tab-active">
+                <span class="tab-icon">📋</span>Admission Form
+            </div>
+            <div class="tab-item tab-locked">
+                <span class="tab-icon">⏳</span>Pending
+            </div>
+            <div class="tab-item tab-locked">
+                <span class="tab-icon">🏠</span>Hostel Features
+            </div>
         </div>
-        <a th:href="@{/admission}" class="btn btn-blue">Fill Admission Form</a>
+        <div class="card">
+            <p>You haven't submitted your admission form yet.</p>
+            <a href="/admission" class="btn-feat btn-blue">📋 Fill Admission Form</a>
+        </div>
     </div>
 
-    <!-- ========================
-         CASE 2: Profile exists
-         ======================== -->
-    <div th:if="${profile != null}">
+    <!-- CASE B: Profile submitted — PENDING -->
+    <div th:if="${profile != null and profile.status.name() == 'PENDING'}">
+        <div class="tab-bar">
+            <div class="tab-item tab-done">
+                <span class="tab-icon">✅</span>Registered
+            </div>
+            <div class="tab-item tab-done">
+                <span class="tab-icon">✅</span>Form Submitted
+            </div>
+            <div class="tab-item tab-active">
+                <span class="tab-icon">⏳</span>Pending Approval
+            </div>
+            <div class="tab-item tab-locked">
+                <span class="tab-icon">🔒</span>Hostel Features
+            </div>
+        </div>
+        <div class="card">
+            <p><strong>Admission Status:</strong>
+                <span class="status-badge badge-pending">⏳ PENDING</span>
+            </p>
+            <p style="color:#777; font-size:14px; margin-top:10px;">
+                Your admission form is under review. Please wait for admin approval.
+                You will be able to access rent payment and queries after approval.
+            </p>
+        </div>
+    </div>
 
-        <!-- STATUS BOX -->
-        <div th:if="${profile.status.name() == 'PENDING'}"  class="status-box pending">
-            ⏳ Your admission is under review. Please wait for admin approval.
+    <!-- CASE C: APPROVED -->
+    <div th:if="${profile != null and profile.status.name() == 'APPROVED'}">
+        <div class="tab-bar">
+            <div class="tab-item tab-done">
+                <span class="tab-icon">✅</span>Registered
+            </div>
+            <div class="tab-item tab-done">
+                <span class="tab-icon">✅</span>Form Submitted
+            </div>
+            <div class="tab-item tab-done">
+                <span class="tab-icon">✅</span>Approved
+            </div>
+            <div class="tab-item tab-done">
+                <span class="tab-icon">🏠</span>Hostel Features
+            </div>
         </div>
-        <div th:if="${profile.status.name() == 'APPROVED'}" class="status-box approved">
-            ✅ Your admission has been <strong>Approved</strong>! You can now use all features.
+        <div class="card">
+            <p><strong>Admission Status:</strong>
+                <span class="status-badge badge-approved">✅ APPROVED</span>
+            </p>
         </div>
-        <div th:if="${profile.status.name() == 'REJECTED'}" class="status-box rejected">
-            ❌ Your admission was rejected. Please contact the hostel office.
-        </div>
+    </div>
 
-        <!-- PROFILE INFO (always shown after form fill) -->
-        <div class="profile-info">
-            <h3>Your Profile Details</h3>
+    <!-- CASE D: REJECTED -->
+    <div th:if="${profile != null and profile.status.name() == 'REJECTED'}">
+        <div class="tab-bar">
+            <div class="tab-item tab-done">
+                <span class="tab-icon">✅</span>Registered
+            </div>
+            <div class="tab-item tab-done">
+                <span class="tab-icon">✅</span>Form Submitted
+            </div>
+            <div class="tab-item tab-rejected">
+                <span class="tab-icon">❌</span>Rejected
+            </div>
+            <div class="tab-item tab-locked">
+                <span class="tab-icon">🔒</span>Hostel Features
+            </div>
+        </div>
+        <div class="card">
+            <p><strong>Admission Status:</strong>
+                <span class="status-badge badge-rejected">❌ REJECTED</span>
+            </p>
+            <p style="color:#888; font-size:14px; margin-top:8px;">
+                Your admission was rejected. Please contact the hostel office for more details.
+            </p>
+        </div>
+    </div>
+
+    <!-- =============================================
+         PROFILE DETAILS CARD (shown if form submitted)
+    ============================================= -->
+    <div th:if="${profile != null}" class="card">
+        <h3 style="margin-top:0;">📄 Your Profile Details</h3>
+        <div class="profile-grid">
             <p><strong>Phone:</strong>          <span th:text="${profile.phoneNumber}"></span></p>
             <p><strong>Address:</strong>        <span th:text="${profile.address}"></span></p>
             <p><strong>College:</strong>        <span th:text="${profile.collegeName}"></span></p>
@@ -96,26 +252,28 @@
             <p><strong>Parent Name:</strong>    <span th:text="${profile.parentName}"></span></p>
             <p><strong>Parent Contact:</strong> <span th:text="${profile.parentContact}"></span></p>
         </div>
+    </div>
 
-        <!-- ✅ FEATURES: ONLY unlocked after ADMIN APPROVAL -->
-        <div th:if="${profile.status.name() == 'APPROVED'}" class="feature-section">
-            <h3>🔓 Available Features</h3>
-            <a th:href="@{/rent}"    class="btn btn-green">💰 Rent Payment Status</a>
-            <a th:href="@{/queries}" class="btn btn-blue">📩 Query / Support</a>
-        </div>
+    <!-- =============================================
+         FEATURE SECTION — only unlocked after APPROVED
+    ============================================= -->
+    <div th:if="${profile != null}" class="card">
+        <h3 style="margin-top:0;">🔓 Hostel Features</h3>
 
-        <!-- If PENDING: show locked message -->
-        <div th:if="${profile.status.name() == 'PENDING'}" class="feature-section">
-            <div class="alert alert-info">
-                🔒 Features like Rent Payment and Query Support will be unlocked
-                after admin approves your admission.
+        <!-- APPROVED: show active buttons -->
+        <div th:if="${profile.status.name() == 'APPROVED'}">
+            <div class="feature-buttons">
+                <a href="/rent"    class="btn-feat btn-green">💰 Rent Payment</a>
+                <a href="/queries" class="btn-feat btn-blue">📩 Query / Support</a>
             </div>
         </div>
 
+        <!-- NOT APPROVED: show locked box -->
+        <div th:unless="${profile.status.name() == 'APPROVED'}" class="locked-box">
+            <div class="lock-icon">🔒</div>
+            <p>Rent Payment and Query Support will unlock after<br/>admin approves your admission.</p>
+        </div>
     </div>
-
-    <br/>
-    <a th:href="@{/logout}" class="btn btn-red">Logout</a>
 
 </div>
 </main>

@@ -153,6 +153,18 @@ public class UserController {
     }
 
 
+    // Add this route so "Login as Admin" button on index works:
+@GetMapping("/admin-login")
+public String showAdminLoginForm(Model model) {
+    model.addAttribute("user", new User());
+    model.addAttribute("adminLogin", true); // hint for the page title
+    return "login"; // reuses same login.html
+}   
+
+
+
+
+
     // =========================
     // DASHBOARD
     // =========================

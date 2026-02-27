@@ -1,10 +1,10 @@
+
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Hostel Management System</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <style>
         body {
             margin: 0;
@@ -12,40 +12,91 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            background-color: #f0f2f5;
         }
+        main { flex: 1; }
 
+        /* Hero */
         .hero {
-            flex: 1;
             text-align: center;
-            padding: 80px 20px;
-            background-color: #ecf0f1;
+            padding: 50px 20px 30px;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
         }
+        .hero h1 { font-size: 36px; margin-bottom: 10px; }
+        .hero p  { font-size: 17px; opacity: 0.9; }
 
-        .hero h1 {
-            font-size: 40px;
-            margin-bottom: 20px;
+        /* Two card section */
+        .login-cards {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            padding: 40px 20px;
         }
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 35px 30px;
+            width: 280px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .card .icon { font-size: 48px; margin-bottom: 12px; }
+        .card h2   { margin: 0 0 10px; font-size: 22px; color: #2c3e50; }
+        .card p    { font-size: 14px; color: #777; margin-bottom: 20px; }
+        .card a.btn-card {
+            display: block;
+            padding: 11px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+        }
+        .card a.btn-card:hover { opacity: 0.88; }
+        .btn-user  { background: #3498db; }
+        .btn-admin { background: #2c3e50; }
 
-        .hero p {
-            font-size: 18px;
-            color: #555;
-        }
+        .card .sub-link { margin-top: 12px; font-size: 13px; }
+        .card .sub-link a { color: #3498db; text-decoration: none; }
     </style>
 </head>
-
 <body>
 
-<!-- Header -->
 <div th:replace="fragments/header :: header"></div>
 
-<!-- Hero Section -->
-<section class="hero">
-    <h1>Welcome to Hostel Management System</h1>
-    <p>Manage rooms, students, and bookings easily and efficiently.</p>
-</section>
+<main>
+    <!-- Hero Section -->
+    <div class="hero">
+        <h1>🏨 Welcome to Hostel Management System</h1>
+        <p>Manage rooms, students, admissions and payments easily.</p>
+    </div>
 
-<!-- Footer -->
+    <!-- Login Selection Cards -->
+    <div class="login-cards">
+
+        <!-- Student / User Card -->
+        <div class="card">
+            <div class="icon">🎓</div>
+            <h2>Student Login</h2>
+            <p>Already registered? Login to check your admission status and manage your hostel details.</p>
+            <a href="/login" class="btn-card btn-user">Login as Student</a>
+            <div class="sub-link">New here? <a href="/register">Register Now</a></div>
+        </div>
+
+        <!-- Admin Card -->
+        <div class="card">
+            <div class="icon">⚙️</div>
+            <h2>Admin Login</h2>
+            <p>Admin panel to manage student admissions, approvals, rent payments and queries.</p>
+            <a href="/admin-login" class="btn-card btn-admin">Login as Admin</a>
+        </div>
+
+    </div>
+</main>
+
 <div th:replace="fragments/footer :: footer"></div>
-
 </body>
 </html>
+```
