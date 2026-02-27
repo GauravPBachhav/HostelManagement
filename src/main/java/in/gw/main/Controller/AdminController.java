@@ -1,18 +1,13 @@
 package in.gw.main.Controller;
 
-import java.time.LocalDate;
-
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.*;
 
 import in.gw.main.Entity.ProfileStatus;
+import in.gw.main.Entity.StudentProfile;
 import in.gw.main.Entity.User;
 import in.gw.main.Services.StudentProfileService;
 import jakarta.servlet.http.HttpSession;
@@ -29,63 +24,34 @@ public class AdminController {
         return user != null && "ADMIN".equals(user.getRole());
     }
 
-    // =====================
-    // ADMIN DASHBOARD
-    // Sections: Pending | Approved | Rejected | Month-wise | Queries
-    // =====================
+    // ADMIN DASHBOARD — passes all 3 lists separately
     @GetMapping("/dashboard")
-    public String adminDashboard(HttpSession session, Model model,
-                                 @RequestParam(defaultValue = "0")  int month,
-                                 @RequestParam(defaultValue = "0")  int year) {
-
+    public String adminDashboard(HttpSession session, Model model) {
         if (!isAdmin(session)) return "redirect:/login";
 
-        // Default to current month/year if not given
-        LocalDate now = LocalDate.now();
-        if (month == 0) month = now.getMonthValue();
-        if (year  == 0) year  = now.getYear();
+        // ✅ FIX: Pass all profile lists — admin sees full details
+        List<StudentProfile> pendingProfiles  = studentProfileService.getPendingProfiles();
+        List<StudentProfile> approvedProfiles = studentProfileService.getApprovedProfiles();
+        List<StudentProfile> rejectedProfiles = studentProfileService.getRejectedProfiles();
 
-        // All sections
-        model.addAttribute("pendingProfiles",  studentProfileService.getPendingProfiles());
-        model.addAttribute("approvedProfiles", studentProfileService.getApprovedProfiles());
-        model.addAttribute("rejectedProfiles", studentProfileService.getRejectedProfiles());
-        model.addAttribute("monthlyProfiles",  studentProfileService.getApprovedByMonth(month, year));
-        model.addAttribute("queryProfiles",    studentProfileService.getProfilesWithQueries());
-
-        // Pass month/year to template for the form
-        model.addAttribute("selectedMonth", month);
-        model.addAttribute("selectedYear",  year);
+        model.addAttribute("pendingProfiles",  pendingProfiles);
+        model.addAttribute("approvedProfiles", approvedProfiles);
+        model.addAttribute("rejectedProfiles", rejectedProfiles);
 
         return "admin-dashboard";
     }
 
-    // Approve
     @PostMapping("/approve/{id}")
-    public String approve(@PathVariable Long id, HttpSession session,
-                          RedirectAttributes ra) {
+    public String approveProfile(@PathVariable Long id, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
         studentProfileService.updateStatus(id, ProfileStatus.APPROVED);
-        ra.addFlashAttribute("success", "✅ Profile approved!");
         return "redirect:/admin/dashboard";
     }
 
-    // Reject
     @PostMapping("/reject/{id}")
-    public String reject(@PathVariable Long id, HttpSession session,
-                         RedirectAttributes ra) {
+    public String rejectProfile(@PathVariable Long id, HttpSession session) {
         if (!isAdmin(session)) return "redirect:/login";
         studentProfileService.updateStatus(id, ProfileStatus.REJECTED);
-        ra.addFlashAttribute("success", "Profile rejected.");
-        return "redirect:/admin/dashboard";
-    }
-
-    // Mark rent paid
-    @PostMapping("/rent-paid/{id}")
-    public String markRentPaid(@PathVariable Long id, HttpSession session,
-                               RedirectAttributes ra) {
-        if (!isAdmin(session)) return "redirect:/login";
-        studentProfileService.markRentPaid(id);
-        ra.addFlashAttribute("success", "💰 Rent marked as paid!");
         return "redirect:/admin/dashboard";
     }
 }

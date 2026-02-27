@@ -1,68 +1,45 @@
-
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Register - Hostel Management</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0; padding: 0;
-            background-color: #f5f5f5;
-            display: flex; flex-direction: column; min-height: 100vh;
-        }
-        main { flex: 1; }
-        .form-wrapper {
-            max-width: 420px;
-            margin: 60px auto; padding: 30px;
-            background: #fff; border-radius: 8px;
-            box-shadow: 0 0 12px rgba(0,0,0,0.1);
-        }
-        .form-wrapper h2 { text-align: center; margin-bottom: 20px; }
-        .form-wrapper input {
-            width: 100%; padding: 9px;
-            margin-bottom: 14px; border-radius: 4px;
-            border: 1px solid #ccc; box-sizing: border-box;
-        }
-        .form-wrapper button {
-            width: 100%; padding: 10px;
-            background: #27ae60; color: white;
-            border: none; border-radius: 4px;
-            font-size: 15px; cursor: pointer;
-        }
-        .form-wrapper button:hover { background: #219a52; }
-        .alert { padding: 10px; border-radius: 4px; margin-bottom: 15px; text-align: center; }
-        .alert-error { background: #f8d7da; color: #721c24; }
-        .login-link { text-align: center; margin-top: 15px; }
-        .login-link a { color: #3498db; text-decoration: none; }
-    </style>
+  <title>Register - Hostel Management</title>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    *{box-sizing:border-box;}
+    body{font-family:Arial,sans-serif;margin:0;background:#f0f2f5;display:flex;flex-direction:column;min-height:100vh;}
+    main{flex:1;display:flex;align-items:center;justify-content:center;padding:30px 15px;}
+    .box{background:white;border-radius:12px;padding:36px 32px;width:100%;max-width:420px;box-shadow:0 4px 20px rgba(0,0,0,0.1);}
+    .box h2{margin:0 0 6px;color:#1a252f;text-align:center;font-size:24px;}
+    .box .subtitle{text-align:center;color:#888;font-size:13px;margin-bottom:22px;}
+    .box label{display:block;font-size:13px;font-weight:bold;color:#555;margin-bottom:4px;}
+    .box input{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px;margin-bottom:16px;}
+    .box input:focus{outline:none;border-color:#27ae60;}
+    .box button{width:100%;padding:11px;background:#27ae60;color:white;border:none;border-radius:6px;font-size:15px;cursor:pointer;font-weight:bold;}
+    .box button:hover{background:#219a52;}
+    .link-row{text-align:center;margin-top:14px;font-size:13px;color:#888;}
+    .link-row a{color:#3498db;text-decoration:none;}
+    .alert{padding:10px 14px;border-radius:6px;margin-bottom:16px;font-size:14px;text-align:center;}
+    .alert-error{background:#f8d7da;color:#721c24;}
+  </style>
 </head>
 <body>
-
 <div th:replace="fragments/header :: header"></div>
-
 <main>
-<div class="form-wrapper">
-    <h2>Create Account</h2>
-
-    <!-- ✅ Show error if email already exists -->
+  <div class="box">
+    <h2>🎓 Create Account</h2>
+    <p class="subtitle">Register to apply for hostel admission.</p>
     <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
-
     <form action="/regForm" th:object="${user}" method="post">
-        <input type="text"     th:field="*{name}"     placeholder="Full Name"       required />
-        <input type="email"    th:field="*{email}"    placeholder="Email Address"   required />
-        <input type="password" th:field="*{password}" placeholder="Password"        required />
-        <button type="submit">Register</button>
+      <label>Full Name</label>
+      <input type="text"     th:field="*{name}"     placeholder="Your full name"  required/>
+      <label>Email Address</label>
+      <input type="email"    th:field="*{email}"    placeholder="you@example.com" required/>
+      <label>Password</label>
+      <input type="password" th:field="*{password}" placeholder="Create password" required/>
+      <button type="submit">Register Now →</button>
     </form>
-
-    <div class="login-link">
-        Already have an account? <a th:href="@{/login}">Login here</a>
-    </div>
-</div>
+    <div class="link-row">Already have an account? <a href="/login">Login here</a></div>
+  </div>
 </main>
-
 <div th:replace="fragments/footer :: footer"></div>
 </body>
 </html>
-```

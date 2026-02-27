@@ -1,6 +1,5 @@
 package in.gw.main.Services;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,35 +32,11 @@ public class StudentProfileService {
         return studentProfileRepository.findByStatus(ProfileStatus.REJECTED);
     }
 
-    // Month-wise approved profiles
-    @Transactional
-    public List<StudentProfile> getApprovedByMonth(int month, int year) {
-        LocalDate start = LocalDate.of(year, month, 1);
-        LocalDate end   = start.withDayOfMonth(start.lengthOfMonth());
-        return studentProfileRepository.findByStatusAndSubmittedAtBetween(
-                ProfileStatus.APPROVED, start, end);
-    }
-
-    // Profiles with queries
-    @Transactional
-    public List<StudentProfile> getProfilesWithQueries() {
-        return studentProfileRepository.findByQueryTextNotNull();
-    }
-
     public void updateStatus(Long id, ProfileStatus status) {
         StudentProfile profile = studentProfileRepository
                 .findById(id)
                 .orElseThrow(() -> new RuntimeException("Profile not found"));
         profile.setStatus(status);
-        studentProfileRepository.save(profile);
-    }
-
-    // Mark rent as paid
-    public void markRentPaid(Long id) {
-        StudentProfile profile = studentProfileRepository
-                .findById(id)
-                .orElseThrow(() -> new RuntimeException("Profile not found"));
-        profile.setRentPaid(true);
         studentProfileRepository.save(profile);
     }
 
@@ -71,10 +46,10 @@ public class StudentProfileService {
             throw new RuntimeException("Profile already submitted!");
         }
         profile.setStatus(ProfileStatus.PENDING);
-        profile.setSubmittedAt(LocalDate.now()); // ✅ Set date on save
         studentProfileRepository.save(profile);
     }
 
+    @Transactional
     public StudentProfile findByUser(User user) {
         return studentProfileRepository.findByUser(user);
     }
@@ -82,4 +57,6 @@ public class StudentProfileService {
     public StudentProfile findById(Long id) {
         return studentProfileRepository.findById(id).orElse(null);
     }
+
+    // ✅ REMOVED: getProfilesWithQueries() — queryText field doesn't exist yet
 }

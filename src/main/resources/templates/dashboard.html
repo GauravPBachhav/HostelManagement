@@ -1,284 +1,253 @@
-
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>My Dashboard - Hostel Management</title>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            background-color: #f0f2f5;
-            display: flex; flex-direction: column; min-height: 100vh;
-        }
-        main { flex: 1; }
-        .container {
-            max-width: 700px;
-            margin: 30px auto;
-            padding: 0 15px;
-        }
-        h2 { color: #2c3e50; margin-bottom: 5px; }
-        .sub-title { color: #777; font-size: 14px; margin-bottom: 20px; }
+  <title>My Dashboard - Hostel Management</title>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    *{box-sizing:border-box;}
+    body{font-family:Arial,sans-serif;margin:0;background:#f0f2f5;display:flex;flex-direction:column;min-height:100vh;}
+    main{flex:1;}
+    .page-header{background:white;padding:20px 30px;border-bottom:1px solid #eee;display:flex;align-items:center;gap:14px;}
+    .page-header .avatar{width:46px;height:46px;background:#3498db;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-size:20px;}
+    .page-header h2{margin:0;font-size:20px;color:#1a252f;}
+    .page-header p{margin:2px 0 0;font-size:13px;color:#888;}
 
-        /* ===== WHATSAPP-STYLE TAB BAR ===== */
-        .tab-bar {
-            display: flex;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 25px;
-        }
-        .tab-item {
-            flex: 1;
-            padding: 14px 5px;
-            text-align: center;
-            font-size: 13px;
-            font-weight: bold;
-            border-bottom: 3px solid transparent;
-            color: #aaa;
-            cursor: default;
-        }
-        .tab-item .tab-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+    /* ====== HORIZONTAL TAB BAR ====== */
+    .tab-bar{
+      display:flex; overflow-x:auto; background:white;
+      border-bottom:2px solid #eee; padding:0 20px;
+      white-space:nowrap; gap:0;
+    }
+    .tab-bar::-webkit-scrollbar{height:4px;}
+    .tab-bar::-webkit-scrollbar-thumb{background:#ddd;border-radius:4px;}
+    .tab-bar a{
+      display:inline-block; padding:14px 20px;
+      text-decoration:none; color:#888; font-size:14px; font-weight:bold;
+      border-bottom:3px solid transparent; transition:all 0.2s;
+    }
+    .tab-bar a:hover{color:#3498db;}
+    /* Make the first tab appear active by default using :target or just style */
+    .tab-bar a.tab-active{color:#3498db;border-bottom:3px solid #3498db;}
+    /* Greyed out locked tabs */
+    .tab-bar a.tab-locked{color:#ccc;cursor:default;pointer-events:none;}
+    .tab-bar a.tab-locked:hover{color:#ccc;}
 
-        /* ACTIVE (current step) */
-        .tab-active {
-            color: #3498db;
-            border-bottom: 3px solid #3498db;
-        }
-        /* COMPLETED (green) */
-        .tab-done {
-            color: #27ae60;
-            border-bottom: 3px solid #27ae60;
-        }
-        /* LOCKED (grey) */
-        .tab-locked {
-            color: #ccc;
-            background: #fafafa;
-        }
-        /* REJECTED (red) */
-        .tab-rejected {
-            color: #e74c3c;
-            border-bottom: 3px solid #e74c3c;
-        }
+    /* ====== TAB CONTENT SECTIONS ====== */
+    .tab-content{max-width:800px;margin:25px auto;padding:0 15px;}
+    .section-panel{display:none;}           /* all hidden by default */
+    .section-panel:target{display:block;}   /* show when URL has #id */
+    /* Always show status panel as default (first section) */
+    .section-panel.default-show{display:block;}
 
-        /* ===== CONTENT CARDS ===== */
-        .card {
-            background: white;
-            border-radius: 10px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        .status-badge {
-            display: inline-block;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        .badge-pending  { background: #fff3cd; color: #856404; }
-        .badge-approved { background: #d4edda; color: #155724; }
-        .badge-rejected { background: #f8d7da; color: #721c24; }
+    .card{background:white;border-radius:12px;padding:26px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.08);}
+    .card h3{margin:0 0 16px;color:#1a252f;font-size:16px;border-bottom:1px solid #f0f2f5;padding-bottom:10px;}
 
-        .profile-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px 20px;
-            margin-top: 15px;
-        }
-        .profile-grid p { margin: 4px 0; font-size: 14px; color: #555; }
-        .profile-grid strong { color: #333; }
+    /* Status steps */
+    .steps{display:flex;gap:0;margin-bottom:10px;}
+    .step{flex:1;text-align:center;padding:12px 4px;font-size:12px;font-weight:bold;}
+    .step .step-icon{font-size:24px;display:block;margin-bottom:4px;}
+    .step-done   {color:#27ae60;}
+    .step-active {color:#3498db;}
+    .step-pending{color:#f39c12;}
+    .step-locked {color:#ccc;}
+    .step-rejected{color:#e74c3c;}
+    .step-connector{width:20px;align-self:center;color:#ddd;font-size:18px;text-align:center;}
 
-        /* locked feature box */
-        .locked-box {
-            background: #f8f9fa;
-            border: 2px dashed #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            color: #bbb;
-            font-size: 15px;
-        }
-        .locked-box .lock-icon { font-size: 30px; }
+    /* Badge */
+    .badge{display:inline-block;padding:5px 14px;border-radius:20px;font-size:13px;font-weight:bold;}
+    .badge-pending {background:#fff3cd;color:#856404;}
+    .badge-approved{background:#d4edda;color:#155724;}
+    .badge-rejected{background:#f8d7da;color:#721c24;}
 
-        /* feature buttons (only when approved) */
-        .feature-buttons { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
-        .btn-feat {
-            padding: 11px 20px;
-            border-radius: 7px;
-            text-decoration: none;
-            color: white;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        .btn-green { background: #27ae60; }
-        .btn-blue  { background: #3498db; }
-        .btn-red   { background: #e74c3c; }
-        .btn-feat:hover { opacity: 0.85; }
+    /* Profile grid */
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;}
+    .info-grid .item label{display:block;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.5px;}
+    .info-grid .item span{font-size:14px;color:#333;font-weight:bold;}
 
-        .alert { padding: 12px; border-radius: 6px; margin-bottom: 16px; }
-        .alert-success { background: #d4edda; color: #155724; }
-    </style>
+    /* Locked feature box */
+    .locked-box{background:#f8f9fa;border:2px dashed #ddd;border-radius:10px;padding:30px;text-align:center;color:#bbb;}
+    .locked-box .lock-icon{font-size:36px;margin-bottom:8px;}
+    .locked-box p{margin:0;font-size:14px;}
+
+    /* Action buttons */
+    .btn-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;}
+    .action-btn{display:inline-block;padding:11px 22px;border-radius:8px;text-decoration:none;color:white;font-size:14px;font-weight:bold;}
+    .btn-green{background:#27ae60;}
+    .btn-blue {background:#3498db;}
+    .btn-red  {background:#e74c3c;}
+    .action-btn:hover{opacity:0.85;}
+
+    .alert{padding:11px 16px;border-radius:8px;margin-bottom:16px;font-size:14px;}
+    .alert-success{background:#d4edda;color:#155724;}
+  </style>
 </head>
 <body>
-
 <div th:replace="fragments/header :: header"></div>
-
 <main>
-<div class="container">
 
-    <h2>Welcome, <span th:text="${session.loggedUser.name}"></span> 👋</h2>
-    <p class="sub-title" th:text="${session.loggedUser.email}"></p>
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="avatar">👤</div>
+    <div>
+      <h2 th:text="${session.loggedUser.name}">Student Name</h2>
+      <p th:text="${session.loggedUser.email}">email</p>
+    </div>
+  </div>
 
-    <!-- Flash message -->
-    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+  <!-- ====== HORIZONTAL TAB BAR ====== -->
+  <!--
+    Pure CSS trick: clicking a tab changes URL hash (#section-id)
+    CSS :target selector shows that section
+    The "Status" tab/section is shown by default (.default-show)
+    Locked tabs (greyed) are not clickable
+  -->
+  <div class="tab-bar">
+    <a href="#tab-status" class="tab-active">📊 Admission Status</a>
+    <a href="#tab-profile" th:if="${profile != null}">👤 My Profile</a>
+    <!-- Rent tab: active link if approved, locked if not -->
+    <a href="#tab-rent"
+       th:if="${profile != null and profile.status.name() == 'APPROVED'}">💰 Rent Payment</a>
+    <a class="tab-locked"
+       th:if="${profile == null or profile.status.name() != 'APPROVED'}">💰 Rent Payment</a>
+    <!-- Query tab: active link if approved, locked if not -->
+    <a href="#tab-query"
+       th:if="${profile != null and profile.status.name() == 'APPROVED'}">📩 Query / Support</a>
+    <a class="tab-locked"
+       th:if="${profile == null or profile.status.name() != 'APPROVED'}">📩 Query / Support</a>
+  </div>
 
-    <!-- =============================================
-         WHATSAPP-STYLE TAB/STEP BAR
-         Steps: Register → Admission Form → Pending → Approved
-    ============================================= -->
+  <div class="tab-content">
 
-    <!-- CASE A: Profile NOT submitted yet -->
-    <div th:if="${profile == null}">
-        <div class="tab-bar">
-            <div class="tab-item tab-done">
-                <span class="tab-icon">✅</span>Registered
-            </div>
-            <div class="tab-item tab-active">
-                <span class="tab-icon">📋</span>Admission Form
-            </div>
-            <div class="tab-item tab-locked">
-                <span class="tab-icon">⏳</span>Pending
-            </div>
-            <div class="tab-item tab-locked">
-                <span class="tab-icon">🏠</span>Hostel Features
-            </div>
+    <!-- ====== TAB 1: STATUS (default visible) ====== -->
+    <div id="tab-status" class="section-panel default-show">
+
+      <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+      <div class="card">
+        <h3>📊 Your Admission Progress</h3>
+
+        <!-- Step progress indicator -->
+        <!-- NO PROFILE YET -->
+        <div th:if="${profile == null}">
+          <div class="steps">
+            <div class="step step-done"><span class="step-icon">✅</span>Registered</div>
+            <div class="step-connector">›</div>
+            <div class="step step-active"><span class="step-icon">📋</span>Fill Form</div>
+            <div class="step-connector">›</div>
+            <div class="step step-locked"><span class="step-icon">⏳</span>Pending</div>
+            <div class="step-connector">›</div>
+            <div class="step step-locked"><span class="step-icon">🏠</span>Hostel</div>
+          </div>
+          <p style="color:#666;font-size:14px;">You haven't submitted your admission form yet.</p>
+          <div class="btn-row">
+            <a href="/admission" class="action-btn btn-blue">📋 Fill Admission Form</a>
+          </div>
         </div>
-        <div class="card">
-            <p>You haven't submitted your admission form yet.</p>
-            <a href="/admission" class="btn-feat btn-blue">📋 Fill Admission Form</a>
+
+        <!-- PENDING -->
+        <div th:if="${profile != null and profile.status.name() == 'PENDING'}">
+          <div class="steps">
+            <div class="step step-done"><span class="step-icon">✅</span>Registered</div>
+            <div class="step-connector">›</div>
+            <div class="step step-done"><span class="step-icon">✅</span>Form Done</div>
+            <div class="step-connector">›</div>
+            <div class="step step-pending"><span class="step-icon">⏳</span>Pending</div>
+            <div class="step-connector">›</div>
+            <div class="step step-locked"><span class="step-icon">🔒</span>Hostel</div>
+          </div>
+          <p style="margin-top:12px;">Status: <span class="badge badge-pending">⏳ Pending Approval</span></p>
+          <p style="color:#888;font-size:13px;">Your form is under admin review. Features unlock after approval.</p>
         </div>
+
+        <!-- APPROVED -->
+        <div th:if="${profile != null and profile.status.name() == 'APPROVED'}">
+          <div class="steps">
+            <div class="step step-done"><span class="step-icon">✅</span>Registered</div>
+            <div class="step-connector">›</div>
+            <div class="step step-done"><span class="step-icon">✅</span>Form Done</div>
+            <div class="step-connector">›</div>
+            <div class="step step-done"><span class="step-icon">✅</span>Approved</div>
+            <div class="step-connector">›</div>
+            <div class="step step-done"><span class="step-icon">🏠</span>Hostel</div>
+          </div>
+          <p style="margin-top:12px;">Status: <span class="badge badge-approved">✅ Approved</span></p>
+          <p style="color:#555;font-size:13px;">Congratulations! All features are now unlocked.</p>
+          <div class="btn-row">
+            <a href="#tab-rent"  class="action-btn btn-green">💰 Rent Payment</a>
+            <a href="#tab-query" class="action-btn btn-blue">📩 Query / Support</a>
+          </div>
+        </div>
+
+        <!-- REJECTED -->
+        <div th:if="${profile != null and profile.status.name() == 'REJECTED'}">
+          <div class="steps">
+            <div class="step step-done"><span class="step-icon">✅</span>Registered</div>
+            <div class="step-connector">›</div>
+            <div class="step step-done"><span class="step-icon">✅</span>Form Done</div>
+            <div class="step-connector">›</div>
+            <div class="step step-rejected"><span class="step-icon">❌</span>Rejected</div>
+            <div class="step-connector">›</div>
+            <div class="step step-locked"><span class="step-icon">🔒</span>Hostel</div>
+          </div>
+          <p style="margin-top:12px;">Status: <span class="badge badge-rejected">❌ Rejected</span></p>
+          <p style="color:#888;font-size:13px;">Please contact the hostel office for more information.</p>
+        </div>
+
+      </div>
     </div>
 
-    <!-- CASE B: Profile submitted — PENDING -->
-    <div th:if="${profile != null and profile.status.name() == 'PENDING'}">
-        <div class="tab-bar">
-            <div class="tab-item tab-done">
-                <span class="tab-icon">✅</span>Registered
-            </div>
-            <div class="tab-item tab-done">
-                <span class="tab-icon">✅</span>Form Submitted
-            </div>
-            <div class="tab-item tab-active">
-                <span class="tab-icon">⏳</span>Pending Approval
-            </div>
-            <div class="tab-item tab-locked">
-                <span class="tab-icon">🔒</span>Hostel Features
-            </div>
+    <!-- ====== TAB 2: MY PROFILE ====== -->
+    <div id="tab-profile" class="section-panel" th:if="${profile != null}">
+      <div class="card">
+        <h3>👤 My Profile Details</h3>
+        <div class="info-grid">
+          <div class="item"><label>Mobile</label><span th:text="${profile.phoneNumber}"></span></div>
+          <div class="item"><label>Address</label><span th:text="${profile.address}"></span></div>
+          <div class="item"><label>College</label><span th:text="${profile.collegeName}"></span></div>
+          <div class="item"><label>Course</label><span th:text="${profile.course}"></span></div>
+          <div class="item"><label>Year</label><span th:text="${profile.yearOfStudy}"></span></div>
+          <div class="item"><label>Parent Name</label><span th:text="${profile.parentName}"></span></div>
+          <div class="item"><label>Parent Contact</label><span th:text="${profile.parentContact}"></span></div>
         </div>
-        <div class="card">
-            <p><strong>Admission Status:</strong>
-                <span class="status-badge badge-pending">⏳ PENDING</span>
-            </p>
-            <p style="color:#777; font-size:14px; margin-top:10px;">
-                Your admission form is under review. Please wait for admin approval.
-                You will be able to access rent payment and queries after approval.
-            </p>
-        </div>
+      </div>
     </div>
 
-    <!-- CASE C: APPROVED -->
-    <div th:if="${profile != null and profile.status.name() == 'APPROVED'}">
-        <div class="tab-bar">
-            <div class="tab-item tab-done">
-                <span class="tab-icon">✅</span>Registered
-            </div>
-            <div class="tab-item tab-done">
-                <span class="tab-icon">✅</span>Form Submitted
-            </div>
-            <div class="tab-item tab-done">
-                <span class="tab-icon">✅</span>Approved
-            </div>
-            <div class="tab-item tab-done">
-                <span class="tab-icon">🏠</span>Hostel Features
-            </div>
+    <!-- ====== TAB 3: RENT PAYMENT ====== -->
+    <div id="tab-rent" class="section-panel">
+      <div class="card">
+        <h3>💰 Rent Payment</h3>
+        <div th:if="${profile != null and profile.status.name() == 'APPROVED'}">
+          <p style="color:#666;font-size:14px;">Rent payment details will be shown here.</p>
+          <div class="btn-row">
+            <a href="#" class="action-btn btn-green">💳 Pay Rent Online</a>
+          </div>
         </div>
-        <div class="card">
-            <p><strong>Admission Status:</strong>
-                <span class="status-badge badge-approved">✅ APPROVED</span>
-            </p>
+        <div th:unless="${profile != null and profile.status.name() == 'APPROVED'}" class="locked-box">
+          <div class="lock-icon">🔒</div>
+          <p>Available only after admin approves your admission.</p>
         </div>
+      </div>
     </div>
 
-    <!-- CASE D: REJECTED -->
-    <div th:if="${profile != null and profile.status.name() == 'REJECTED'}">
-        <div class="tab-bar">
-            <div class="tab-item tab-done">
-                <span class="tab-icon">✅</span>Registered
-            </div>
-            <div class="tab-item tab-done">
-                <span class="tab-icon">✅</span>Form Submitted
-            </div>
-            <div class="tab-item tab-rejected">
-                <span class="tab-icon">❌</span>Rejected
-            </div>
-            <div class="tab-item tab-locked">
-                <span class="tab-icon">🔒</span>Hostel Features
-            </div>
+    <!-- ====== TAB 4: QUERY / SUPPORT ====== -->
+    <div id="tab-query" class="section-panel">
+      <div class="card">
+        <h3>📩 Query / Support</h3>
+        <div th:if="${profile != null and profile.status.name() == 'APPROVED'}">
+          <p style="color:#666;font-size:14px;">Submit your queries or complaints to hostel admin.</p>
+          <div class="btn-row">
+            <a href="#" class="action-btn btn-blue">✉️ Send Query</a>
+          </div>
         </div>
-        <div class="card">
-            <p><strong>Admission Status:</strong>
-                <span class="status-badge badge-rejected">❌ REJECTED</span>
-            </p>
-            <p style="color:#888; font-size:14px; margin-top:8px;">
-                Your admission was rejected. Please contact the hostel office for more details.
-            </p>
+        <div th:unless="${profile != null and profile.status.name() == 'APPROVED'}" class="locked-box">
+          <div class="lock-icon">🔒</div>
+          <p>Available only after admin approves your admission.</p>
         </div>
+      </div>
     </div>
 
-    <!-- =============================================
-         PROFILE DETAILS CARD (shown if form submitted)
-    ============================================= -->
-    <div th:if="${profile != null}" class="card">
-        <h3 style="margin-top:0;">📄 Your Profile Details</h3>
-        <div class="profile-grid">
-            <p><strong>Phone:</strong>          <span th:text="${profile.phoneNumber}"></span></p>
-            <p><strong>Address:</strong>        <span th:text="${profile.address}"></span></p>
-            <p><strong>College:</strong>        <span th:text="${profile.collegeName}"></span></p>
-            <p><strong>Course:</strong>         <span th:text="${profile.course}"></span></p>
-            <p><strong>Year of Study:</strong>  <span th:text="${profile.yearOfStudy}"></span></p>
-            <p><strong>Parent Name:</strong>    <span th:text="${profile.parentName}"></span></p>
-            <p><strong>Parent Contact:</strong> <span th:text="${profile.parentContact}"></span></p>
-        </div>
-    </div>
-
-    <!-- =============================================
-         FEATURE SECTION — only unlocked after APPROVED
-    ============================================= -->
-    <div th:if="${profile != null}" class="card">
-        <h3 style="margin-top:0;">🔓 Hostel Features</h3>
-
-        <!-- APPROVED: show active buttons -->
-        <div th:if="${profile.status.name() == 'APPROVED'}">
-            <div class="feature-buttons">
-                <a href="/rent"    class="btn-feat btn-green">💰 Rent Payment</a>
-                <a href="/queries" class="btn-feat btn-blue">📩 Query / Support</a>
-            </div>
-        </div>
-
-        <!-- NOT APPROVED: show locked box -->
-        <div th:unless="${profile.status.name() == 'APPROVED'}" class="locked-box">
-            <div class="lock-icon">🔒</div>
-            <p>Rent Payment and Query Support will unlock after<br/>admin approves your admission.</p>
-        </div>
-    </div>
-
-</div>
+  </div>
 </main>
-
 <div th:replace="fragments/footer :: footer"></div>
 </body>
 </html>
-```

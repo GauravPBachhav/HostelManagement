@@ -1,102 +1,65 @@
-
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Hostel Management System</title>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            background-color: #f0f2f5;
-        }
-        main { flex: 1; }
-
-        /* Hero */
-        .hero {
-            text-align: center;
-            padding: 50px 20px 30px;
-            background: linear-gradient(135deg, #2c3e50, #3498db);
-            color: white;
-        }
-        .hero h1 { font-size: 36px; margin-bottom: 10px; }
-        .hero p  { font-size: 17px; opacity: 0.9; }
-
-        /* Two card section */
-        .login-cards {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            flex-wrap: wrap;
-            padding: 40px 20px;
-        }
-        .card {
-            background: white;
-            border-radius: 10px;
-            padding: 35px 30px;
-            width: 280px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        .card .icon { font-size: 48px; margin-bottom: 12px; }
-        .card h2   { margin: 0 0 10px; font-size: 22px; color: #2c3e50; }
-        .card p    { font-size: 14px; color: #777; margin-bottom: 20px; }
-        .card a.btn-card {
-            display: block;
-            padding: 11px;
-            border-radius: 6px;
-            text-decoration: none;
-            color: white;
-            font-size: 15px;
-            font-weight: bold;
-        }
-        .card a.btn-card:hover { opacity: 0.88; }
-        .btn-user  { background: #3498db; }
-        .btn-admin { background: #2c3e50; }
-
-        .card .sub-link { margin-top: 12px; font-size: 13px; }
-        .card .sub-link a { color: #3498db; text-decoration: none; }
-    </style>
+  <title>Hostel Management System</title>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:Arial,sans-serif; min-height:100vh; display:flex; flex-direction:column; background:#f0f2f5; }
+    main { flex:1; }
+    .hero {
+      background: linear-gradient(135deg, #1a252f 0%, #2c3e50 50%, #3498db 100%);
+      color: white; text-align: center; padding: 70px 20px 50px;
+    }
+    .hero h1 { font-size: 38px; margin: 0 0 12px; }
+    .hero p  { font-size: 17px; opacity: 0.85; margin: 0; }
+    .cards-section { display:flex; justify-content:center; gap:30px; flex-wrap:wrap; padding:50px 20px; }
+    .card {
+      background: white; border-radius: 12px; padding: 40px 30px;
+      width: 300px; text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+    .card:hover { transform: translateY(-4px); }
+    .card .icon { font-size: 52px; margin-bottom: 14px; }
+    .card h2    { margin: 0 0 10px; font-size: 22px; color: #1a252f; }
+    .card p     { font-size: 14px; color: #777; margin-bottom: 24px; line-height: 1.6; }
+    .card-btn {
+      display: block; padding: 12px; border-radius: 8px;
+      color: white; text-decoration: none; font-size: 15px; font-weight: bold;
+    }
+    .card-btn:hover { opacity: 0.88; }
+    .btn-student { background: #3498db; }
+    .btn-admin   { background: #1a252f; }
+    .sub-link { margin-top: 14px; font-size: 13px; color: #999; }
+    .sub-link a { color: #3498db; text-decoration: none; }
+  </style>
 </head>
 <body>
-
 <div th:replace="fragments/header :: header"></div>
-
 <main>
-    <!-- Hero Section -->
-    <div class="hero">
-        <h1>🏨 Welcome to Hostel Management System</h1>
-        <p>Manage rooms, students, admissions and payments easily.</p>
+  <div class="hero">
+    <h1>🏨 Hostel Management System</h1>
+    <p>Streamline student admissions, approvals, and rent payments in one place.</p>
+  </div>
+  <div class="cards-section">
+    <!-- Student Card -->
+    <div class="card">
+      <div class="icon">🎓</div>
+      <h2>Student Portal</h2>
+      <p>Register, fill your admission form, and track your hostel status in real time.</p>
+      <a href="/login" class="card-btn btn-student">Student Login</a>
+      <div class="sub-link">New here? <a href="/register">Register now</a></div>
     </div>
-
-    <!-- Login Selection Cards -->
-    <div class="login-cards">
-
-        <!-- Student / User Card -->
-        <div class="card">
-            <div class="icon">🎓</div>
-            <h2>Student Login</h2>
-            <p>Already registered? Login to check your admission status and manage your hostel details.</p>
-            <a href="/login" class="btn-card btn-user">Login as Student</a>
-            <div class="sub-link">New here? <a href="/register">Register Now</a></div>
-        </div>
-
-        <!-- Admin Card -->
-        <div class="card">
-            <div class="icon">⚙️</div>
-            <h2>Admin Login</h2>
-            <p>Admin panel to manage student admissions, approvals, rent payments and queries.</p>
-            <a href="/admin-login" class="btn-card btn-admin">Login as Admin</a>
-        </div>
-
+    <!-- Admin Card -->
+    <div class="card">
+      <div class="icon">⚙️</div>
+      <h2>Admin Panel</h2>
+      <p>Manage student admissions, approve requests, and track rent payments.</p>
+      <a href="/admin-login" class="card-btn btn-admin">Admin Login</a>
     </div>
+  </div>
 </main>
-
 <div th:replace="fragments/footer :: footer"></div>
 </body>
 </html>
-```
