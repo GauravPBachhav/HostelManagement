@@ -1,45 +1,66 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>Register - Hostel Management</title>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <style>
-    *{box-sizing:border-box;}
-    body{font-family:Arial,sans-serif;margin:0;background:#f0f2f5;display:flex;flex-direction:column;min-height:100vh;}
-    main{flex:1;display:flex;align-items:center;justify-content:center;padding:30px 15px;}
-    .box{background:white;border-radius:12px;padding:36px 32px;width:100%;max-width:420px;box-shadow:0 4px 20px rgba(0,0,0,0.1);}
-    .box h2{margin:0 0 6px;color:#1a252f;text-align:center;font-size:24px;}
-    .box .subtitle{text-align:center;color:#888;font-size:13px;margin-bottom:22px;}
-    .box label{display:block;font-size:13px;font-weight:bold;color:#555;margin-bottom:4px;}
-    .box input{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px;margin-bottom:16px;}
-    .box input:focus{outline:none;border-color:#27ae60;}
-    .box button{width:100%;padding:11px;background:#27ae60;color:white;border:none;border-radius:6px;font-size:15px;cursor:pointer;font-weight:bold;}
-    .box button:hover{background:#219a52;}
-    .link-row{text-align:center;margin-top:14px;font-size:13px;color:#888;}
-    .link-row a{color:#3498db;text-decoration:none;}
-    .alert{padding:10px 14px;border-radius:6px;margin-bottom:16px;font-size:14px;text-align:center;}
-    .alert-error{background:#f8d7da;color:#721c24;}
-  </style>
+    <title>Register - Shivtirth Hostel</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
 </head>
-<body>
-<div th:replace="fragments/header :: header"></div>
-<main>
-  <div class="box">
-    <h2>🎓 Create Account</h2>
-    <p class="subtitle">Register to apply for hostel admission.</p>
-    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
-    <form action="/regForm" th:object="${user}" method="post">
-      <label>Full Name</label>
-      <input type="text"     th:field="*{name}"     placeholder="Your full name"  required/>
-      <label>Email Address</label>
-      <input type="email"    th:field="*{email}"    placeholder="you@example.com" required/>
-      <label>Password</label>
-      <input type="password" th:field="*{password}" placeholder="Create password" required/>
-      <button type="submit">Register Now →</button>
-    </form>
-    <div class="link-row">Already have an account? <a href="/login">Login here</a></div>
-  </div>
+<body class="d-flex flex-column min-vh-100" style="background:#f5f6fa;">
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="flex-grow-1 d-flex align-items-center justify-content-center py-5">
+    <div class="card shadow border-0" style="width: 100%; max-width: 440px;">
+        <div class="card-body p-4">
+
+            <h4 class="text-center mb-1">
+                <i class="bi bi-person-plus"></i> Create Account
+            </h4>
+            <p class="text-center text-muted small mb-3">
+                Register to apply for hostel admission.
+            </p>
+
+            <!-- Error message (e.g., email already registered) -->
+            <div th:if="${error}" class="alert alert-danger py-2 text-center small"
+                 th:text="${error}"></div>
+
+            <!--
+              REGISTRATION FORM
+              - th:action adds CSRF token
+              - th:object="${user}" binds to the User object
+              - th:field="*{name}" auto-fills the input with user.name
+            -->
+            <form th:action="@{/regForm}" th:object="${user}" method="post">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Full Name</label>
+                    <input type="text" th:field="*{name}" class="form-control"
+                           placeholder="Your full name" required/>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Email Address</label>
+                    <input type="email" th:field="*{email}" class="form-control"
+                           placeholder="you@example.com" required/>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Password</label>
+                    <input type="password" th:field="*{password}" class="form-control"
+                           placeholder="Create password" required/>
+                </div>
+                <button type="submit" class="btn btn-success w-100 fw-bold">
+                    Register Now <i class="bi bi-arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="text-center mt-3 small text-muted">
+                Already have an account? <a href="/login">Login here</a>
+            </div>
+
+        </div>
+    </div>
 </main>
-<div th:replace="fragments/footer :: footer"></div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

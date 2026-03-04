@@ -2,47 +2,66 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head></head>
 <body>
+
+<!--
+  HEADER FRAGMENT
+  This is included on EVERY page using: th:replace="~{fragments/header :: header}"
+  It shows the navbar with logo + login/register/logout buttons.
+  The "loggedUser" variable comes from GlobalModelAttributes.java
+-->
 <header th:fragment="header">
-<style>
-  header {
-    display: flex; justify-content: space-between; align-items: center;
-    background: #1a252f; padding: 14px 30px; color: white;
-    position: sticky; top: 0; z-index: 100;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  }
-  .logo a { font-size: 20px; font-weight: bold; color: white; text-decoration: none; letter-spacing: 0.5px; }
-  .nav-btns a {
-    text-decoration: none; margin-left: 10px; padding: 7px 16px;
-    border-radius: 20px; font-size: 13px; font-weight: bold; color: white;
-    transition: opacity 0.2s;
-  }
-  .nav-btns a:hover { opacity: 0.8; }
-  .btn-login    { background: #3498db; }
-  .btn-register { background: #27ae60; }
-  .btn-logout   { background: #e74c3c; }
-  .btn-dash     { background: #8e44ad; }
-  .user-label   { font-size: 13px; color: #bdc3c7; }
-</style>
-  <div class="logo"><a href="/">🏨 Hostel Management</a></div>
-  <div class="nav-btns">
-    <!-- Not logged in -->
-    <th:block th:if="${session.loggedUser == null}">
-      <a href="/login"    class="btn-login">Login</a>
-      <a href="/register" class="btn-register">Register</a>
-    </th:block>
-    <!-- Admin logged in -->
-    <th:block th:if="${session.loggedUser != null and session.loggedUser.role == 'ADMIN'}">
-      <span class="user-label">⚙️ Admin</span>
-      <a href="/admin/dashboard" class="btn-dash">Dashboard</a>
-      <a href="/logout"          class="btn-logout">Logout</a>
-    </th:block>
-    <!-- User logged in -->
-    <th:block th:if="${session.loggedUser != null and session.loggedUser.role == 'USER'}">
-      <span class="user-label" th:text="'👤 ' + ${session.loggedUser.name}"></span>
-      <a href="/dashboard" class="btn-dash">My Dashboard</a>
-      <a href="/logout"    class="btn-logout">Logout</a>
-    </th:block>
-  </div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow">
+        <div class="container-fluid">
+            <!-- Brand / Logo -->
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="bi bi-building"></i> Shivtirth Hostel
+            </a>
+
+            <!-- Right side buttons -->
+            <div class="d-flex align-items-center gap-2">
+
+                <!-- NOT LOGGED IN → show Login + Register buttons -->
+                <th:block th:if="${loggedUser == null}">
+                    <a href="/login" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                    <a href="/register" class="btn btn-success btn-sm">
+                        <i class="bi bi-person-plus"></i> Register
+                    </a>
+                </th:block>
+
+                <!-- ADMIN LOGGED IN → show Dashboard + Logout -->
+                <th:block th:if="${loggedUser != null and loggedUser.role == 'ADMIN'}">
+                    <span class="text-light small me-2">
+                        <i class="bi bi-gear"></i> Admin
+                    </span>
+                    <a href="/admin/dashboard" class="btn btn-outline-info btn-sm">Dashboard</a>
+                    <!-- Logout must be POST (Spring Security requirement) -->
+                    <form th:action="@{/logout}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </form>
+                </th:block>
+
+                <!-- STUDENT LOGGED IN → show name + Dashboard + Logout -->
+                <th:block th:if="${loggedUser != null and loggedUser.role == 'USER'}">
+                    <span class="text-light small me-2">
+                        <i class="bi bi-person"></i>
+                        <span th:text="${loggedUser.name}">User</span>
+                    </span>
+                    <a href="/dashboard" class="btn btn-outline-info btn-sm">My Dashboard</a>
+                    <form th:action="@{/logout}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </form>
+                </th:block>
+
+            </div>
+        </div>
+    </nav>
 </header>
+
 </body>
 </html>

@@ -1,6 +1,7 @@
 package in.gw.main.Services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import in.gw.main.Entity.User;
@@ -12,11 +13,17 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    // BCrypt password encoder (configured in SecurityConfig)
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public void registerUser(User user) {
         user.setEmail(user.getEmail().toLowerCase());
         if (userRepository.findByEmail(user.getEmail()) != null) {
             throw new RuntimeException("Email already registered!");
         }
+        // HASH the password before saving (BCrypt)
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole("USER");
         user.setProfileCompleted(false);
         userRepository.save(user);
@@ -40,5 +47,25 @@ public class UserService {
 
     public boolean validateUser(String email, String password) {
         return checkLogin(email, password) != null;
+    }
+
+    /**
+     * ADMIN PASSWORD RESET
+     * Resets a user's password to a default value (hostel123).
+     * Admin triggers this from the dashboard.
+     * The student should change it after first login.
+     */
+    public String resetPassword(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        String defaultPassword = "hostel123";
+        user.setPassword(passwordEncoder.encode(defaultPassword));
+        userRepository.save(user);
+        return defaultPassword;
+    }
+
+    /** Get all users (for admin purposes) */
+    public java.util.List<User> findAll() {
+        return userRepository.findAll();
     }
 }

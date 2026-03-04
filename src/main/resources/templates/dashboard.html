@@ -1,253 +1,466 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>My Dashboard - Hostel Management</title>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <style>
-    *{box-sizing:border-box;}
-    body{font-family:Arial,sans-serif;margin:0;background:#f0f2f5;display:flex;flex-direction:column;min-height:100vh;}
-    main{flex:1;}
-    .page-header{background:white;padding:20px 30px;border-bottom:1px solid #eee;display:flex;align-items:center;gap:14px;}
-    .page-header .avatar{width:46px;height:46px;background:#3498db;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-size:20px;}
-    .page-header h2{margin:0;font-size:20px;color:#1a252f;}
-    .page-header p{margin:2px 0 0;font-size:13px;color:#888;}
-
-    /* ====== HORIZONTAL TAB BAR ====== */
-    .tab-bar{
-      display:flex; overflow-x:auto; background:white;
-      border-bottom:2px solid #eee; padding:0 20px;
-      white-space:nowrap; gap:0;
-    }
-    .tab-bar::-webkit-scrollbar{height:4px;}
-    .tab-bar::-webkit-scrollbar-thumb{background:#ddd;border-radius:4px;}
-    .tab-bar a{
-      display:inline-block; padding:14px 20px;
-      text-decoration:none; color:#888; font-size:14px; font-weight:bold;
-      border-bottom:3px solid transparent; transition:all 0.2s;
-    }
-    .tab-bar a:hover{color:#3498db;}
-    /* Make the first tab appear active by default using :target or just style */
-    .tab-bar a.tab-active{color:#3498db;border-bottom:3px solid #3498db;}
-    /* Greyed out locked tabs */
-    .tab-bar a.tab-locked{color:#ccc;cursor:default;pointer-events:none;}
-    .tab-bar a.tab-locked:hover{color:#ccc;}
-
-    /* ====== TAB CONTENT SECTIONS ====== */
-    .tab-content{max-width:800px;margin:25px auto;padding:0 15px;}
-    .section-panel{display:none;}           /* all hidden by default */
-    .section-panel:target{display:block;}   /* show when URL has #id */
-    /* Always show status panel as default (first section) */
-    .section-panel.default-show{display:block;}
-
-    .card{background:white;border-radius:12px;padding:26px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.08);}
-    .card h3{margin:0 0 16px;color:#1a252f;font-size:16px;border-bottom:1px solid #f0f2f5;padding-bottom:10px;}
-
-    /* Status steps */
-    .steps{display:flex;gap:0;margin-bottom:10px;}
-    .step{flex:1;text-align:center;padding:12px 4px;font-size:12px;font-weight:bold;}
-    .step .step-icon{font-size:24px;display:block;margin-bottom:4px;}
-    .step-done   {color:#27ae60;}
-    .step-active {color:#3498db;}
-    .step-pending{color:#f39c12;}
-    .step-locked {color:#ccc;}
-    .step-rejected{color:#e74c3c;}
-    .step-connector{width:20px;align-self:center;color:#ddd;font-size:18px;text-align:center;}
-
-    /* Badge */
-    .badge{display:inline-block;padding:5px 14px;border-radius:20px;font-size:13px;font-weight:bold;}
-    .badge-pending {background:#fff3cd;color:#856404;}
-    .badge-approved{background:#d4edda;color:#155724;}
-    .badge-rejected{background:#f8d7da;color:#721c24;}
-
-    /* Profile grid */
-    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;}
-    .info-grid .item label{display:block;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.5px;}
-    .info-grid .item span{font-size:14px;color:#333;font-weight:bold;}
-
-    /* Locked feature box */
-    .locked-box{background:#f8f9fa;border:2px dashed #ddd;border-radius:10px;padding:30px;text-align:center;color:#bbb;}
-    .locked-box .lock-icon{font-size:36px;margin-bottom:8px;}
-    .locked-box p{margin:0;font-size:14px;}
-
-    /* Action buttons */
-    .btn-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;}
-    .action-btn{display:inline-block;padding:11px 22px;border-radius:8px;text-decoration:none;color:white;font-size:14px;font-weight:bold;}
-    .btn-green{background:#27ae60;}
-    .btn-blue {background:#3498db;}
-    .btn-red  {background:#e74c3c;}
-    .action-btn:hover{opacity:0.85;}
-
-    .alert{padding:11px 16px;border-radius:8px;margin-bottom:16px;font-size:14px;}
-    .alert-success{background:#d4edda;color:#155724;}
-  </style>
+    <title>My Dashboard - Shivtirth Hostel</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
 </head>
-<body>
-<div th:replace="fragments/header :: header"></div>
-<main>
+<body class="d-flex flex-column min-vh-100" style="background:#f5f6fa;">
+<div th:replace="~{fragments/header :: header}"></div>
 
-  <!-- Page Header -->
-  <div class="page-header">
-    <div class="avatar">👤</div>
-    <div>
-      <h2 th:text="${session.loggedUser.name}">Student Name</h2>
-      <p th:text="${session.loggedUser.email}">email</p>
-    </div>
-  </div>
+<main class="flex-grow-1">
 
-  <!-- ====== HORIZONTAL TAB BAR ====== -->
-  <!--
-    Pure CSS trick: clicking a tab changes URL hash (#section-id)
-    CSS :target selector shows that section
-    The "Status" tab/section is shown by default (.default-show)
-    Locked tabs (greyed) are not clickable
-  -->
-  <div class="tab-bar">
-    <a href="#tab-status" class="tab-active">📊 Admission Status</a>
-    <a href="#tab-profile" th:if="${profile != null}">👤 My Profile</a>
-    <!-- Rent tab: active link if approved, locked if not -->
-    <a href="#tab-rent"
-       th:if="${profile != null and profile.status.name() == 'APPROVED'}">💰 Rent Payment</a>
-    <a class="tab-locked"
-       th:if="${profile == null or profile.status.name() != 'APPROVED'}">💰 Rent Payment</a>
-    <!-- Query tab: active link if approved, locked if not -->
-    <a href="#tab-query"
-       th:if="${profile != null and profile.status.name() == 'APPROVED'}">📩 Query / Support</a>
-    <a class="tab-locked"
-       th:if="${profile == null or profile.status.name() != 'APPROVED'}">📩 Query / Support</a>
-  </div>
-
-  <div class="tab-content">
-
-    <!-- ====== TAB 1: STATUS (default visible) ====== -->
-    <div id="tab-status" class="section-panel default-show">
-
-      <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-
-      <div class="card">
-        <h3>📊 Your Admission Progress</h3>
-
-        <!-- Step progress indicator -->
-        <!-- NO PROFILE YET -->
-        <div th:if="${profile == null}">
-          <div class="steps">
-            <div class="step step-done"><span class="step-icon">✅</span>Registered</div>
-            <div class="step-connector">›</div>
-            <div class="step step-active"><span class="step-icon">📋</span>Fill Form</div>
-            <div class="step-connector">›</div>
-            <div class="step step-locked"><span class="step-icon">⏳</span>Pending</div>
-            <div class="step-connector">›</div>
-            <div class="step step-locked"><span class="step-icon">🏠</span>Hostel</div>
-          </div>
-          <p style="color:#666;font-size:14px;">You haven't submitted your admission form yet.</p>
-          <div class="btn-row">
-            <a href="/admission" class="action-btn btn-blue">📋 Fill Admission Form</a>
-          </div>
+    <!-- ====== PAGE HEADER ====== -->
+    <div class="bg-white border-bottom p-3">
+        <div class="container d-flex align-items-center gap-3">
+            <!-- Profile photo or default icon -->
+            <div th:if="${profile != null and profile.profilePhoto != null}">
+                <img th:src="@{'/' + ${profile.profilePhoto}}"
+                     alt="Profile" class="rounded-circle shadow-sm"
+                     style="width:46px;height:46px;object-fit:cover;"/>
+            </div>
+            <div th:if="${profile == null or profile.profilePhoto == null}"
+                 class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                 style="width:46px;height:46px;font-size:20px;">
+                <i class="bi bi-person"></i>
+            </div>
+            <div>
+                <h5 class="mb-0" th:text="${loggedUser.name}">Student Name</h5>
+                <small class="text-muted" th:text="${loggedUser.email}">email</small>
+            </div>
         </div>
-
-        <!-- PENDING -->
-        <div th:if="${profile != null and profile.status.name() == 'PENDING'}">
-          <div class="steps">
-            <div class="step step-done"><span class="step-icon">✅</span>Registered</div>
-            <div class="step-connector">›</div>
-            <div class="step step-done"><span class="step-icon">✅</span>Form Done</div>
-            <div class="step-connector">›</div>
-            <div class="step step-pending"><span class="step-icon">⏳</span>Pending</div>
-            <div class="step-connector">›</div>
-            <div class="step step-locked"><span class="step-icon">🔒</span>Hostel</div>
-          </div>
-          <p style="margin-top:12px;">Status: <span class="badge badge-pending">⏳ Pending Approval</span></p>
-          <p style="color:#888;font-size:13px;">Your form is under admin review. Features unlock after approval.</p>
-        </div>
-
-        <!-- APPROVED -->
-        <div th:if="${profile != null and profile.status.name() == 'APPROVED'}">
-          <div class="steps">
-            <div class="step step-done"><span class="step-icon">✅</span>Registered</div>
-            <div class="step-connector">›</div>
-            <div class="step step-done"><span class="step-icon">✅</span>Form Done</div>
-            <div class="step-connector">›</div>
-            <div class="step step-done"><span class="step-icon">✅</span>Approved</div>
-            <div class="step-connector">›</div>
-            <div class="step step-done"><span class="step-icon">🏠</span>Hostel</div>
-          </div>
-          <p style="margin-top:12px;">Status: <span class="badge badge-approved">✅ Approved</span></p>
-          <p style="color:#555;font-size:13px;">Congratulations! All features are now unlocked.</p>
-          <div class="btn-row">
-            <a href="#tab-rent"  class="action-btn btn-green">💰 Rent Payment</a>
-            <a href="#tab-query" class="action-btn btn-blue">📩 Query / Support</a>
-          </div>
-        </div>
-
-        <!-- REJECTED -->
-        <div th:if="${profile != null and profile.status.name() == 'REJECTED'}">
-          <div class="steps">
-            <div class="step step-done"><span class="step-icon">✅</span>Registered</div>
-            <div class="step-connector">›</div>
-            <div class="step step-done"><span class="step-icon">✅</span>Form Done</div>
-            <div class="step-connector">›</div>
-            <div class="step step-rejected"><span class="step-icon">❌</span>Rejected</div>
-            <div class="step-connector">›</div>
-            <div class="step step-locked"><span class="step-icon">🔒</span>Hostel</div>
-          </div>
-          <p style="margin-top:12px;">Status: <span class="badge badge-rejected">❌ Rejected</span></p>
-          <p style="color:#888;font-size:13px;">Please contact the hostel office for more information.</p>
-        </div>
-
-      </div>
     </div>
 
-    <!-- ====== TAB 2: MY PROFILE ====== -->
-    <div id="tab-profile" class="section-panel" th:if="${profile != null}">
-      <div class="card">
-        <h3>👤 My Profile Details</h3>
-        <div class="info-grid">
-          <div class="item"><label>Mobile</label><span th:text="${profile.phoneNumber}"></span></div>
-          <div class="item"><label>Address</label><span th:text="${profile.address}"></span></div>
-          <div class="item"><label>College</label><span th:text="${profile.collegeName}"></span></div>
-          <div class="item"><label>Course</label><span th:text="${profile.course}"></span></div>
-          <div class="item"><label>Year</label><span th:text="${profile.yearOfStudy}"></span></div>
-          <div class="item"><label>Parent Name</label><span th:text="${profile.parentName}"></span></div>
-          <div class="item"><label>Parent Contact</label><span th:text="${profile.parentContact}"></span></div>
+    <!-- ====== TAB NAVIGATION ====== -->
+    <div class="bg-white border-bottom">
+        <div class="container">
+            <ul class="nav nav-tabs border-0" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-status">
+                        <i class="bi bi-bar-chart"></i> Status
+                    </button>
+                </li>
+                <li class="nav-item" th:if="${profile != null}">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-profile">
+                        <i class="bi bi-person-badge"></i> My Profile
+                    </button>
+                </li>
+                <!-- Rent & Query tabs only visible after APPROVAL -->
+                <li class="nav-item" th:if="${profile != null and profile.status.name() == 'APPROVED'}">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-rent">
+                        <i class="bi bi-cash-coin"></i> Rent Payment
+                    </button>
+                </li>
+                <li class="nav-item" th:if="${profile != null and profile.status.name() == 'APPROVED'}">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-query">
+                        <i class="bi bi-chat-dots"></i> Query / Support
+                    </button>
+                </li>
+            </ul>
         </div>
-      </div>
     </div>
 
-    <!-- ====== TAB 3: RENT PAYMENT ====== -->
-    <div id="tab-rent" class="section-panel">
-      <div class="card">
-        <h3>💰 Rent Payment</h3>
-        <div th:if="${profile != null and profile.status.name() == 'APPROVED'}">
-          <p style="color:#666;font-size:14px;">Rent payment details will be shown here.</p>
-          <div class="btn-row">
-            <a href="#" class="action-btn btn-green">💳 Pay Rent Online</a>
-          </div>
-        </div>
-        <div th:unless="${profile != null and profile.status.name() == 'APPROVED'}" class="locked-box">
-          <div class="lock-icon">🔒</div>
-          <p>Available only after admin approves your admission.</p>
-        </div>
-      </div>
-    </div>
+    <!-- ====== TAB CONTENT ====== -->
+    <div class="container my-4">
+        <div class="tab-content">
 
-    <!-- ====== TAB 4: QUERY / SUPPORT ====== -->
-    <div id="tab-query" class="section-panel">
-      <div class="card">
-        <h3>📩 Query / Support</h3>
-        <div th:if="${profile != null and profile.status.name() == 'APPROVED'}">
-          <p style="color:#666;font-size:14px;">Submit your queries or complaints to hostel admin.</p>
-          <div class="btn-row">
-            <a href="#" class="action-btn btn-blue">✉️ Send Query</a>
-          </div>
-        </div>
-        <div th:unless="${profile != null and profile.status.name() == 'APPROVED'}" class="locked-box">
-          <div class="lock-icon">🔒</div>
-          <p>Available only after admin approves your admission.</p>
-        </div>
-      </div>
-    </div>
+            <!-- ============================================ -->
+            <!-- TAB 1: ADMISSION STATUS (shown by default)   -->
+            <!-- ============================================ -->
+            <div class="tab-pane show active" id="tab-status">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-bar-chart"></i> Admission Progress</h5>
 
-  </div>
+                        <!-- CASE 1: No profile submitted yet -->
+                        <div th:if="${profile == null}">
+                            <div class="d-flex justify-content-between text-center my-4">
+                                <div class="text-success">
+                                    <i class="bi bi-check-circle fs-3"></i><br/>
+                                    <small>Registered</small>
+                                </div>
+                                <div class="align-self-center text-muted">&rarr;</div>
+                                <div class="text-primary">
+                                    <i class="bi bi-pencil-square fs-3"></i><br/>
+                                    <small class="fw-bold">Fill Form</small>
+                                </div>
+                                <div class="align-self-center text-muted">&rarr;</div>
+                                <div class="text-muted">
+                                    <i class="bi bi-hourglass fs-3"></i><br/>
+                                    <small>Pending</small>
+                                </div>
+                                <div class="align-self-center text-muted">&rarr;</div>
+                                <div class="text-muted">
+                                    <i class="bi bi-house fs-3"></i><br/>
+                                    <small>Hostel</small>
+                                </div>
+                            </div>
+                            <p class="text-muted">You haven't submitted your admission form yet.</p>
+                            <a href="/admission" class="btn btn-primary">
+                                <i class="bi bi-clipboard-check"></i> Fill Admission Form
+                            </a>
+                        </div>
+
+                        <!-- CASE 2: PENDING approval -->
+                        <div th:if="${profile != null and profile.status.name() == 'PENDING'}">
+                            <div class="d-flex justify-content-between text-center my-4">
+                                <div class="text-success">
+                                    <i class="bi bi-check-circle fs-3"></i><br/>
+                                    <small>Registered</small>
+                                </div>
+                                <div class="align-self-center text-muted">&rarr;</div>
+                                <div class="text-success">
+                                    <i class="bi bi-check-circle fs-3"></i><br/>
+                                    <small>Form Done</small>
+                                </div>
+                                <div class="align-self-center text-muted">&rarr;</div>
+                                <div class="text-warning">
+                                    <i class="bi bi-hourglass-split fs-3"></i><br/>
+                                    <small class="fw-bold">Pending</small>
+                                </div>
+                                <div class="align-self-center text-muted">&rarr;</div>
+                                <div class="text-muted">
+                                    <i class="bi bi-lock fs-3"></i><br/>
+                                    <small>Hostel</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-warning text-dark">
+                                <i class="bi bi-hourglass-split"></i> Pending Approval
+                            </span>
+                            <p class="text-muted small mt-2">
+                                Your form is under admin review. Features unlock after approval.
+                            </p>
+                        </div>
+
+                        <!-- CASE 3: APPROVED -->
+                        <div th:if="${profile != null and profile.status.name() == 'APPROVED'}">
+                            <div class="d-flex justify-content-between text-center my-4">
+                                <div class="text-success">
+                                    <i class="bi bi-check-circle fs-3"></i><br/>
+                                    <small>Registered</small>
+                                </div>
+                                <div class="align-self-center text-muted">&rarr;</div>
+                                <div class="text-success">
+                                    <i class="bi bi-check-circle fs-3"></i><br/>
+                                    <small>Form Done</small>
+                                </div>
+                                <div class="align-self-center text-muted">&rarr;</div>
+                                <div class="text-success">
+                                    <i class="bi bi-check-circle fs-3"></i><br/>
+                                    <small>Approved</small>
+                                </div>
+                                <div class="align-self-center text-muted">&rarr;</div>
+                                <div class="text-success">
+                                    <i class="bi bi-house-check fs-3"></i><br/>
+                                    <small class="fw-bold">Hostel</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-success">
+                                <i class="bi bi-check-circle"></i> Approved
+                            </span>
+                            <p class="text-muted small mt-2">All features are now unlocked.</p>
+
+                            <!-- Show assigned room info -->
+                            <div th:if="${profile.room != null}" class="alert alert-info mt-3">
+                                <i class="bi bi-door-open"></i>
+                                <strong>Room:</strong> <span th:text="${profile.room.roomNumber}"></span> |
+                                <strong>Type:</strong> <span th:text="${profile.room.roomType}"></span> |
+                                <strong>Rent:</strong> &#8377;<span th:text="${profile.room.monthlyRent}"></span>/month
+                            </div>
+                        </div>
+
+                        <!-- CASE 4: REJECTED -->
+                        <div th:if="${profile != null and profile.status.name() == 'REJECTED'}">
+                            <div class="d-flex justify-content-between text-center my-4">
+                                <div class="text-success">
+                                    <i class="bi bi-check-circle fs-3"></i><br/>
+                                    <small>Registered</small>
+                                </div>
+                                <div class="align-self-center text-muted">&rarr;</div>
+                                <div class="text-success">
+                                    <i class="bi bi-check-circle fs-3"></i><br/>
+                                    <small>Form Done</small>
+                                </div>
+                                <div class="align-self-center text-muted">&rarr;</div>
+                                <div class="text-danger">
+                                    <i class="bi bi-x-circle fs-3"></i><br/>
+                                    <small class="fw-bold">Rejected</small>
+                                </div>
+                                <div class="align-self-center text-muted">&rarr;</div>
+                                <div class="text-muted">
+                                    <i class="bi bi-lock fs-3"></i><br/>
+                                    <small>Hostel</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-danger">
+                                <i class="bi bi-x-circle"></i> Rejected
+                            </span>
+                            <p class="text-muted small mt-2">
+                                Please contact the hostel office for more information.
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- TAB 2: MY PROFILE                            -->
+            <!-- ============================================ -->
+            <div class="tab-pane" id="tab-profile" th:if="${profile != null}">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-person-badge"></i> My Profile Details</h5>
+
+                        <!-- Profile photo -->
+                        <div th:if="${profile.profilePhoto != null}" class="text-center mb-3">
+                            <img th:src="@{'/' + ${profile.profilePhoto}}"
+                                 alt="My Photo" class="rounded-circle shadow"
+                                 style="width:100px;height:100px;object-fit:cover;"/>
+                        </div>
+
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-6">
+                                <label class="text-muted text-uppercase small">Mobile</label>
+                                <p class="fw-bold" th:text="${profile.phoneNumber}"></p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted text-uppercase small">Address</label>
+                                <p class="fw-bold" th:text="${profile.address}"></p>
+                            </div>
+                            <div class="col-md-6" th:if="${profile.dateOfBirth != null}">
+                                <label class="text-muted text-uppercase small">Date of Birth</label>
+                                <p class="fw-bold" th:text="${profile.dateOfBirth}"></p>
+                            </div>
+                            <div class="col-md-6" th:if="${profile.gender != null}">
+                                <label class="text-muted text-uppercase small">Gender</label>
+                                <p class="fw-bold" th:text="${profile.gender}"></p>
+                            </div>
+                            <div class="col-md-6" th:if="${profile.aadharNumber != null}">
+                                <label class="text-muted text-uppercase small">Aadhar Number</label>
+                                <p class="fw-bold" th:text="${profile.aadharNumber}"></p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted text-uppercase small">College</label>
+                                <p class="fw-bold" th:text="${profile.collegeName}"></p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted text-uppercase small">Course</label>
+                                <p class="fw-bold" th:text="${profile.course}"></p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted text-uppercase small">Year of Study</label>
+                                <p class="fw-bold" th:text="${profile.yearOfStudy}"></p>
+                            </div>
+                            <div class="col-md-6" th:if="${profile.academicYear != null}">
+                                <label class="text-muted text-uppercase small">Academic Year</label>
+                                <p class="fw-bold" th:text="${profile.academicYear}"></p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted text-uppercase small">Parent Name</label>
+                                <p class="fw-bold" th:text="${profile.parentName}"></p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted text-uppercase small">Parent Contact</label>
+                                <p class="fw-bold" th:text="${profile.parentContact}"></p>
+                            </div>
+                            <div class="col-md-6" th:if="${profile.room != null}">
+                                <label class="text-muted text-uppercase small">Room Assigned</label>
+                                <p class="fw-bold"
+                                   th:text="${profile.room.roomNumber + ' (' + profile.room.roomType + ')'}"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- TAB 3: RENT PAYMENT                          -->
+            <!-- ============================================ -->
+            <div class="tab-pane" id="tab-rent"
+                 th:if="${profile != null and profile.status.name() == 'APPROVED'}">
+
+                <!-- Pay Rent Form -->
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-cash-coin"></i> Pay Monthly Rent</h5>
+
+                        <!-- Show room & rent info -->
+                        <div th:if="${profile.room != null}" class="alert alert-light border mb-3">
+                            <strong>Room:</strong> <span th:text="${profile.room.roomNumber}"></span> |
+                            <strong>Monthly Rent:</strong>
+                            &#8377;<span th:text="${profile.room.monthlyRent}"></span>
+                        </div>
+
+                        <form th:action="@{/dashboard/rent/pay}" method="post" class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Month</label>
+                                <select name="month" class="form-select" required>
+                                    <option value="January">January</option>
+                                    <option value="February">February</option>
+                                    <option value="March">March</option>
+                                    <option value="April">April</option>
+                                    <option value="May">May</option>
+                                    <option value="June">June</option>
+                                    <option value="July">July</option>
+                                    <option value="August">August</option>
+                                    <option value="September">September</option>
+                                    <option value="October">October</option>
+                                    <option value="November">November</option>
+                                    <option value="December">December</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">Year</label>
+                                <input type="number" name="year" class="form-control"
+                                       value="2026" required/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">Payment Mode</label>
+                                <select name="paymentMode" class="form-select" required>
+                                    <option value="CASH">Cash</option>
+                                    <option value="UPI">UPI</option>
+                                    <option value="ONLINE">Online</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="bi bi-credit-card"></i> Pay
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Payment History Table -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-receipt"></i> Payment History</h5>
+
+                        <div th:if="${rentPayments == null or #lists.isEmpty(rentPayments)}"
+                             class="text-center text-muted py-4">
+                            No payments recorded yet.
+                        </div>
+
+                        <table th:if="${rentPayments != null and !#lists.isEmpty(rentPayments)}"
+                               class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th><th>Month</th><th>Year</th>
+                                    <th>Amount</th><th>Mode</th><th>Date</th><th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="p, s : ${rentPayments}">
+                                    <td th:text="${s.count}"></td>
+                                    <td th:text="${p.month}"></td>
+                                    <td th:text="${p.year}"></td>
+                                    <td>&#8377;<span th:text="${p.amount}"></span></td>
+                                    <td th:text="${p.paymentMode}"></td>
+                                    <td th:text="${p.paymentDate}"></td>
+                                    <td><span class="badge bg-success" th:text="${p.status}"></span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- TAB 4: QUERY / SUPPORT                       -->
+            <!-- ============================================ -->
+            <div class="tab-pane" id="tab-query"
+                 th:if="${profile != null and profile.status.name() == 'APPROVED'}">
+
+                <!-- Submit Query Form -->
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-chat-dots"></i> Submit a Query</h5>
+                        <form th:action="@{/dashboard/query/submit}" method="post"
+                              enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Subject</label>
+                                <input type="text" name="subject" class="form-control"
+                                       placeholder="e.g. Water issue in room" required/>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Message</label>
+                                <textarea name="message" class="form-control" rows="3"
+                                          placeholder="Describe your issue in detail..." required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">
+                                    <i class="bi bi-camera"></i> Attach Photo (optional)
+                                </label>
+                                <input type="file" name="queryImage" class="form-control"
+                                       accept="image/*"/>
+                                <small class="text-muted">Upload a photo of the issue (JPEG/PNG, max 5MB)</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send"></i> Submit Query
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Query History -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-clock-history"></i> My Queries</h5>
+
+                        <div th:if="${queries == null or #lists.isEmpty(queries)}"
+                             class="text-center text-muted py-4">
+                            No queries submitted yet.
+                        </div>
+
+                        <div th:each="q : ${queries}" class="border rounded p-3 mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <strong th:text="${q.subject}"></strong>
+                                <span class="badge"
+                                      th:classappend="${q.status.name() == 'OPEN'} ? 'bg-warning text-dark' : 'bg-success'"
+                                      th:text="${q.status}"></span>
+                            </div>
+                            <p class="text-muted small mb-1 mt-1" th:text="${q.message}"></p>
+                            <!-- Show attached image -->
+                            <div th:if="${q.imageUrl != null}" class="mb-2">
+                                <a th:href="@{'/' + ${q.imageUrl}}" target="_blank">
+                                    <img th:src="@{'/' + ${q.imageUrl}}"
+                                         alt="Attached Image" class="rounded shadow-sm"
+                                         style="max-width:200px; max-height:150px; object-fit:cover;"/>
+                                </a>
+                            </div>
+                            <small class="text-muted" th:text="${q.createdAt}"></small>
+                            <!-- Admin's reply -->
+                            <div th:if="${q.adminReply != null}"
+                                 class="alert alert-info mt-2 mb-0 py-2 small">
+                                <strong><i class="bi bi-reply"></i> Admin Reply:</strong>
+                                <span th:text="${q.adminReply}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- end tab-content -->
+    </div>
 </main>
-<div th:replace="fragments/footer :: footer"></div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Script: open correct tab when redirected with hash (e.g., #tab-rent) -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var hash = window.location.hash;
+    if (hash) {
+        var tabButton = document.querySelector('[data-bs-target="' + hash + '"]');
+        if (tabButton) {
+            new bootstrap.Tab(tabButton).show();
+        }
+    }
+});
+</script>
 </body>
 </html>

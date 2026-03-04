@@ -31,6 +31,27 @@ public class StudentProfile {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
+    // Room assigned to this student (set by admin on approval)
+    @ManyToOne
+    @JoinColumn(name = "room_id")
+    private Room room;
+
+    // Academic year of admission, e.g. "2025-26"
+    private String academicYear;
+
+    // Profile photo file path (saved by FileStorageService)
+    // e.g., "uploads/profiles/abc-123.jpg"
+    private String profilePhoto;
+
+    // Aadhar / ID number for identification
+    private String aadharNumber;
+
+    // Date of birth
+    private String dateOfBirth;
+
+    // Gender
+    private String gender;
+
     // =====================
     // GETTERS & SETTERS
     // =====================
@@ -68,4 +89,22 @@ public class StudentProfile {
         this.user = user;
         user.setStudentProfile(this);
     }
+
+    public Room getRoom()                  { return room; }
+    public void setRoom(Room room)         { this.room = room; }
+
+    public String getAcademicYear()        { return academicYear; }
+    public void setAcademicYear(String v)  { this.academicYear = v; }
+
+    public String getProfilePhoto()        { return profilePhoto; }
+    public void setProfilePhoto(String v)  { this.profilePhoto = v; }
+
+    public String getAadharNumber()        { return aadharNumber; }
+    public void setAadharNumber(String v)  { this.aadharNumber = v; }
+
+    public String getDateOfBirth()         { return dateOfBirth; }
+    public void setDateOfBirth(String v)   { this.dateOfBirth = v; }
+
+    public String getGender()              { return gender; }
+    public void setGender(String v)        { this.gender = v; }
 }

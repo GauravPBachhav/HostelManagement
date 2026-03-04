@@ -1,55 +1,73 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>Login - Hostel Management</title>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <style>
-    *{box-sizing:border-box;}
-    body{font-family:Arial,sans-serif;margin:0;background:#f0f2f5;display:flex;flex-direction:column;min-height:100vh;}
-    main{flex:1;display:flex;align-items:center;justify-content:center;padding:30px 15px;}
-    .box{background:white;border-radius:12px;padding:36px 32px;width:100%;max-width:400px;box-shadow:0 4px 20px rgba(0,0,0,0.1);}
-    .box h2{margin:0 0 6px;color:#1a252f;text-align:center;font-size:24px;}
-    .box .subtitle{text-align:center;color:#888;font-size:13px;margin-bottom:22px;}
-    .box label{display:block;font-size:13px;font-weight:bold;color:#555;margin-bottom:4px;}
-    .box input{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px;margin-bottom:16px;}
-    .box input:focus{outline:none;border-color:#3498db;}
-    .box button{width:100%;padding:11px;background:#3498db;color:white;border:none;border-radius:6px;font-size:15px;cursor:pointer;font-weight:bold;}
-    .box button:hover{background:#2980b9;}
-    .link-row{text-align:center;margin-top:14px;font-size:13px;color:#888;}
-    .link-row a{color:#3498db;text-decoration:none;}
-    .alert{padding:10px 14px;border-radius:6px;margin-bottom:16px;font-size:14px;text-align:center;}
-    .alert-success{background:#d4edda;color:#155724;}
-    .alert-error  {background:#f8d7da;color:#721c24;}
-    .admin-badge{background:#1a252f;color:white;text-align:center;padding:6px;border-radius:6px;font-size:13px;margin-bottom:16px;}
-  </style>
+    <title>Login - Shivtirth Hostel</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
 </head>
-<body>
-<div th:replace="fragments/header :: header"></div>
-<main>
-  <div class="box">
-    <!-- Show ADMIN badge if coming from admin-login page -->
-    <div th:if="${isAdminLogin}" class="admin-badge">⚙️ Admin Login</div>
-    <h2 th:text="${isAdminLogin} ? 'Admin Login' : 'Student Login'">Login</h2>
-    <p class="subtitle">Welcome back! Please enter your credentials.</p>
+<body class="d-flex flex-column min-vh-100" style="background:#f5f6fa;">
+<div th:replace="~{fragments/header :: header}"></div>
 
-    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-    <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+<main class="flex-grow-1 d-flex align-items-center justify-content-center py-5">
+    <div class="card shadow border-0" style="width: 100%; max-width: 420px;">
+        <div class="card-body p-4">
 
-    <form action="/loginForm" method="post" th:object="${user}">
-      <label>Email Address</label>
-      <input type="email"    th:field="*{email}"    placeholder="you@example.com" required/>
-      <label>Password</label>
-      <input type="password" th:field="*{password}" placeholder="Your password"   required/>
-      <button type="submit">Login →</button>
-    </form>
-    <div class="link-row" th:unless="${isAdminLogin}">
-      Don't have an account? <a href="/register">Register here</a>
+            <!-- Admin badge (shown only when coming from /admin-login) -->
+            <div th:if="${isAdminLogin}" class="alert alert-dark text-center py-2 mb-3">
+                <i class="bi bi-gear"></i> Admin Login
+            </div>
+
+            <h4 class="text-center mb-1"
+                th:text="${isAdminLogin} ? 'Admin Login' : 'Student Login'">Login</h4>
+            <p class="text-center text-muted small mb-3">Enter your credentials to continue.</p>
+
+            <!-- Success message (after logout or registration) -->
+            <div th:if="${success}" class="alert alert-success py-2 text-center small"
+                 th:text="${success}"></div>
+
+            <!-- Error message (wrong password) -->
+            <div th:if="${error}" class="alert alert-danger py-2 text-center small"
+                 th:text="${error}"></div>
+
+            <!--
+              LOGIN FORM
+              Spring Security processes this form automatically.
+              - th:action adds CSRF token (security protection)
+              - name="email" matches SecurityConfig's usernameParameter("email")
+              - name="password" is the default password field
+              - Posts to /loginForm (configured in SecurityConfig)
+            -->
+            <form th:action="@{/loginForm}" method="post">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Email Address</label>
+                    <input type="email" name="email" class="form-control"
+                           placeholder="you@example.com" required/>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Password</label>
+                    <input type="password" name="password" class="form-control"
+                           placeholder="Your password" required/>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 fw-bold">
+                    Login <i class="bi bi-arrow-right"></i>
+                </button>
+            </form>
+
+            <!-- Register link (hidden for admin login) -->
+            <div th:unless="${isAdminLogin}" class="text-center mt-3 small text-muted">
+                Don't have an account? <a href="/register">Register here</a>
+            </div>
+            <div th:if="${isAdminLogin}" class="text-center mt-3 small">
+                <a href="/"><i class="bi bi-arrow-left"></i> Back to Home</a>
+            </div>
+
+        </div>
     </div>
-    <div class="link-row" th:if="${isAdminLogin}">
-      <a href="/">← Back to Home</a>
-    </div>
-  </div>
 </main>
-<div th:replace="fragments/footer :: footer"></div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

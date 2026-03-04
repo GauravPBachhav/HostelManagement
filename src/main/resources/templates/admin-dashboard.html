@@ -1,186 +1,648 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>Admin Dashboard - Hostel Management</title>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <style>
-    *{box-sizing:border-box;}
-    body{font-family:Arial,sans-serif;margin:0;background:#f0f2f5;display:flex;flex-direction:column;min-height:100vh;}
-    main{flex:1;}
-    .page-header{background:white;padding:20px 30px;border-bottom:1px solid #eee;display:flex;align-items:center;gap:14px;}
-    .page-header .avatar{width:46px;height:46px;background:#1a252f;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-size:20px;}
-    .page-header h2{margin:0;font-size:20px;color:#1a252f;}
-    .page-header p{margin:2px 0 0;font-size:13px;color:#888;}
-
-    /* ====== HORIZONTAL TAB BAR ====== */
-    .tab-bar{
-      display:flex;overflow-x:auto;background:white;
-      border-bottom:2px solid #eee;padding:0 20px;
-      white-space:nowrap;
-    }
-    .tab-bar::-webkit-scrollbar{height:4px;}
-    .tab-bar::-webkit-scrollbar-thumb{background:#ddd;border-radius:4px;}
-    .tab-bar a{
-      display:inline-block;padding:14px 20px;text-decoration:none;
-      color:#888;font-size:14px;font-weight:bold;
-      border-bottom:3px solid transparent;transition:color 0.2s;
-    }
-    .tab-bar a:hover{color:#3498db;}
-    .tab-bar a.tab-active{color:#3498db;border-bottom:3px solid #3498db;}
-
-    /* ====== TAB SECTIONS ====== */
-    .tab-content{max-width:1100px;margin:25px auto;padding:0 15px;}
-    .section-panel{display:none;}
-    .section-panel:target{display:block;}
-    .section-panel.default-show{display:block;}
-
-    .card{background:white;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.08);}
-    .card h3{margin:0 0 18px;color:#1a252f;font-size:16px;border-bottom:1px solid #f0f2f5;padding-bottom:10px;}
-
-    /* Table */
-    table{width:100%;border-collapse:collapse;font-size:13px;}
-    thead th{background:#1a252f;color:white;padding:10px 12px;text-align:left;font-weight:600;}
-    tbody td{padding:10px 12px;border-bottom:1px solid #f0f2f5;color:#444;}
-    tbody tr:last-child td{border-bottom:none;}
-    tbody tr:hover td{background:#fafafa;}
-
-    /* Detail row inside table */
-    .detail-row td{background:#f8f9fa!important;font-size:12px;color:#666;padding:6px 12px;}
-
-    /* Badges */
-    .badge{display:inline-block;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:bold;}
-    .badge-pending {background:#fff3cd;color:#856404;}
-    .badge-approved{background:#d4edda;color:#155724;}
-    .badge-rejected{background:#f8d7da;color:#721c24;}
-
-    /* Buttons */
-    .btn{padding:5px 14px;border:none;border-radius:20px;cursor:pointer;font-size:12px;font-weight:bold;color:white;}
-    .btn-approve{background:#27ae60;}
-    .btn-reject {background:#e74c3c;}
-    .btn:hover{opacity:0.85;}
-
-    .no-data{text-align:center;padding:30px;color:#bbb;font-size:15px;}
-    .alert{padding:11px 16px;border-radius:8px;margin-bottom:16px;font-size:14px;}
-    .alert-success{background:#d4edda;color:#155724;}
-  </style>
+    <title>Admin Dashboard - Shivtirth Hostel</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
 </head>
-<body>
-<div th:replace="fragments/header :: header"></div>
-<main>
+<body class="d-flex flex-column min-vh-100" style="background:#f5f6fa;">
+<div th:replace="~{fragments/header :: header}"></div>
 
-  <div class="page-header">
-    <div class="avatar">⚙️</div>
-    <div>
-      <h2>Admin Dashboard</h2>
-      <p>Manage student admissions, approvals and rent.</p>
-    </div>
-  </div>
+<main class="flex-grow-1">
 
-  <!-- ====== HORIZONTAL ADMIN TAB BAR ====== -->
-  <div class="tab-bar">
-    <a href="#tab-pending"  class="tab-active">⏳ Pending (<span th:text="${#lists.size(pendingProfiles)}">0</span>)</a>
-    <a href="#tab-approved">✅ Approved (<span th:text="${#lists.size(approvedProfiles)}">0</span>)</a>
-    <a href="#tab-rejected">❌ Rejected (<span th:text="${#lists.size(rejectedProfiles)}">0</span>)</a>
-  </div>
-
-  <div class="tab-content">
-
-    <!-- Flash message -->
-    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-
-    <!-- ====== TAB 1: PENDING — WITH FULL DETAILS + APPROVE/REJECT ====== -->
-    <div id="tab-pending" class="section-panel default-show">
-      <div class="card">
-        <h3>⏳ Pending Admissions — Review &amp; Approve</h3>
-        <div th:if="${#lists.isEmpty(pendingProfiles)}" class="no-data">🎉 No pending admissions right now.</div>
-        <table th:unless="${#lists.isEmpty(pendingProfiles)}">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Name</th><th>Email</th>
-              <th>Phone</th><th>College</th>
-              <th>Course</th><th>Year</th>
-              <th>Address</th>
-              <th>Parent</th><th>Parent Contact</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr th:each="p, s : ${pendingProfiles}">
-              <td th:text="${s.count}"></td>
-              <td><strong th:text="${p.user != null ? p.user.name  : '-'}"></strong></td>
-              <td th:text="${p.user != null ? p.user.email : '-'}"></td>
-              <td th:text="${p.phoneNumber}"></td>
-              <td th:text="${p.collegeName}"></td>
-              <td th:text="${p.course}"></td>
-              <td th:text="${p.yearOfStudy}"></td>
-              <td th:text="${p.address}"></td>
-              <td th:text="${p.parentName}"></td>
-              <td th:text="${p.parentContact}"></td>
-              <td>
-                <form th:action="@{/admin/approve/{id}(id=${p.id})}" method="post" style="display:inline;">
-                  <button type="submit" class="btn btn-approve">✅ Approve</button>
-                </form>
-                <form th:action="@{/admin/reject/{id}(id=${p.id})}"  method="post" style="display:inline;margin-left:4px;">
-                  <button type="submit" class="btn btn-reject">❌ Reject</button>
-                </form>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <!-- ====== PAGE HEADER ====== -->
+    <div class="bg-white border-bottom p-3">
+        <div class="container d-flex align-items-center gap-3">
+            <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center"
+                 style="width:46px;height:46px;font-size:18px;">
+                <i class="bi bi-gear"></i>
+            </div>
+            <div>
+                <h5 class="mb-0">Admin Dashboard</h5>
+                <small class="text-muted">Manage admissions, rooms, rent and queries.</small>
+            </div>
+        </div>
     </div>
 
-    <!-- ====== TAB 2: APPROVED ====== -->
-    <div id="tab-approved" class="section-panel">
-      <div class="card">
-        <h3>✅ Approved Students</h3>
-        <div th:if="${#lists.isEmpty(approvedProfiles)}" class="no-data">No approved students yet.</div>
-        <table th:unless="${#lists.isEmpty(approvedProfiles)}">
-          <thead>
-            <tr><th>#</th><th>Name</th><th>Email</th><th>College</th><th>Course</th><th>Phone</th><th>Status</th></tr>
-          </thead>
-          <tbody>
-            <tr th:each="p, s : ${approvedProfiles}">
-              <td th:text="${s.count}"></td>
-              <td><strong th:text="${p.user != null ? p.user.name  : '-'}"></strong></td>
-              <td th:text="${p.user != null ? p.user.email : '-'}"></td>
-              <td th:text="${p.collegeName}"></td>
-              <td th:text="${p.course}"></td>
-              <td th:text="${p.phoneNumber}"></td>
-              <td><span class="badge badge-approved">✅ Approved</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <!-- ====== FLASH MESSAGES ====== -->
+    <div class="container mt-3">
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
     </div>
 
-    <!-- ====== TAB 3: REJECTED ====== -->
-    <div id="tab-rejected" class="section-panel">
-      <div class="card">
-        <h3>❌ Rejected Students</h3>
-        <div th:if="${#lists.isEmpty(rejectedProfiles)}" class="no-data">No rejected students.</div>
-        <table th:unless="${#lists.isEmpty(rejectedProfiles)}">
-          <thead>
-            <tr><th>#</th><th>Name</th><th>Email</th><th>College</th><th>Course</th><th>Phone</th><th>Status</th></tr>
-          </thead>
-          <tbody>
-            <tr th:each="p, s : ${rejectedProfiles}">
-              <td th:text="${s.count}"></td>
-              <td><strong th:text="${p.user != null ? p.user.name  : '-'}"></strong></td>
-              <td th:text="${p.user != null ? p.user.email : '-'}"></td>
-              <td th:text="${p.collegeName}"></td>
-              <td th:text="${p.course}"></td>
-              <td th:text="${p.phoneNumber}"></td>
-              <td><span class="badge badge-rejected">❌ Rejected</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <!-- ====== STATS CARDS ====== -->
+    <div class="container mt-3">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm text-center">
+                    <div class="card-body py-3">
+                        <h4 class="text-warning mb-0" th:text="${#lists.size(pendingProfiles)}">0</h4>
+                        <small class="text-muted">Pending</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm text-center">
+                    <div class="card-body py-3">
+                        <h4 class="text-success mb-0" th:text="${#lists.size(approvedProfiles)}">0</h4>
+                        <small class="text-muted">Approved</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm text-center">
+                    <div class="card-body py-3">
+                        <h4 class="text-primary mb-0" th:text="${totalBeds}">0</h4>
+                        <small class="text-muted">Total Beds</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm text-center">
+                    <div class="card-body py-3">
+                        <h4 class="text-info mb-0" th:text="${availableBeds}">0</h4>
+                        <small class="text-muted">Available Beds</small>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-  </div>
+    <!-- ====== TAB NAVIGATION ====== -->
+    <div class="container mt-3">
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-pending">
+                    <i class="bi bi-hourglass-split"></i> Pending
+                    <span class="badge bg-warning text-dark ms-1"
+                          th:text="${#lists.size(pendingProfiles)}">0</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-approved">
+                    <i class="bi bi-check-circle"></i> Approved
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-rejected">
+                    <i class="bi bi-x-circle"></i> Rejected
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-rooms">
+                    <i class="bi bi-door-open"></i> Rooms
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-rent">
+                    <i class="bi bi-cash-coin"></i> Rent
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-queries">
+                    <i class="bi bi-chat-dots"></i> Queries
+                    <span class="badge bg-danger ms-1"
+                          th:text="${#lists.size(openQueries)}">0</span>
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <!-- ====== TAB CONTENT ====== -->
+    <div class="container my-3">
+        <div class="tab-content">
+
+            <!-- ============================================ -->
+            <!-- TAB 1: PENDING ADMISSIONS                    -->
+            <!-- ============================================ -->
+            <div class="tab-pane show active" id="tab-pending">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-hourglass-split"></i> Pending Admissions
+                        </h5>
+
+                        <div th:if="${#lists.isEmpty(pendingProfiles)}"
+                             class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-1"></i>
+                            <p class="mt-2">No pending admissions.</p>
+                        </div>
+
+                        <!-- STUDENT APPLICATION CARDS (not just a table!) -->
+                        <div th:unless="${#lists.isEmpty(pendingProfiles)}">
+                            <div th:each="p : ${pendingProfiles}" class="card border mb-3">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <!-- Photo -->
+                                        <div class="col-auto">
+                                            <div th:if="${p.profilePhoto != null}">
+                                                <img th:src="@{'/' + ${p.profilePhoto}}"
+                                                     alt="photo" class="rounded-circle"
+                                                     style="width:60px;height:60px;object-fit:cover;"/>
+                                            </div>
+                                            <div th:if="${p.profilePhoto == null}"
+                                                 class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center"
+                                                 style="width:60px;height:60px;font-size:24px;">
+                                                <i class="bi bi-person"></i>
+                                            </div>
+                                        </div>
+                                        <!-- Info -->
+                                        <div class="col">
+                                            <h6 class="mb-0" th:text="${p.user != null ? p.user.name : '-'}">Name</h6>
+                                            <small class="text-muted" th:text="${p.user != null ? p.user.email : '-'}">email</small>
+                                            <div class="mt-1">
+                                                <span class="badge bg-primary" th:text="${p.course}"></span>
+                                                <span class="badge bg-info" th:text="${p.yearOfStudy}"></span>
+                                                <span class="badge bg-secondary" th:text="${p.collegeName}"></span>
+                                            </div>
+                                            <small class="text-muted d-block mt-1">
+                                                <i class="bi bi-telephone"></i> <span th:text="${p.phoneNumber}"></span>
+                                                &nbsp;|&nbsp;
+                                                <i class="bi bi-people"></i> <span th:text="${p.parentName}"></span>
+                                                (<span th:text="${p.parentContact}"></span>)
+                                            </small>
+                                        </div>
+                                        <!-- Actions -->
+                                        <div class="col-auto">
+                                            <!-- VIEW FULL DETAIL -->
+                                            <a th:href="@{/admin/student/{id}(id=${p.id})}"
+                                               class="btn btn-outline-primary btn-sm me-1">
+                                                <i class="bi bi-eye"></i> View Detail
+                                            </a>
+                                            <!-- QUICK APPROVE -->
+                                            <form th:action="@{/admin/approve/{id}(id=${p.id})}"
+                                                  method="post"
+                                                  class="d-inline-flex gap-1 align-items-center">
+                                                <select name="roomId"
+                                                        class="form-select form-select-sm"
+                                                        style="width:auto;min-width:130px;">
+                                                    <option value="">No room</option>
+                                                    <option th:each="r : ${availableRooms}"
+                                                            th:value="${r.id}"
+                                                            th:text="${r.roomNumber + ' (' + r.roomType + ')'}">
+                                                    </option>
+                                                </select>
+                                                <button type="submit" class="btn btn-success btn-sm">
+                                                    <i class="bi bi-check"></i> Approve
+                                                </button>
+                                            </form>
+                                            <!-- REJECT -->
+                                            <form th:action="@{/admin/reject/{id}(id=${p.id})}"
+                                                  method="post" class="d-inline ms-1">
+                                                <button type="submit"
+                                                        class="btn btn-danger btn-sm"
+                                                        onclick="return confirm('Reject this student?')">
+                                                    <i class="bi bi-x"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- TAB 2: APPROVED STUDENTS                     -->
+            <!-- ============================================ -->
+            <div class="tab-pane" id="tab-approved">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-check-circle"></i> Approved Students
+                        </h5>
+
+                        <div th:if="${#lists.isEmpty(approvedProfiles)}"
+                             class="text-center text-muted py-4">
+                            No approved students yet.
+                        </div>
+
+                        <div class="table-responsive" th:unless="${#lists.isEmpty(approvedProfiles)}">
+                            <table class="table table-striped table-hover align-middle">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>#</th><th>Photo</th><th>Name</th><th>Email</th>
+                                        <th>College</th><th>Course</th><th>Phone</th><th>Room</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="p, s : ${approvedProfiles}">
+                                        <td th:text="${s.count}"></td>
+                                        <td>
+                                            <img th:if="${p.profilePhoto != null}"
+                                                 th:src="@{'/' + ${p.profilePhoto}}"
+                                                 alt="photo" class="rounded-circle"
+                                                 style="width:35px;height:35px;object-fit:cover;"/>
+                                            <i th:if="${p.profilePhoto == null}" class="bi bi-person-circle fs-4 text-muted"></i>
+                                        </td>
+                                        <td>
+                                            <a th:href="@{/admin/student/{id}(id=${p.id})}"
+                                               class="text-decoration-none fw-bold"
+                                               th:text="${p.user != null ? p.user.name : '-'}">
+                                            </a>
+                                        </td>
+                                        <td th:text="${p.user != null ? p.user.email : '-'}"></td>
+                                        <td th:text="${p.collegeName}"></td>
+                                        <td th:text="${p.course}"></td>
+                                        <td th:text="${p.phoneNumber}"></td>
+                                        <td>
+                                            <span th:if="${p.room != null}" class="badge bg-info"
+                                                  th:text="${p.room.roomNumber}"></span>
+                                            <span th:if="${p.room == null}"
+                                                  class="badge bg-secondary">Not Assigned</span>
+                                        </td>
+                                        <td>
+                                            <!-- View Detail -->
+                                            <a th:href="@{/admin/student/{id}(id=${p.id})}"
+                                               class="btn btn-outline-primary btn-sm me-1">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <!-- Reset Password -->
+                                            <form th:action="@{/admin/reset-password/{userId}(userId=${p.user.id})}"
+                                                  method="post" class="d-inline">
+                                                <button type="submit"
+                                                        class="btn btn-outline-warning btn-sm"
+                                                        title="Reset password to hostel123"
+                                                        onclick="return confirm('Reset password for this student to hostel123?')">
+                                                    <i class="bi bi-key"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- TAB 3: REJECTED STUDENTS                     -->
+            <!-- ============================================ -->
+            <div class="tab-pane" id="tab-rejected">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-x-circle"></i> Rejected Students
+                        </h5>
+
+                        <div th:if="${#lists.isEmpty(rejectedProfiles)}"
+                             class="text-center text-muted py-4">
+                            No rejected students.
+                        </div>
+
+                        <table th:unless="${#lists.isEmpty(rejectedProfiles)}"
+                               class="table table-striped table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th><th>Photo</th><th>Name</th><th>Email</th>
+                                    <th>College</th><th>Course</th><th>Phone</th><th>Detail</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="p, s : ${rejectedProfiles}">
+                                    <td th:text="${s.count}"></td>
+                                    <td>
+                                        <img th:if="${p.profilePhoto != null}"
+                                             th:src="@{'/' + ${p.profilePhoto}}"
+                                             alt="photo" class="rounded-circle"
+                                             style="width:35px;height:35px;object-fit:cover;"/>
+                                        <i th:if="${p.profilePhoto == null}" class="bi bi-person-circle fs-4 text-muted"></i>
+                                    </td>
+                                    <td>
+                                        <strong th:text="${p.user != null ? p.user.name : '-'}"></strong>
+                                    </td>
+                                    <td th:text="${p.user != null ? p.user.email : '-'}"></td>
+                                    <td th:text="${p.collegeName}"></td>
+                                    <td th:text="${p.course}"></td>
+                                    <td th:text="${p.phoneNumber}"></td>
+                                    <td>
+                                        <a th:href="@{/admin/student/{id}(id=${p.id})}"
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- TAB 4: ROOM MANAGEMENT                       -->
+            <!-- ============================================ -->
+            <div class="tab-pane" id="tab-rooms">
+
+                <!-- Add Room Form -->
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-plus-circle"></i> Add New Room
+                        </h5>
+                        <form th:action="@{/admin/rooms/add}" th:object="${newRoom}"
+                              method="post" class="row g-3">
+                            <div class="col-md-2">
+                                <label class="form-label small fw-bold">Room No.</label>
+                                <input type="text" th:field="*{roomNumber}"
+                                       class="form-control" placeholder="101" required/>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-bold">Floor</label>
+                                <input type="number" th:field="*{floor}"
+                                       class="form-control" placeholder="1" required/>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-bold">Type</label>
+                                <select th:field="*{roomType}" class="form-select" required>
+                                    <option value="SINGLE">Single</option>
+                                    <option value="DOUBLE">Double</option>
+                                    <option value="TRIPLE">Triple</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-bold">Capacity</label>
+                                <input type="number" th:field="*{capacity}"
+                                       class="form-control" placeholder="2" required/>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-bold">Rent (&#8377;)</label>
+                                <input type="number" th:field="*{monthlyRent}"
+                                       class="form-control" placeholder="5000" required/>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-plus"></i> Add
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Room List Table -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-door-open"></i> All Rooms
+                        </h5>
+
+                        <div th:if="${#lists.isEmpty(rooms)}"
+                             class="text-center text-muted py-4">
+                            No rooms added yet. Add your first room above.
+                        </div>
+
+                        <table th:unless="${#lists.isEmpty(rooms)}"
+                               class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Room No</th><th>Floor</th><th>Type</th>
+                                    <th>Capacity</th><th>Occupied</th><th>Available</th>
+                                    <th>Rent</th><th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="r : ${rooms}">
+                                    <td><strong th:text="${r.roomNumber}"></strong></td>
+                                    <td th:text="${r.floor}"></td>
+                                    <td>
+                                        <span class="badge bg-secondary"
+                                              th:text="${r.roomType}"></span>
+                                    </td>
+                                    <td th:text="${r.capacity}"></td>
+                                    <td th:text="${r.currentOccupancy}"></td>
+                                    <td>
+                                        <span class="badge"
+                                              th:classappend="${r.capacity - r.currentOccupancy > 0} ? 'bg-success' : 'bg-danger'"
+                                              th:text="${r.capacity - r.currentOccupancy}">
+                                        </span>
+                                    </td>
+                                    <td>&#8377;<span th:text="${r.monthlyRent}"></span></td>
+                                    <td>
+                                        <form th:action="@{/admin/rooms/delete/{id}(id=${r.id})}"
+                                              method="post" class="d-inline">
+                                            <button type="submit"
+                                                    class="btn btn-outline-danger btn-sm"
+                                                    onclick="return confirm('Delete this room?')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- TAB 5: RENT OVERVIEW                         -->
+            <!-- ============================================ -->
+            <div class="tab-pane" id="tab-rent">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-cash-coin"></i> Recent Rent Payments
+                        </h5>
+
+                        <div th:if="${#lists.isEmpty(recentPayments)}"
+                             class="text-center text-muted py-4">
+                            No payments recorded yet.
+                        </div>
+
+                        <div class="table-responsive" th:unless="${#lists.isEmpty(recentPayments)}">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>#</th><th>Student</th><th>Room</th><th>Month</th><th>Year</th>
+                                        <th>Amount</th><th>Mode</th><th>Date</th><th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="p, s : ${recentPayments}">
+                                        <td th:text="${s.count}"></td>
+                                        <td th:text="${p.studentProfile != null and p.studentProfile.user != null ? p.studentProfile.user.name : '-'}"></td>
+                                        <td>
+                                            <span th:if="${p.studentProfile != null and p.studentProfile.room != null}"
+                                                  class="badge bg-info"
+                                                  th:text="${p.studentProfile.room.roomNumber}"></span>
+                                            <span th:if="${p.studentProfile == null or p.studentProfile.room == null}"
+                                                  class="text-muted">-</span>
+                                        </td>
+                                        <td th:text="${p.month}"></td>
+                                        <td th:text="${p.year}"></td>
+                                        <td>&#8377;<span th:text="${p.amount}"></span></td>
+                                        <td th:text="${p.paymentMode}"></td>
+                                        <td th:text="${p.paymentDate}"></td>
+                                        <td>
+                                            <span class="badge bg-success" th:text="${p.status}"></span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- TAB 6: STUDENT QUERIES                       -->
+            <!-- ============================================ -->
+            <div class="tab-pane" id="tab-queries">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-chat-dots"></i> Student Queries
+                        </h5>
+
+                        <!-- Sub-tabs: Open / All -->
+                        <ul class="nav nav-pills mb-3" role="tablist">
+                            <li class="nav-item">
+                                <button class="nav-link active" data-bs-toggle="pill"
+                                        data-bs-target="#queries-open">
+                                    Open <span class="badge bg-danger ms-1" th:text="${#lists.size(openQueries)}">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" data-bs-toggle="pill"
+                                        data-bs-target="#queries-all">
+                                    All Queries
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <!-- OPEN QUERIES -->
+                            <div class="tab-pane show active" id="queries-open">
+                                <div th:if="${#lists.isEmpty(openQueries)}"
+                                     class="text-center text-muted py-4">
+                                    <i class="bi bi-check-circle fs-1 text-success"></i>
+                                    <p class="mt-2">No open queries. All resolved!</p>
+                                </div>
+
+                                <div th:each="q : ${openQueries}" class="border rounded p-3 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong th:text="${q.subject}"></strong><br/>
+                                            <small class="text-muted">
+                                                By: <span th:text="${q.studentProfile != null and q.studentProfile.user != null ? q.studentProfile.user.name : '-'}"></span>
+                                                <span th:if="${q.studentProfile != null and q.studentProfile.room != null}">
+                                                    | Room: <span th:text="${q.studentProfile.room.roomNumber}"></span>
+                                                </span>
+                                                | <span th:text="${q.createdAt}"></span>
+                                            </small>
+                                        </div>
+                                        <span class="badge bg-warning text-dark">OPEN</span>
+                                    </div>
+                                    <p class="mt-2 mb-2" th:text="${q.message}"></p>
+
+                                    <!-- Show attached image if any -->
+                                    <div th:if="${q.imageUrl != null}" class="mb-2">
+                                        <a th:href="@{'/' + ${q.imageUrl}}" target="_blank">
+                                            <img th:src="@{'/' + ${q.imageUrl}}"
+                                                 alt="Query Image"
+                                                 class="rounded shadow-sm"
+                                                 style="max-width:300px; max-height:200px; object-fit:cover;"/>
+                                        </a>
+                                    </div>
+
+                                    <!-- Reply form -->
+                                    <form th:action="@{/admin/query/reply/{id}(id=${q.id})}"
+                                          method="post" class="d-flex gap-2">
+                                        <input type="text" name="adminReply"
+                                               class="form-control form-control-sm"
+                                               placeholder="Type your reply..." required/>
+                                        <button type="submit"
+                                                class="btn btn-primary btn-sm text-nowrap">
+                                            <i class="bi bi-reply"></i> Reply
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- ALL QUERIES -->
+                            <div class="tab-pane" id="queries-all">
+                                <div th:if="${allQueries == null or #lists.isEmpty(allQueries)}"
+                                     class="text-center text-muted py-4">
+                                    No queries found.
+                                </div>
+
+                                <div th:each="q : ${allQueries}" class="border rounded p-3 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong th:text="${q.subject}"></strong><br/>
+                                            <small class="text-muted">
+                                                By: <span th:text="${q.studentProfile != null and q.studentProfile.user != null ? q.studentProfile.user.name : '-'}"></span>
+                                                | <span th:text="${q.createdAt}"></span>
+                                            </small>
+                                        </div>
+                                        <span class="badge"
+                                              th:classappend="${q.status.name() == 'OPEN'} ? 'bg-warning text-dark' : 'bg-success'"
+                                              th:text="${q.status}"></span>
+                                    </div>
+                                    <p class="mt-2 mb-2" th:text="${q.message}"></p>
+
+                                    <!-- Attached image -->
+                                    <div th:if="${q.imageUrl != null}" class="mb-2">
+                                        <a th:href="@{'/' + ${q.imageUrl}}" target="_blank">
+                                            <img th:src="@{'/' + ${q.imageUrl}}"
+                                                 alt="Query Image"
+                                                 class="rounded shadow-sm"
+                                                 style="max-width:200px; max-height:150px; object-fit:cover;"/>
+                                        </a>
+                                    </div>
+
+                                    <!-- Show reply -->
+                                    <div th:if="${q.adminReply != null}"
+                                         class="alert alert-success mt-2 mb-0 py-2 small">
+                                        <strong>Admin Reply:</strong>
+                                        <span th:text="${q.adminReply}"></span>
+                                    </div>
+
+                                    <!-- Reply form (only if still OPEN) -->
+                                    <div th:if="${q.status.name() == 'OPEN'}">
+                                        <form th:action="@{/admin/query/reply/{id}(id=${q.id})}"
+                                              method="post" class="d-flex gap-2 mt-2">
+                                            <input type="text" name="adminReply"
+                                                   class="form-control form-control-sm"
+                                                   placeholder="Type your reply..." required/>
+                                            <button type="submit"
+                                                    class="btn btn-primary btn-sm text-nowrap">
+                                                <i class="bi bi-reply"></i> Reply
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- end query sub-tabs -->
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- end tab-content -->
+    </div>
 </main>
-<div th:replace="fragments/footer :: footer"></div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Script: open correct tab when redirected with hash -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var hash = window.location.hash;
+    if (hash) {
+        var tabButton = document.querySelector('[data-bs-target="' + hash + '"]');
+        if (tabButton) {
+            new bootstrap.Tab(tabButton).show();
+        }
+    }
+});
+</script>
 </body>
 </html>

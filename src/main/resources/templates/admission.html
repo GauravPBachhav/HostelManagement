@@ -1,60 +1,168 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>Admission Form - Hostel Management</title>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <style>
-    *{box-sizing:border-box;}
-    body{font-family:Arial,sans-serif;margin:0;background:#f0f2f5;display:flex;flex-direction:column;min-height:100vh;}
-    main{flex:1;}
-    .wrapper{max-width:540px;margin:35px auto 50px;padding:0 15px;}
-    .card{background:white;border-radius:12px;padding:32px;box-shadow:0 4px 16px rgba(0,0,0,0.1);}
-    .card h2{margin:0 0 6px;color:#1a252f;font-size:22px;}
-    .card .subtitle{color:#888;font-size:13px;margin-bottom:22px;}
-    label{display:block;font-size:13px;font-weight:bold;color:#555;margin-bottom:4px;}
-    input[type=text]{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px;margin-bottom:15px;}
-    input:focus{outline:none;border-color:#3498db;}
-    .section-title{font-size:12px;font-weight:bold;color:#3498db;text-transform:uppercase;letter-spacing:1px;margin:10px 0 12px;padding-bottom:6px;border-bottom:1px solid #eee;}
-    button[type=submit]{width:100%;padding:12px;background:#3498db;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;font-weight:bold;margin-top:8px;}
-    button:hover{background:#2980b9;}
-  </style>
+    <title>Admission Form - Shivtirth Hostel</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
 </head>
-<body>
-<!-- Header is FIRST — this fixes the disappearing header bug -->
-<div th:replace="fragments/header :: header"></div>
-<main>
-  <div class="wrapper">
-    <div class="card">
-      <h2>📋 Hostel Admission Form</h2>
-      <p class="subtitle">Fill in your details. Admin will review and approve your admission.</p>
+<body class="d-flex flex-column min-vh-100" style="background:#f5f6fa;">
+<div th:replace="~{fragments/header :: header}"></div>
 
-      <form th:action="@{/admission}" th:object="${profile}" method="post">
+<main class="flex-grow-1 py-4">
+    <div class="container" style="max-width: 700px;">
+        <div class="card shadow border-0">
+            <div class="card-body p-4">
 
-        <div class="section-title">Contact Information</div>
-        <label>Mobile Number</label>
-        <input type="text" th:field="*{phoneNumber}" placeholder="e.g. 9876543210" required/>
-        <label>Permanent Address</label>
-        <input type="text" th:field="*{address}"     placeholder="Your home address" required/>
+                <h4 class="mb-1">
+                    <i class="bi bi-clipboard-check"></i> Hostel Admission Form
+                </h4>
+                <p class="text-muted small mb-4">
+                    Fill in your details completely. Admin will review and approve your admission.
+                </p>
 
-        <div class="section-title">Academic Details</div>
-        <label>College Name</label>
-        <input type="text" th:field="*{collegeName}" placeholder="e.g. ABC College" required/>
-        <label>Course</label>
-        <input type="text" th:field="*{course}"      placeholder="e.g. B.Tech, BCA, B.Sc" required/>
-        <label>Year of Study</label>
-        <input type="text" th:field="*{yearOfStudy}" placeholder="e.g. 2nd Year" required/>
+                <!-- Error message -->
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
-        <div class="section-title">Parent / Guardian Details</div>
-        <label>Parent / Guardian Name</label>
-        <input type="text" th:field="*{parentName}"    placeholder="Parent full name" required/>
-        <label>Parent Contact Number</label>
-        <input type="text" th:field="*{parentContact}" placeholder="Parent mobile number" required/>
+                <!--
+                    enctype="multipart/form-data" is REQUIRED for file uploads.
+                    Without it, the browser won't send the file content.
+                -->
+                <form th:action="@{/admission}" th:object="${profile}" method="post"
+                      enctype="multipart/form-data">
 
-        <button type="submit">Submit Admission Form →</button>
-      </form>
+                    <!-- Profile Photo Upload -->
+                    <h6 class="text-primary text-uppercase small fw-bold border-bottom pb-2 mb-3">
+                        <i class="bi bi-camera"></i> Profile Photo
+                    </h6>
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold">Upload Your Photo</label>
+                        <input type="file" name="photo" class="form-control"
+                               accept="image/*" id="photoInput"/>
+                        <small class="text-muted">Passport size photo (JPEG/PNG, max 5MB)</small>
+                        <!-- Preview -->
+                        <div class="mt-2" id="photoPreview" style="display:none;">
+                            <img id="previewImg" class="rounded shadow-sm"
+                                 style="width:120px; height:120px; object-fit:cover;" alt="Preview"/>
+                        </div>
+                    </div>
+
+                    <!-- Personal Information -->
+                    <h6 class="text-primary text-uppercase small fw-bold border-bottom pb-2 mb-3">
+                        Personal Information
+                    </h6>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Date of Birth</label>
+                            <input type="date" th:field="*{dateOfBirth}" class="form-control" required/>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Gender</label>
+                            <select th:field="*{gender}" class="form-select" required>
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Aadhar Number</label>
+                        <input type="text" th:field="*{aadharNumber}" class="form-control"
+                               placeholder="e.g. 1234 5678 9012" maxlength="14"/>
+                        <small class="text-muted">Optional but recommended for verification</small>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <h6 class="text-primary text-uppercase small fw-bold border-bottom pb-2 mb-3 mt-4">
+                        Contact Information
+                    </h6>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Mobile Number</label>
+                        <input type="text" th:field="*{phoneNumber}" class="form-control"
+                               placeholder="e.g. 9876543210" required/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Permanent Address</label>
+                        <textarea th:field="*{address}" class="form-control" rows="2"
+                                  placeholder="Your home address" required></textarea>
+                    </div>
+
+                    <!-- Academic Details -->
+                    <h6 class="text-primary text-uppercase small fw-bold border-bottom pb-2 mb-3 mt-4">
+                        Academic Details
+                    </h6>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">College Name</label>
+                        <input type="text" th:field="*{collegeName}" class="form-control"
+                               placeholder="e.g. ABC College of Engineering" required/>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Course</label>
+                            <input type="text" th:field="*{course}" class="form-control"
+                                   placeholder="e.g. B.Tech, BCA" required/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Year of Study</label>
+                            <select th:field="*{yearOfStudy}" class="form-select" required>
+                                <option value="">Select</option>
+                                <option value="1st Year">1st Year</option>
+                                <option value="2nd Year">2nd Year</option>
+                                <option value="3rd Year">3rd Year</option>
+                                <option value="4th Year">4th Year</option>
+                                <option value="5th Year">5th Year</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Academic Year</label>
+                            <input type="text" th:field="*{academicYear}" class="form-control"
+                                   placeholder="e.g. 2025-26" required/>
+                        </div>
+                    </div>
+
+                    <!-- Parent / Guardian Details -->
+                    <h6 class="text-primary text-uppercase small fw-bold border-bottom pb-2 mb-3 mt-4">
+                        Parent / Guardian Details
+                    </h6>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Parent / Guardian Name</label>
+                        <input type="text" th:field="*{parentName}" class="form-control"
+                               placeholder="Parent full name" required/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Parent Contact Number</label>
+                        <input type="text" th:field="*{parentContact}" class="form-control"
+                               placeholder="Parent mobile number" required/>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 fw-bold mt-2">
+                        <i class="bi bi-send"></i> Submit Admission Form
+                    </button>
+                </form>
+
+            </div>
+        </div>
     </div>
-  </div>
 </main>
-<div th:replace="fragments/footer :: footer"></div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Photo preview script -->
+<script>
+document.getElementById('photoInput').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (file) {
+        var reader = new FileReader();
+        reader.onload = function(ev) {
+            document.getElementById('previewImg').src = ev.target.result;
+            document.getElementById('photoPreview').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+</script>
 </body>
 </html>
