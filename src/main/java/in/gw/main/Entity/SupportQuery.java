@@ -1,7 +1,17 @@
 package in.gw.main.Entity;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 /**
  * SUPPORT QUERY ENTITY
@@ -48,9 +58,8 @@ public class SupportQuery {
 
     private LocalDateTime resolvedAt;   // when admin replied
 
-    // Optional image attached to the query
-    // e.g., "uploads/queries/abc-123.jpg"
-    private String imageUrl;
+    // Optional photo attached to the query (relative path)
+    private String photoPath;
 
     // =====================
     // GETTERS & SETTERS
@@ -80,6 +89,6 @@ public class SupportQuery {
     public LocalDateTime getResolvedAt() { return resolvedAt; }
     public void setResolvedAt(LocalDateTime resolvedAt) { this.resolvedAt = resolvedAt; }
 
-    public String getImageUrl() { return imageUrl; }
-    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public String getPhotoPath() { return photoPath; }
+    public void setPhotoPath(String photoPath) { this.photoPath = photoPath; }
 }

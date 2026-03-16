@@ -15,13 +15,13 @@
     <!-- ====== PAGE HEADER ====== -->
     <div class="bg-white border-bottom p-3">
         <div class="container d-flex align-items-center gap-3">
-            <!-- Profile photo or default icon -->
-            <div th:if="${profile != null and profile.profilePhoto != null}">
-                <img th:src="@{'/' + ${profile.profilePhoto}}"
-                     alt="Profile" class="rounded-circle shadow-sm"
+            <!-- Show profile photo if available, else default icon -->
+            <div th:if="${profile != null and profile.profilePhotoPath != null}">
+                <img th:src="@{'/uploads/' + ${profile.profilePhotoPath}}"
+                     alt="Profile Photo" class="rounded-circle"
                      style="width:46px;height:46px;object-fit:cover;"/>
             </div>
-            <div th:if="${profile == null or profile.profilePhoto == null}"
+            <div th:if="${profile == null or profile.profilePhotoPath == null}"
                  class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
                  style="width:46px;height:46px;font-size:20px;">
                 <i class="bi bi-person"></i>
@@ -214,11 +214,11 @@
                     <div class="card-body">
                         <h5 class="card-title"><i class="bi bi-person-badge"></i> My Profile Details</h5>
 
-                        <!-- Profile photo -->
-                        <div th:if="${profile.profilePhoto != null}" class="text-center mb-3">
-                            <img th:src="@{'/' + ${profile.profilePhoto}}"
-                                 alt="My Photo" class="rounded-circle shadow"
-                                 style="width:100px;height:100px;object-fit:cover;"/>
+                        <!-- Profile Photo -->
+                        <div class="text-center mb-3" th:if="${profile.profilePhotoPath != null}">
+                            <img th:src="@{'/uploads/' + ${profile.profilePhotoPath}}"
+                                 alt="Profile Photo" class="rounded-circle shadow"
+                                 style="width:120px;height:120px;object-fit:cover;"/>
                         </div>
 
                         <div class="row g-3 mt-2">
@@ -378,8 +378,7 @@
                 <div class="card shadow-sm border-0 mb-3">
                     <div class="card-body">
                         <h5 class="card-title"><i class="bi bi-chat-dots"></i> Submit a Query</h5>
-                        <form th:action="@{/dashboard/query/submit}" method="post"
-                              enctype="multipart/form-data">
+                        <form th:action="@{/dashboard/query/submit}" method="post" enctype="multipart/form-data">
                             <div class="mb-3">
                                 <label class="form-label small fw-bold">Subject</label>
                                 <input type="text" name="subject" class="form-control"
@@ -391,12 +390,9 @@
                                           placeholder="Describe your issue in detail..." required></textarea>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label small fw-bold">
-                                    <i class="bi bi-camera"></i> Attach Photo (optional)
-                                </label>
-                                <input type="file" name="queryImage" class="form-control"
-                                       accept="image/*"/>
-                                <small class="text-muted">Upload a photo of the issue (JPEG/PNG, max 5MB)</small>
+                                <label class="form-label small fw-bold">Attach Photo (optional)</label>
+                                <input type="file" name="queryPhoto" class="form-control" accept="image/*"/>
+                                <small class="text-muted">Attach a photo of the issue if applicable (JPG/PNG, max 2MB)</small>
                             </div>
                             <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-send"></i> Submit Query
@@ -423,13 +419,11 @@
                                       th:text="${q.status}"></span>
                             </div>
                             <p class="text-muted small mb-1 mt-1" th:text="${q.message}"></p>
-                            <!-- Show attached image -->
-                            <div th:if="${q.imageUrl != null}" class="mb-2">
-                                <a th:href="@{'/' + ${q.imageUrl}}" target="_blank">
-                                    <img th:src="@{'/' + ${q.imageUrl}}"
-                                         alt="Attached Image" class="rounded shadow-sm"
-                                         style="max-width:200px; max-height:150px; object-fit:cover;"/>
-                                </a>
+                            <!-- Query attached photo -->
+                            <div th:if="${q.photoPath != null}" class="mb-2">
+                                <img th:src="@{'/uploads/' + ${q.photoPath}}"
+                                     alt="Query Photo" class="img-thumbnail"
+                                     style="max-width:300px;max-height:200px;"/>
                             </div>
                             <small class="text-muted" th:text="${q.createdAt}"></small>
                             <!-- Admin's reply -->

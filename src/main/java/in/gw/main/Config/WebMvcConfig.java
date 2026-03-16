@@ -1,6 +1,8 @@
 package in.gw.main.Config;
 
-import org.springframework.beans.factory.annotation.Value;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -8,26 +10,22 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 /**
  * WEB MVC CONFIGURATION
  * ----------------------
- * Tells Spring Boot how to serve uploaded files.
+ * Maps the /uploads/** URL path to the physical "uploads/" directory on disk.
+ * This allows uploaded profile photos and query photos to be served directly.
  *
- * PROBLEM: By default, Spring only serves files from src/main/resources/static/.
- *          Our uploaded files are in the "uploads/" folder outside of /static/.
- *
- * SOLUTION: We register "uploads/" as a resource location.
- *           So when browser requests /uploads/profiles/photo.jpg,
- *           Spring looks for it in the "uploads/" folder on disk.
+ * Example:
+ *   DB stores:  "profiles/abc-123.jpg"
+ *   URL:        /uploads/profiles/abc-123.jpg
+ *   Disk:       uploads/profiles/abc-123.jpg
  */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    @Value("${app.upload.dir:uploads}")
-    private String uploadDir;
-
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Map URL path "/uploads/**" → files in the "uploads/" folder on disk
-        // "file:" prefix tells Spring to look on the filesystem (not classpath)
+        Path uploadPath = Paths.get("uploads").toAbsolutePath().normalize();
+
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:" + uploadDir + "/");
+                .addResourceLocations("file:" + uploadPath.toString() + "/");
     }
 }

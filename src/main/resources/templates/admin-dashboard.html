@@ -137,14 +137,14 @@
                             <div th:each="p : ${pendingProfiles}" class="card border mb-3">
                                 <div class="card-body">
                                     <div class="row align-items-center">
-                                        <!-- Photo -->
                                         <div class="col-auto">
-                                            <div th:if="${p.profilePhoto != null}">
-                                                <img th:src="@{'/' + ${p.profilePhoto}}"
-                                                     alt="photo" class="rounded-circle"
+                                            <!-- Show profile photo if available -->
+                                            <div th:if="${p.profilePhotoPath != null}">
+                                                <img th:src="@{'/uploads/' + ${p.profilePhotoPath}}"
+                                                     alt="Photo" class="rounded-circle"
                                                      style="width:60px;height:60px;object-fit:cover;"/>
                                             </div>
-                                            <div th:if="${p.profilePhoto == null}"
+                                            <div th:if="${p.profilePhotoPath == null}"
                                                  class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center"
                                                  style="width:60px;height:60px;font-size:24px;">
                                                 <i class="bi bi-person"></i>
@@ -227,7 +227,7 @@
                             <table class="table table-striped table-hover align-middle">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th>#</th><th>Photo</th><th>Name</th><th>Email</th>
+                                        <th>#</th><th>Name</th><th>Email</th>
                                         <th>College</th><th>Course</th><th>Phone</th><th>Room</th>
                                         <th>Actions</th>
                                     </tr>
@@ -235,13 +235,6 @@
                                 <tbody>
                                     <tr th:each="p, s : ${approvedProfiles}">
                                         <td th:text="${s.count}"></td>
-                                        <td>
-                                            <img th:if="${p.profilePhoto != null}"
-                                                 th:src="@{'/' + ${p.profilePhoto}}"
-                                                 alt="photo" class="rounded-circle"
-                                                 style="width:35px;height:35px;object-fit:cover;"/>
-                                            <i th:if="${p.profilePhoto == null}" class="bi bi-person-circle fs-4 text-muted"></i>
-                                        </td>
                                         <td>
                                             <a th:href="@{/admin/student/{id}(id=${p.id})}"
                                                class="text-decoration-none fw-bold"
@@ -302,20 +295,13 @@
                                class="table table-striped table-hover align-middle">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>#</th><th>Photo</th><th>Name</th><th>Email</th>
+                                    <th>#</th><th>Name</th><th>Email</th>
                                     <th>College</th><th>Course</th><th>Phone</th><th>Detail</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr th:each="p, s : ${rejectedProfiles}">
                                     <td th:text="${s.count}"></td>
-                                    <td>
-                                        <img th:if="${p.profilePhoto != null}"
-                                             th:src="@{'/' + ${p.profilePhoto}}"
-                                             alt="photo" class="rounded-circle"
-                                             style="width:35px;height:35px;object-fit:cover;"/>
-                                        <i th:if="${p.profilePhoto == null}" class="bi bi-person-circle fs-4 text-muted"></i>
-                                    </td>
                                     <td>
                                         <strong th:text="${p.user != null ? p.user.name : '-'}"></strong>
                                     </td>
@@ -541,15 +527,11 @@
                                         <span class="badge bg-warning text-dark">OPEN</span>
                                     </div>
                                     <p class="mt-2 mb-2" th:text="${q.message}"></p>
-
-                                    <!-- Show attached image if any -->
-                                    <div th:if="${q.imageUrl != null}" class="mb-2">
-                                        <a th:href="@{'/' + ${q.imageUrl}}" target="_blank">
-                                            <img th:src="@{'/' + ${q.imageUrl}}"
-                                                 alt="Query Image"
-                                                 class="rounded shadow-sm"
-                                                 style="max-width:300px; max-height:200px; object-fit:cover;"/>
-                                        </a>
+                                    <!-- Query attached photo -->
+                                    <div th:if="${q.photoPath != null}" class="mb-2">
+                                        <img th:src="@{'/uploads/' + ${q.photoPath}}"
+                                             alt="Query Photo" class="img-thumbnail"
+                                             style="max-width:400px;max-height:250px;"/>
                                     </div>
 
                                     <!-- Reply form -->
@@ -587,15 +569,11 @@
                                               th:text="${q.status}"></span>
                                     </div>
                                     <p class="mt-2 mb-2" th:text="${q.message}"></p>
-
-                                    <!-- Attached image -->
-                                    <div th:if="${q.imageUrl != null}" class="mb-2">
-                                        <a th:href="@{'/' + ${q.imageUrl}}" target="_blank">
-                                            <img th:src="@{'/' + ${q.imageUrl}}"
-                                                 alt="Query Image"
-                                                 class="rounded shadow-sm"
-                                                 style="max-width:200px; max-height:150px; object-fit:cover;"/>
-                                        </a>
+                                    <!-- Query attached photo -->
+                                    <div th:if="${q.photoPath != null}" class="mb-2">
+                                        <img th:src="@{'/uploads/' + ${q.photoPath}}"
+                                             alt="Query Photo" class="img-thumbnail"
+                                             style="max-width:400px;max-height:250px;"/>
                                     </div>
 
                                     <!-- Show reply -->

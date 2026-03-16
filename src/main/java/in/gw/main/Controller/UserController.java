@@ -4,13 +4,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import in.gw.main.Config.CustomUserDetails;
-import in.gw.main.Entity.*;
-import in.gw.main.Services.*;
+import in.gw.main.Entity.ProfileStatus;
+import in.gw.main.Entity.StudentProfile;
+import in.gw.main.Entity.User;
+import in.gw.main.Services.FileStorageService;
+import in.gw.main.Services.RentPaymentService;
+import in.gw.main.Services.RoomService;
+import in.gw.main.Services.StudentProfileService;
+import in.gw.main.Services.SupportQueryService;
+import in.gw.main.Services.UserService;
 
 /**
  * USER CONTROLLER
@@ -18,11 +28,6 @@ import in.gw.main.Services.*;
  * Handles all pages for:
  *   - Public visitors (home, login, register)
  *   - Logged-in students (dashboard, admission, rent, queries)
- *
- * FEATURES:
- *   - Profile photo upload during admission
- *   - Query image upload for support tickets
- *   - All form submissions use multipart/form-data for file uploads
  */
 @Controller
 public class UserController {
@@ -129,12 +134,11 @@ public class UserController {
     }
 
     /**
-     * ADMISSION FORM SUBMIT - with profile photo upload
-     * The form uses enctype="multipart/form-data" to support file upload.
+     * ADMISSION FORM SUBMIT (with optional profile photo)
      */
     @PostMapping("/admission")
     public String submitAdmission(@ModelAttribute StudentProfile profile,
-                                  @RequestParam(value = "photo", required = false) MultipartFile photo,
+                                  @RequestParam(value = "profilePhoto", required = false) MultipartFile profilePhoto,
                                   @AuthenticationPrincipal CustomUserDetails userDetails,
                                   RedirectAttributes redirectAttributes) {
         User user = userService.findById(userDetails.getUserId());
@@ -143,9 +147,14 @@ public class UserController {
         profile.setStatus(ProfileStatus.PENDING);
 
         // Save profile photo if uploaded
-        if (photo != null && !photo.isEmpty()) {
-            String photoPath = fileStorageService.saveFile(photo, "profiles");
-            profile.setProfilePhoto(photoPath);
+        if (profilePhoto != null && !profilePhoto.isEmpty()) {
+            try {
+                String photoPath = fileStorageService.saveProfilePhoto(profilePhoto);
+                profile.setProfilePhotoPath(photoPath);
+            } catch (Exception e) {
+                redirectAttributes.addFlashAttribute("error", "Failed to upload photo: " + e.getMessage());
+                return "redirect:/admission";
+            }
         }
 
         try {
@@ -194,24 +203,27 @@ public class UserController {
     }
 
     /**
-     * SUBMIT QUERY - with optional image upload
-     * Student can attach a photo (e.g., water leakage, broken furniture)
+     * SUBMIT QUERY (with optional photo attachment)
      */
     @PostMapping("/dashboard/query/submit")
     public String submitQuery(@RequestParam String subject,
                               @RequestParam String message,
-                              @RequestParam(value = "queryImage", required = false) MultipartFile queryImage,
+                              @RequestParam(value = "queryPhoto", required = false) MultipartFile queryPhoto,
                               @AuthenticationPrincipal CustomUserDetails userDetails) {
         User user = userService.findById(userDetails.getUserId());
         StudentProfile profile = studentProfileService.findByUser(user);
 
-        // Save query image if uploaded
-        String imageUrl = null;
-        if (queryImage != null && !queryImage.isEmpty()) {
-            imageUrl = fileStorageService.saveFile(queryImage, "queries");
+        String photoPath = null;
+        if (queryPhoto != null && !queryPhoto.isEmpty()) {
+            try {
+                photoPath = fileStorageService.saveQueryPhoto(queryPhoto);
+            } catch (Exception e) {
+                // If photo upload fails, still submit the query without the photo
+                photoPath = null;
+            }
         }
 
-        supportQueryService.submitQuery(profile, subject, message, imageUrl);
+        supportQueryService.submitQuery(profile, subject, message, photoPath);
         return "redirect:/dashboard#tab-query";
     }
 }

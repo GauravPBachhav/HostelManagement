@@ -25,28 +25,7 @@
                 <!-- Error message -->
                 <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
-                <!--
-                    enctype="multipart/form-data" is REQUIRED for file uploads.
-                    Without it, the browser won't send the file content.
-                -->
-                <form th:action="@{/admission}" th:object="${profile}" method="post"
-                      enctype="multipart/form-data">
-
-                    <!-- Profile Photo Upload -->
-                    <h6 class="text-primary text-uppercase small fw-bold border-bottom pb-2 mb-3">
-                        <i class="bi bi-camera"></i> Profile Photo
-                    </h6>
-                    <div class="mb-4">
-                        <label class="form-label small fw-bold">Upload Your Photo</label>
-                        <input type="file" name="photo" class="form-control"
-                               accept="image/*" id="photoInput"/>
-                        <small class="text-muted">Passport size photo (JPEG/PNG, max 5MB)</small>
-                        <!-- Preview -->
-                        <div class="mt-2" id="photoPreview" style="display:none;">
-                            <img id="previewImg" class="rounded shadow-sm"
-                                 style="width:120px; height:120px; object-fit:cover;" alt="Preview"/>
-                        </div>
-                    </div>
+                <form th:action="@{/admission}" th:object="${profile}" method="post" enctype="multipart/form-data">
 
                     <!-- Personal Information -->
                     <h6 class="text-primary text-uppercase small fw-bold border-bottom pb-2 mb-3">
@@ -72,6 +51,16 @@
                         <input type="text" th:field="*{aadharNumber}" class="form-control"
                                placeholder="e.g. 1234 5678 9012" maxlength="14"/>
                         <small class="text-muted">Optional but recommended for verification</small>
+                    </div>
+
+                    <!-- Profile Photo -->
+                    <h6 class="text-primary text-uppercase small fw-bold border-bottom pb-2 mb-3 mt-4">
+                        Profile Photo
+                    </h6>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Upload Your Photo</label>
+                        <input type="file" name="profilePhoto" class="form-control" accept="image/*"/>
+                        <small class="text-muted">Upload a passport-size photo (JPG/PNG, max 2MB)</small>
                     </div>
 
                     <!-- Contact Information -->
@@ -149,20 +138,5 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- Photo preview script -->
-<script>
-document.getElementById('photoInput').addEventListener('change', function(e) {
-    var file = e.target.files[0];
-    if (file) {
-        var reader = new FileReader();
-        reader.onload = function(ev) {
-            document.getElementById('previewImg').src = ev.target.result;
-            document.getElementById('photoPreview').style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-    }
-});
-</script>
 </body>
 </html>

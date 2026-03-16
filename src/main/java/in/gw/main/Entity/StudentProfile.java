@@ -1,6 +1,17 @@
 package in.gw.main.Entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "student_profiles")
@@ -39,10 +50,6 @@ public class StudentProfile {
     // Academic year of admission, e.g. "2025-26"
     private String academicYear;
 
-    // Profile photo file path (saved by FileStorageService)
-    // e.g., "uploads/profiles/abc-123.jpg"
-    private String profilePhoto;
-
     // Aadhar / ID number for identification
     private String aadharNumber;
 
@@ -51,6 +58,9 @@ public class StudentProfile {
 
     // Gender
     private String gender;
+
+    // Profile photo file path (relative to uploads directory)
+    private String profilePhotoPath;
 
     // =====================
     // GETTERS & SETTERS
@@ -96,9 +106,6 @@ public class StudentProfile {
     public String getAcademicYear()        { return academicYear; }
     public void setAcademicYear(String v)  { this.academicYear = v; }
 
-    public String getProfilePhoto()        { return profilePhoto; }
-    public void setProfilePhoto(String v)  { this.profilePhoto = v; }
-
     public String getAadharNumber()        { return aadharNumber; }
     public void setAadharNumber(String v)  { this.aadharNumber = v; }
 
@@ -107,4 +114,7 @@ public class StudentProfile {
 
     public String getGender()              { return gender; }
     public void setGender(String v)        { this.gender = v; }
+
+    public String getProfilePhotoPath()          { return profilePhotoPath; }
+    public void setProfilePhotoPath(String v)    { this.profilePhotoPath = v; }
 }

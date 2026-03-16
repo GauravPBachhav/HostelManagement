@@ -1,87 +1,70 @@
 package in.gw.main.Services;
 
-import org.springframework.beans.factory.annotation.Value;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.nio.file.*;
-import java.util.UUID;
 
 /**
  * FILE STORAGE SERVICE
  * ---------------------
- * Handles saving uploaded files (profile photos, query images) to disk.
+ * Handles saving uploaded files (profile photos, query photos) to disk.
  *
- * HOW IT WORKS:
- *   1. A file comes in from the HTML form (MultipartFile)
- *   2. We generate a UNIQUE file name (UUID) so two "photo.jpg" don't collide
- *   3. We save it to the "uploads/" folder inside the project directory
- *   4. We return the relative path like "uploads/profiles/abc-123.jpg"
- *   5. This path is stored in the database and used in <img> tags
+ * Files are stored in:
+ *   uploads/profiles/   → student profile photos
+ *   uploads/queries/    → query attachment photos
  *
- * SUBFOLDER STRUCTURE:
- *   uploads/
- *     profiles/    → student profile photos
- *     queries/     → query/complaint images
+ * Each file gets a unique name (UUID) to prevent collisions.
+ * Returns the relative path (e.g. "profiles/abc-123.jpg") that is stored in DB.
  */
 @Service
 public class FileStorageService {
 
-    @Value("${app.upload.dir:uploads}")
-    private String uploadDir;
+    private final Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
 
     /**
-     * Save an uploaded file to a specific subfolder.
-     *
-     * @param file      the uploaded file from the form
-     * @param subfolder e.g. "profiles" or "queries"
-     * @return          relative path like "uploads/profiles/abc-123.jpg"
+     * Save a profile photo. Returns the relative path stored in DB.
+     * @param file the uploaded file
+     * @return relative path like "profiles/uuid-filename.jpg"
      */
-    public String saveFile(MultipartFile file, String subfolder) {
-        if (file == null || file.isEmpty()) {
-            return null;  // No file uploaded, that's OK
-        }
-
-        try {
-            // Create the directory if it doesn't exist
-            // e.g., uploads/profiles/
-            Path dirPath = Paths.get(uploadDir, subfolder);
-            Files.createDirectories(dirPath);
-
-            // Generate a unique file name to avoid collisions
-            // e.g., "a1b2c3d4-photo.jpg"
-            String originalName = file.getOriginalFilename();
-            String extension = "";
-            if (originalName != null && originalName.contains(".")) {
-                extension = originalName.substring(originalName.lastIndexOf("."));
-            }
-            String uniqueName = UUID.randomUUID().toString() + extension;
-
-            // Save the file to disk
-            Path filePath = dirPath.resolve(uniqueName);
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-            // Return relative path (used in <img src="...">)
-            return uploadDir + "/" + subfolder + "/" + uniqueName;
-
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to save file: " + e.getMessage(), e);
-        }
+    public String saveProfilePhoto(MultipartFile file) throws IOException {
+        return saveFile(file, "profiles");
     }
 
     /**
-     * Delete a previously uploaded file.
-     * Used when student re-uploads a photo.
+     * Save a query photo. Returns the relative path stored in DB.
+     * @param file the uploaded file
+     * @return relative path like "queries/uuid-filename.jpg"
      */
-    public void deleteFile(String relativePath) {
-        if (relativePath == null || relativePath.isEmpty()) return;
-        try {
-            Path filePath = Paths.get(relativePath);
-            Files.deleteIfExists(filePath);
-        } catch (IOException e) {
-            // Log but don't crash - file might already be gone
-            System.err.println("Could not delete file: " + relativePath);
+    public String saveQueryPhoto(MultipartFile file) throws IOException {
+        return saveFile(file, "queries");
+    }
+
+    /**
+     * Generic file save method.
+     * Creates subdirectory if needed, generates unique filename, copies file.
+     */
+    private String saveFile(MultipartFile file, String subDir) throws IOException {
+        Path targetDir = uploadDir.resolve(subDir);
+        Files.createDirectories(targetDir);
+
+        // Generate unique filename: UUID + original extension
+        String originalName = file.getOriginalFilename();
+        String extension = "";
+        if (originalName != null && originalName.contains(".")) {
+            extension = originalName.substring(originalName.lastIndexOf("."));
         }
+        String uniqueName = UUID.randomUUID().toString() + extension;
+
+        Path targetPath = targetDir.resolve(uniqueName);
+        Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+
+        // Return relative path (used in DB and URL)
+        return subDir + "/" + uniqueName;
     }
 }

@@ -1,14 +1,15 @@
 package in.gw.main.Services;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import in.gw.main.Entity.QueryStatus;
 import in.gw.main.Entity.StudentProfile;
 import in.gw.main.Entity.SupportQuery;
 import in.gw.main.Repository.SupportQueryRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * SUPPORT QUERY SERVICE
@@ -27,26 +28,22 @@ public class SupportQueryService {
     @Autowired
     private SupportQueryRepository supportQueryRepository;
 
-    /** Student submits a new query */
+    /** Student submits a new query (without photo) */
     public void submitQuery(StudentProfile profile, String subject, String message) {
-        SupportQuery query = new SupportQuery();
-        query.setStudentProfile(profile);
-        query.setSubject(subject);
-        query.setMessage(message);
-        query.setStatus(QueryStatus.OPEN);
-        query.setCreatedAt(LocalDateTime.now());
-        supportQueryRepository.save(query);
+        submitQuery(profile, subject, message, null);
     }
 
-    /** Student submits a new query WITH an image */
-    public void submitQuery(StudentProfile profile, String subject, String message, String imageUrl) {
+    /** Student submits a new query (with optional photo) */
+    public void submitQuery(StudentProfile profile, String subject, String message, String photoPath) {
         SupportQuery query = new SupportQuery();
         query.setStudentProfile(profile);
         query.setSubject(subject);
         query.setMessage(message);
-        query.setImageUrl(imageUrl);
         query.setStatus(QueryStatus.OPEN);
         query.setCreatedAt(LocalDateTime.now());
+        if (photoPath != null && !photoPath.isEmpty()) {
+            query.setPhotoPath(photoPath);
+        }
         supportQueryRepository.save(query);
     }
 

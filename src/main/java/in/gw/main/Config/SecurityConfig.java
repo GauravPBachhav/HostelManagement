@@ -82,12 +82,8 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
 
-            // ===== CSRF: Skip CSRF check for multipart file upload endpoints =====
-            // The /admission form uses enctype="multipart/form-data" for photo upload.
-            // Tomcat 11's multipart parser is triggered when CSRF filter reads form params,
-            // which can cause issues. Since /admission requires login anyway, this is safe.
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/admission")
+                .ignoringRequestMatchers("/admission", "/dashboard/query/submit")
             )
 
             // ===== STEP 2: Login form configuration =====
