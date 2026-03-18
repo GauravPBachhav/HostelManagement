@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import in.gw.main.Entity.*;
@@ -41,6 +42,15 @@ public class AdminController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private NoticeService noticeService;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private StudentArchiveService archiveService;
+
     /**
      * ADMIN DASHBOARD - main page
      * Loads ALL data needed for admin tabs
@@ -65,6 +75,9 @@ public class AdminController {
         // Student queries (open + all)
         model.addAttribute("openQueries", supportQueryService.getOpenQueries());
         model.addAttribute("allQueries", supportQueryService.getAllQueries());
+
+        // Notices
+        model.addAttribute("notices", noticeService.getAllNotices());
 
         return "admin-dashboard";
     }
@@ -94,7 +107,16 @@ public class AdminController {
                           @RequestParam(required = false) Long roomId,
                           RedirectAttributes redirectAttributes) {
         studentProfileService.approveAndAssignRoom(id, roomId);
-        redirectAttributes.addFlashAttribute("success", "Student approved successfully!");
+
+        // Send approval email with room details
+        StudentProfile profile = studentProfileService.findById(id);
+        if (profile != null && profile.getUser() != null) {
+            String roomNum = profile.getRoom() != null ? profile.getRoom().getRoomNumber() : "TBD";
+            int rent = profile.getRoom() != null ? (int) profile.getRoom().getMonthlyRent() : 0;
+            emailService.sendApprovalEmail(profile.getUser().getEmail(), profile.getUser().getName(), roomNum, rent);
+        }
+
+        redirectAttributes.addFlashAttribute("success", "Student approved & email sent!");
         return "redirect:/admin/dashboard";
     }
 
@@ -102,8 +124,19 @@ public class AdminController {
     @PostMapping("/reject/{id}")
     public String reject(@PathVariable Long id,
                          RedirectAttributes redirectAttributes) {
+        // Send rejection email before changing status
+        StudentProfile profile = studentProfileService.findById(id);
+        if (profile != null && profile.getUser() != null) {
+            emailService.sendRejectionEmail(profile.getUser().getEmail(), profile.getUser().getName());
+        }
+
+        // Archive rejected student
+        if (profile != null) {
+            archiveService.archiveFromProfile(profile, ArchiveStatus.REJECTED, "Application rejected by admin");
+        }
+
         studentProfileService.updateStatus(id, ProfileStatus.REJECTED);
-        redirectAttributes.addFlashAttribute("success", "Student rejected.");
+        redirectAttributes.addFlashAttribute("success", "Student rejected, archived & email sent.");
         return "redirect:/admin/dashboard";
     }
 
@@ -140,5 +173,168 @@ public class AdminController {
         redirectAttributes.addFlashAttribute("success",
                 "Password reset to: " + newPassword);
         return "redirect:/admin/dashboard#tab-approved";
+    }
+
+    // =============================================
+    // NOTICE MANAGEMENT
+    // =============================================
+
+    /** Add a new notice */
+    @PostMapping("/notice/add")
+    public String addNotice(@RequestParam String title,
+                            @RequestParam String message,
+                            RedirectAttributes redirectAttributes) {
+        noticeService.addNotice(title, message);
+        redirectAttributes.addFlashAttribute("success", "Notice posted!");
+        return "redirect:/admin/dashboard#tab-notices";
+    }
+
+    /** Delete a notice */
+    @PostMapping("/notice/delete/{id}")
+    public String deleteNotice(@PathVariable Long id) {
+        noticeService.deleteNotice(id);
+        return "redirect:/admin/dashboard#tab-notices";
+    }
+
+    // =============================================
+    // ROOM EDIT
+    // =============================================
+
+    /** Update room details (rent, capacity, type) */
+    @PostMapping("/rooms/edit/{id}")
+    public String editRoom(@PathVariable Long id,
+                           @RequestParam int capacity,
+                           @RequestParam int monthlyRent,
+                           @RequestParam String roomType,
+                           RedirectAttributes redirectAttributes) {
+        roomService.updateRoom(id, capacity, monthlyRent, roomType);
+        redirectAttributes.addFlashAttribute("success", "Room updated!");
+        return "redirect:/admin/dashboard#tab-rooms";
+    }
+
+    // =============================================
+    // ROOM VACATE / CHECKOUT
+    // =============================================
+
+    /**
+     * Vacate a student from their room.
+     * Sets status to VACATED, frees the bed, unassigns room.
+     */
+    @PostMapping("/vacate/{id}")
+    public String vacateStudent(@PathVariable Long id,
+                                RedirectAttributes redirectAttributes) {
+        // Archive before vacating
+        StudentProfile profile = studentProfileService.findById(id);
+        if (profile != null) {
+            archiveService.archiveFromProfile(profile, ArchiveStatus.COMPLETED, "Vacated from hostel");
+        }
+
+        studentProfileService.vacateStudent(id);
+        redirectAttributes.addFlashAttribute("success", "Student vacated, archived & room freed.");
+        return "redirect:/admin/dashboard#tab-approved";
+    }
+
+    // =============================================
+    // STUDENT RECORDS / ARCHIVE
+    // =============================================
+
+    /**
+     * View student records — Active, Alumni (completed), Rejected.
+     * Like a CRM history page.
+     */
+    @GetMapping("/records")
+    public String studentRecords(Model model) {
+        // Active students (currently approved & staying)
+        model.addAttribute("activeStudents",
+            studentProfileService.findByStatus(ProfileStatus.APPROVED));
+
+        // Alumni (completed their stay)
+        model.addAttribute("alumni",
+            archiveService.findByStatus(ArchiveStatus.COMPLETED));
+
+        // Rejected
+        model.addAttribute("rejected",
+            archiveService.findByStatus(ArchiveStatus.REJECTED));
+
+        // Counts for badges
+        model.addAttribute("activeCount",
+            studentProfileService.findByStatus(ProfileStatus.APPROVED).size());
+        model.addAttribute("alumniCount",
+            archiveService.countByStatus(ArchiveStatus.COMPLETED));
+        model.addAttribute("rejectedCount",
+            archiveService.countByStatus(ArchiveStatus.REJECTED));
+
+        return "admin-records";
+    }
+
+    // =============================================
+    // FACILITY MANAGEMENT (Homepage Cards)
+    // =============================================
+
+    @Autowired
+    private FacilityService facilityService;
+
+    @Autowired
+    private FileStorageService fileStorageService;
+
+    /** Facility management page */
+    @GetMapping("/facilities")
+    public String facilitiesPage(Model model) {
+        model.addAttribute("facilities", facilityService.getAllFacilities());
+        model.addAttribute("newFacility", new Facility());
+        return "admin-facilities";
+    }
+
+    /** Add new facility */
+    @PostMapping("/facilities/add")
+    public String addFacility(@ModelAttribute Facility facility,
+                              @RequestParam(value = "photo", required = false) MultipartFile photo,
+                              RedirectAttributes redirectAttributes) {
+        try {
+            if (photo != null && !photo.isEmpty()) {
+                String path = fileStorageService.saveProfilePhoto(photo);
+                facility.setImagePath(path);
+            }
+            facilityService.save(facility);
+            redirectAttributes.addFlashAttribute("success", "Facility added!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/facilities";
+    }
+
+    /** Update facility photo */
+    @PostMapping("/facilities/updatePhoto/{id}")
+    public String updateFacilityPhoto(@PathVariable Long id,
+                                      @RequestParam("photo") MultipartFile photo,
+                                      RedirectAttributes redirectAttributes) {
+        try {
+            Facility f = facilityService.findById(id);
+            if (f != null && photo != null && !photo.isEmpty()) {
+                String path = fileStorageService.saveProfilePhoto(photo);
+                f.setImagePath(path);
+                facilityService.save(f);
+                redirectAttributes.addFlashAttribute("success", "Photo updated for " + f.getTitle());
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/facilities";
+    }
+
+    /** Toggle facility active/inactive */
+    @PostMapping("/facilities/toggle/{id}")
+    public String toggleFacility(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        facilityService.toggleActive(id);
+        redirectAttributes.addFlashAttribute("success", "Facility visibility toggled!");
+        return "redirect:/admin/facilities";
+    }
+
+    /** Delete facility */
+    @PostMapping("/facilities/delete/{id}")
+    public String deleteFacility(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        facilityService.delete(id);
+        redirectAttributes.addFlashAttribute("success", "Facility deleted!");
+        return "redirect:/admin/facilities";
     }
 }

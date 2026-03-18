@@ -1,0 +1,687 @@
+/* ============================================================
+   SHIVTIRTH HOSTEL — GLOBAL DESIGN SYSTEM
+   ============================================================
+   This file defines ALL custom styling for the application.
+   Uses Google Font "Inter" for a clean, modern look.
+   
+   SECTIONS:
+     1. CSS Variables (color tokens, spacing)
+     2. Typography & Base
+     3. Navbar
+     4. Cards & Panels
+     5. Buttons
+     6. Forms
+     7. Tables
+     8. Badges / Status
+     9. Alerts
+    10. Footer
+    11. Animations
+    12. Utility Classes
+    13. Responsive
+   ============================================================ */
+
+/* ===== 1. CSS VARIABLES (Design Tokens) ===== */
+:root {
+    /* Primary Palette */
+    --primary:       #4361ee;
+    --primary-dark:  #3a0ca3;
+    --primary-light: #7b8ff7;
+    
+    /* Accent */
+    --accent:        #f72585;
+    --accent-light:  #ff6bac;
+    
+    /* Neutral */
+    --dark:          #1a1a2e;
+    --dark-2:        #16213e;
+    --gray-900:      #212529;
+    --gray-700:      #495057;
+    --gray-500:      #6c757d;
+    --gray-300:      #dee2e6;
+    --gray-100:      #f8f9fa;
+    --bg:            #f0f2f5;
+    --white:         #ffffff;
+    
+    /* Status Colors */
+    --success:       #06d6a0;
+    --warning:       #ffd166;
+    --danger:        #ef476f;
+    --info:          #118ab2;
+    
+    /* Spacing */
+    --radius:        12px;
+    --radius-lg:     16px;
+    --radius-sm:     8px;
+    --shadow:        0 2px 16px rgba(0,0,0,0.08);
+    --shadow-lg:     0 8px 32px rgba(0,0,0,0.12);
+    --shadow-hover:  0 8px 24px rgba(67,97,238,0.15);
+    
+    /* Transitions */
+    --ease:          cubic-bezier(0.4, 0, 0.2, 1);
+    --transition:    all 0.3s var(--ease);
+}
+
+
+/* ===== 2. TYPOGRAPHY & BASE ===== */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--gray-900);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    color: var(--dark);
+}
+
+a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: var(--transition);
+}
+a:hover {
+    color: var(--primary-dark);
+}
+
+/* Selection color */
+::selection {
+    background: var(--primary);
+    color: var(--white);
+}
+
+
+/* ===== 3. NAVBAR ===== */
+.st-navbar {
+    background: var(--dark) !important;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 20px rgba(0,0,0,0.15);
+    padding: 0.6rem 0;
+}
+
+.st-navbar .navbar-brand {
+    font-weight: 800;
+    font-size: 1.2rem;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.st-navbar .navbar-brand svg {
+    width: 28px;
+    height: 28px;
+}
+
+.st-navbar .btn {
+    font-size: 0.82rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    padding: 0.35rem 0.9rem;
+    transition: var(--transition);
+}
+
+.st-navbar .btn:hover {
+    transform: translateY(-1px);
+}
+
+.st-navbar .st-user-name {
+    font-size: 0.85rem;
+    opacity: 0.85;
+}
+
+
+/* ===== 4. CARDS & PANELS ===== */
+.st-card {
+    background: var(--white);
+    border: none;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    overflow: hidden;
+}
+
+.st-card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+}
+
+.st-card .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.st-card .card-title svg {
+    width: 20px;
+    height: 20px;
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+/* Stat Cards (numbers on homepage / admin dashboard) */
+.st-stat-card {
+    text-align: center;
+    padding: 1.25rem;
+    border-radius: var(--radius);
+    background: var(--white);
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+}
+
+.st-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.st-stat-card .st-stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.st-stat-card .st-stat-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gray-500);
+    margin-top: 4px;
+}
+
+/* Glass card (for login/register) */
+.st-glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+
+/* ===== 5. BUTTONS ===== */
+.st-btn {
+    font-weight: 600;
+    font-size: 0.88rem;
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 1.2rem;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    cursor: pointer;
+}
+
+.st-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.st-btn:active {
+    transform: translateY(0);
+}
+
+.st-btn-primary {
+    background: var(--primary);
+    color: var(--white);
+}
+.st-btn-primary:hover {
+    background: var(--primary-dark);
+    color: var(--white);
+}
+
+.st-btn-success {
+    background: var(--success);
+    color: var(--dark);
+}
+
+.st-btn-danger {
+    background: var(--danger);
+    color: var(--white);
+}
+
+.st-btn-outline {
+    background: transparent;
+    border: 2px solid var(--gray-300);
+    color: var(--gray-700);
+}
+.st-btn-outline:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(67, 97, 238, 0.05);
+}
+
+/* Icon only button */
+.st-btn-icon {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--gray-300);
+    background: var(--white);
+    color: var(--gray-700);
+    transition: var(--transition);
+}
+
+.st-btn-icon:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(67, 97, 238, 0.05);
+}
+
+
+/* ===== 6. FORMS ===== */
+.st-form-control {
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    padding: 0.55rem 0.85rem;
+    font-size: 0.9rem;
+    transition: var(--transition);
+    background: var(--white);
+}
+
+.st-form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+    outline: none;
+}
+
+.st-form-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--gray-700);
+    margin-bottom: 4px;
+}
+
+
+/* ===== 7. TABLES ===== */
+.st-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.st-table thead {
+    background: var(--dark);
+    color: var(--white);
+}
+
+.st-table thead th {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+    padding: 0.75rem 1rem;
+    border: none;
+}
+
+.st-table thead th:first-child {
+    border-radius: var(--radius-sm) 0 0 0;
+}
+.st-table thead th:last-child {
+    border-radius: 0 var(--radius-sm) 0 0;
+}
+
+.st-table tbody td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--gray-300);
+    font-size: 0.88rem;
+    vertical-align: middle;
+}
+
+.st-table tbody tr {
+    transition: var(--transition);
+}
+
+.st-table tbody tr:hover {
+    background: rgba(67, 97, 238, 0.04);
+}
+
+
+/* ===== 8. BADGES / STATUS ===== */
+.st-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.3rem 0.7rem;
+    border-radius: 50px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.st-badge-pending {
+    background: rgba(255, 209, 102, 0.2);
+    color: #b8860b;
+}
+
+.st-badge-approved {
+    background: rgba(6, 214, 160, 0.15);
+    color: #05a17c;
+}
+
+.st-badge-rejected {
+    background: rgba(239, 71, 111, 0.15);
+    color: #d32f2f;
+}
+
+.st-badge-vacated {
+    background: rgba(108, 117, 125, 0.15);
+    color: var(--gray-700);
+}
+
+.st-badge-info {
+    background: rgba(17, 138, 178, 0.15);
+    color: var(--info);
+}
+
+
+/* ===== 9. ALERTS ===== */
+.st-alert {
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    font-size: 0.88rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+}
+
+.st-alert-notice {
+    background: linear-gradient(135deg, rgba(67, 97, 238, 0.08), rgba(123, 143, 247, 0.08));
+    border-left: 4px solid var(--primary);
+    color: var(--dark);
+}
+
+
+/* ===== 10. FOOTER ===== */
+.st-footer {
+    background: var(--dark);
+    color: rgba(255, 255, 255, 0.7);
+    padding: 2rem 0;
+}
+
+.st-footer a {
+    color: rgba(255, 255, 255, 0.7);
+}
+.st-footer a:hover {
+    color: var(--white);
+}
+
+.st-footer .st-footer-brand {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--white);
+}
+
+.st-footer .st-footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.st-footer .st-footer-links li {
+    margin-bottom: 6px;
+}
+.st-footer .st-footer-links a {
+    font-size: 0.85rem;
+}
+.st-footer .st-footer-divider {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 1rem;
+    margin-top: 1.5rem;
+}
+
+
+/* ===== 11. ANIMATIONS ===== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.st-animate-in {
+    animation: fadeInUp 0.5s var(--ease) both;
+}
+
+.st-animate-delay-1 { animation-delay: 0.1s; }
+.st-animate-delay-2 { animation-delay: 0.2s; }
+.st-animate-delay-3 { animation-delay: 0.3s; }
+.st-animate-delay-4 { animation-delay: 0.4s; }
+
+/* Page content fade in */
+main {
+    animation: fadeIn 0.4s var(--ease) both;
+}
+
+/* Alert slide down */
+.alert {
+    animation: slideDown 0.3s var(--ease) both;
+}
+
+
+/* ===== 12. HERO SECTION ===== */
+.st-hero {
+    background: linear-gradient(135deg, var(--dark) 0%, var(--dark-2) 40%, var(--primary-dark) 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.st-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(67, 97, 238, 0.15), transparent 70%);
+}
+
+.st-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -10%;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(247, 37, 133, 0.1), transparent 70%);
+}
+
+.st-hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+
+/* ===== 13. PROGRESS TRACKER ===== */
+.st-progress-tracker {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 0;
+}
+
+.st-progress-step {
+    text-align: center;
+    flex: 1;
+    position: relative;
+}
+
+.st-progress-step .st-step-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    transition: var(--transition);
+}
+
+.st-progress-step .st-step-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.st-step-done .st-step-icon {
+    background: var(--success);
+    color: var(--white);
+}
+
+.st-step-active .st-step-icon {
+    background: var(--primary);
+    color: var(--white);
+    box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.2);
+}
+
+.st-step-pending .st-step-icon {
+    background: var(--gray-300);
+    color: var(--gray-500);
+}
+
+.st-step-failed .st-step-icon {
+    background: var(--danger);
+    color: var(--white);
+}
+
+.st-progress-step .st-step-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.st-progress-connector {
+    flex: 0.5;
+    height: 3px;
+    background: var(--gray-300);
+    border-radius: 2px;
+    margin: 0 -10px;
+    align-self: flex-start;
+    margin-top: 24px;
+}
+
+.st-progress-connector.done {
+    background: var(--success);
+}
+
+
+/* ===== 14. TAB STYLING ===== */
+.st-tabs .nav-link {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--gray-500);
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 0.7rem 1rem;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.st-tabs .nav-link:hover {
+    color: var(--primary);
+    border-bottom-color: rgba(67, 97, 238, 0.3);
+}
+
+.st-tabs .nav-link.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    background: transparent;
+}
+
+.st-tabs .nav-link svg {
+    width: 16px;
+    height: 16px;
+}
+
+
+/* ===== 15. PROFILE HEADER ===== */
+.st-profile-header {
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-300);
+    padding: 1rem 0;
+}
+
+.st-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary);
+}
+
+.st-avatar-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+
+/* ===== 16. RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .st-hero h1 {
+        font-size: 1.8rem;
+    }
+    
+    .st-stat-card .st-stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .st-progress-tracker {
+        gap: 4px;
+    }
+    
+    .st-progress-step .st-step-icon {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .st-progress-step .st-step-label {
+        font-size: 0.65rem;
+    }
+    
+    .st-tabs .nav-link {
+        font-size: 0.78rem;
+        padding: 0.5rem 0.6rem;
+    }
+}

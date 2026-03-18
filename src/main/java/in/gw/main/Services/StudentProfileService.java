@@ -37,6 +37,11 @@ public class StudentProfileService {
         return studentProfileRepository.findByStatus(ProfileStatus.REJECTED);
     }
 
+    /** Generic find by any status */
+    public List<StudentProfile> findByStatus(ProfileStatus status) {
+        return studentProfileRepository.findByStatus(status);
+    }
+
     public void updateStatus(Long id, ProfileStatus status) {
         StudentProfile profile = studentProfileRepository
                 .findById(id)
@@ -61,6 +66,11 @@ public class StudentProfileService {
 
     public StudentProfile findById(Long id) {
         return studentProfileRepository.findById(id).orElse(null);
+    }
+
+    /** Save/update an existing profile (used by profile edit feature) */
+    public void save(StudentProfile profile) {
+        studentProfileRepository.save(profile);
     }
 
     /**
@@ -89,5 +99,37 @@ public class StudentProfileService {
         }
 
         studentProfileRepository.save(profile);
+    }
+
+    /**
+     * VACATE a student from their room.
+     * Steps:
+     *   1. Set status to VACATED
+     *   2. Decrease room occupancy by 1
+     *   3. Remove room assignment from profile
+     */
+    @Transactional
+    public void vacateStudent(Long profileId) {
+        StudentProfile profile = studentProfileRepository.findById(profileId)
+                .orElseThrow(() -> new RuntimeException("Profile not found"));
+
+        // Free the bed in the room
+        if (profile.getRoom() != null) {
+            Room room = profile.getRoom();
+            room.setCurrentOccupancy(Math.max(0, room.getCurrentOccupancy() - 1));
+            roomRepository.save(room);
+            profile.setRoom(null);
+        }
+
+        profile.setStatus(ProfileStatus.VACATED);
+        studentProfileRepository.save(profile);
+    }
+
+    /** Delete a student's profile (used for re-apply on rejection) */
+    public void deleteByUser(User user) {
+        StudentProfile profile = studentProfileRepository.findByUser(user);
+        if (profile != null) {
+            studentProfileRepository.delete(profile);
+        }
     }
 }

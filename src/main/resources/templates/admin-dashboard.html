@@ -23,6 +23,14 @@
                 <h5 class="mb-0">Admin Dashboard</h5>
                 <small class="text-muted">Manage admissions, rooms, rent and queries.</small>
             </div>
+            <div class="ms-auto d-flex gap-2">
+                <a href="/admin/facilities" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-image"></i> Manage Facilities
+                </a>
+                <a href="/admin/records" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-archive"></i> Student Records
+                </a>
+            </div>
         </div>
     </div>
 
@@ -109,11 +117,21 @@
                           th:text="${#lists.size(openQueries)}">0</span>
                 </button>
             </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-notices">
+                    <i class="bi bi-megaphone"></i> Notices
+                </button>
+            </li>
         </ul>
     </div>
 
     <!-- ====== TAB CONTENT ====== -->
     <div class="container my-3">
+        <!-- Global Search -->
+        <div class="mb-3">
+            <input type="text" id="adminSearchInput" class="form-control"
+                   placeholder="🔍 Search students, rooms, notices..." style="max-width:400px; border-radius:8px;"/>
+        </div>
         <div class="tab-content">
 
             <!-- ============================================ -->
@@ -267,6 +285,16 @@
                                                     <i class="bi bi-key"></i>
                                                 </button>
                                             </form>
+                                            <!-- Vacate / Checkout -->
+                                            <form th:action="@{/admin/vacate/{id}(id=${p.id})}"
+                                                  method="post" class="d-inline">
+                                                <button type="submit"
+                                                        class="btn btn-outline-danger btn-sm"
+                                                        title="Vacate student from room"
+                                                        onclick="return confirm('Vacate this student? Room bed will be freed.')">
+                                                    <i class="bi bi-box-arrow-right"></i>
+                                                </button>
+                                            </form>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -411,6 +439,14 @@
                                     </td>
                                     <td>&#8377;<span th:text="${r.monthlyRent}"></span></td>
                                     <td>
+                                        <!-- EDIT BUTTON (opens inline form) -->
+                                        <button class="btn btn-outline-primary btn-sm me-1"
+                                                type="button"
+                                                th:onclick="'toggleEditRoom(' + ${r.id} + ')'"
+                                                title="Edit room">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <!-- DELETE -->
                                         <form th:action="@{/admin/rooms/delete/{id}(id=${r.id})}"
                                               method="post" class="d-inline">
                                             <button type="submit"
@@ -418,6 +454,37 @@
                                                     onclick="return confirm('Delete this room?')">
                                                 <i class="bi bi-trash"></i>
                                             </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <!-- INLINE EDIT ROW (hidden by default) -->
+                                <tr th:each="r : ${rooms}" th:id="'editRow-' + ${r.id}" style="display:none;">
+                                    <td colspan="8">
+                                        <form th:action="@{/admin/rooms/edit/{id}(id=${r.id})}"
+                                              method="post" class="row g-2 align-items-center p-2 bg-light rounded">
+                                            <div class="col-auto">
+                                                <small class="fw-bold">Edit Room <span th:text="${r.roomNumber}"></span>:</small>
+                                            </div>
+                                            <div class="col-auto">
+                                                <select name="roomType" class="form-select form-select-sm">
+                                                    <option value="SINGLE" th:selected="${r.roomType.name() == 'SINGLE'}">Single</option>
+                                                    <option value="DOUBLE" th:selected="${r.roomType.name() == 'DOUBLE'}">Double</option>
+                                                    <option value="TRIPLE" th:selected="${r.roomType.name() == 'TRIPLE'}">Triple</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-auto">
+                                                <input type="number" name="capacity" class="form-control form-control-sm"
+                                                       th:value="${r.capacity}" style="width:70px;" placeholder="Cap" required/>
+                                            </div>
+                                            <div class="col-auto">
+                                                <input type="number" name="monthlyRent" class="form-control form-control-sm"
+                                                       th:value="${r.monthlyRent}" style="width:90px;" placeholder="Rent" required/>
+                                            </div>
+                                            <div class="col-auto">
+                                                <button type="submit" class="btn btn-success btn-sm">Save</button>
+                                                <button type="button" class="btn btn-secondary btn-sm"
+                                                        th:onclick="'toggleEditRoom(' + ${r.id} + ')'">Cancel</button>
+                                            </div>
                                         </form>
                                     </td>
                                 </tr>
@@ -603,6 +670,73 @@
                 </div>
             </div>
 
+            <!-- ============================================ -->
+            <!-- TAB 7: NOTICES                               -->
+            <!-- ============================================ -->
+            <div class="tab-pane" id="tab-notices">
+                <!-- Add Notice Form -->
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-plus-circle"></i> Post a Notice
+                        </h5>
+                        <form th:action="@{/admin/notice/add}" method="post" class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Title</label>
+                                <input type="text" name="title" class="form-control"
+                                       placeholder="e.g. Water supply timing change" required/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Message</label>
+                                <textarea name="message" class="form-control" rows="2"
+                                          placeholder="Detailed notice message..." required></textarea>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-megaphone"></i> Post
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Existing Notices -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-megaphone"></i> All Notices
+                        </h5>
+
+                        <div th:if="${notices == null or #lists.isEmpty(notices)}"
+                             class="text-center text-muted py-4">
+                            No notices posted yet.
+                        </div>
+
+                        <div th:each="n : ${notices}" class="border rounded p-3 mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong th:text="${n.title}"></strong>
+                                    <br/>
+                                    <small class="text-muted" th:text="${n.postedAt}"></small>
+                                </div>
+                                <div>
+                                    <span class="badge" th:classappend="${n.active} ? 'bg-success' : 'bg-secondary'"
+                                          th:text="${n.active} ? 'Active' : 'Inactive'"></span>
+                                    <form th:action="@{/admin/notice/delete/{id}(id=${n.id})}"
+                                          method="post" class="d-inline ms-1">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                onclick="return confirm('Delete this notice?')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            <p class="mt-2 mb-0 text-muted" th:text="${n.message}"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div><!-- end tab-content -->
     </div>
 </main>
@@ -619,6 +753,47 @@ document.addEventListener('DOMContentLoaded', function() {
         if (tabButton) {
             new bootstrap.Tab(tabButton).show();
         }
+    }
+});
+
+// Toggle inline edit row for rooms
+function toggleEditRoom(roomId) {
+    var editRow = document.getElementById('editRow-' + roomId);
+    if (editRow) {
+        editRow.style.display = (editRow.style.display === 'none') ? '' : 'none';
+    }
+}
+
+// ====================================
+// GLOBAL SEARCH / FILTER
+// ====================================
+// Searches all tables in the currently active tab
+document.addEventListener('DOMContentLoaded', function() {
+    var searchInput = document.getElementById('adminSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            var query = this.value.toLowerCase().trim();
+
+            // Get all tables in the page
+            var tables = document.querySelectorAll('.tab-content table tbody');
+            tables.forEach(function(tbody) {
+                var rows = tbody.querySelectorAll('tr');
+                rows.forEach(function(row) {
+                    // Skip edit rows (hidden inline forms)
+                    if (row.id && row.id.startsWith('editRow-')) return;
+
+                    var text = row.textContent.toLowerCase();
+                    row.style.display = (query === '' || text.includes(query)) ? '' : 'none';
+                });
+            });
+
+            // Also filter notices/queries (list items)
+            var listItems = document.querySelectorAll('.tab-content .border.rounded');
+            listItems.forEach(function(item) {
+                var text = item.textContent.toLowerCase();
+                item.style.display = (query === '' || text.includes(query)) ? '' : 'none';
+            });
+        });
     }
 });
 </script>

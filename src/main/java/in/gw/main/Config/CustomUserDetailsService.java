@@ -29,15 +29,13 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // Find user by email in our database
         User user = userRepository.findByEmail(email.toLowerCase());
 
-        // If not found, throw exception (Spring Security shows error on login page)
         if (user == null) {
             throw new UsernameNotFoundException("No user found with email: " + email);
         }
 
-        // Wrap our User in CustomUserDetails and give it to Spring Security
+        // No need to check emailVerified — only verified users exist in DB
         return new CustomUserDetails(user);
     }
 }

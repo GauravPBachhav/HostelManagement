@@ -5,64 +5,90 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
 </head>
-<body class="d-flex flex-column min-vh-100" style="background:#f5f6fa;">
+<body class="d-flex flex-column min-vh-100">
 <div th:replace="~{fragments/header :: header}"></div>
 
-<main class="flex-grow-1 d-flex align-items-center justify-content-center py-5">
-    <div class="card shadow border-0" style="width: 100%; max-width: 420px;">
-        <div class="card-body p-4">
+<!-- Login page with gradient background -->
+<main class="flex-grow-1 d-flex align-items-center justify-content-center py-5"
+      style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #3a0ca3 100%); position:relative; overflow:hidden;">
 
-            <!-- Admin badge (shown only when coming from /admin-login) -->
-            <div th:if="${isAdminLogin}" class="alert alert-dark text-center py-2 mb-3">
-                <i class="bi bi-gear"></i> Admin Login
+    <!-- Decorative circles -->
+    <div style="position:absolute; top:-100px; right:-60px; width:300px; height:300px; border-radius:50%; background:rgba(67,97,238,0.1);"></div>
+    <div style="position:absolute; bottom:-80px; left:-40px; width:250px; height:250px; border-radius:50%; background:rgba(247,37,133,0.08);"></div>
+
+    <div class="st-glass-card st-animate-in" style="width:100%; max-width:420px; position:relative; z-index:1;">
+        <div class="p-4">
+
+            <!-- Admin badge -->
+            <div th:if="${isAdminLogin}" class="text-center mb-3">
+                <span class="st-badge st-badge-info" style="font-size:0.8rem; padding:0.4rem 1rem;">
+                    <!-- Gear SVG -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9"/>
+                    </svg>
+                    Admin Portal
+                </span>
             </div>
 
-            <h4 class="text-center mb-1"
-                th:text="${isAdminLogin} ? 'Admin Login' : 'Student Login'">Login</h4>
-            <p class="text-center text-muted small mb-3">Enter your credentials to continue.</p>
+            <!-- Header with SVG -->
+            <div class="text-center mb-3">
+                <div style="width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#4361ee,#3a0ca3); display:inline-flex; align-items:center; justify-content:center; margin-bottom:10px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none"
+                         stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                        <polyline points="10 17 15 12 10 7"/>
+                        <line x1="15" y1="12" x2="3" y2="12"/>
+                    </svg>
+                </div>
+                <h4 class="mb-0" th:text="${isAdminLogin} ? 'Admin Login' : 'Welcome Back'">Login</h4>
+                <p class="text-muted small mb-0">Enter your credentials to continue</p>
+            </div>
 
-            <!-- Success message (after logout or registration) -->
-            <div th:if="${success}" class="alert alert-success py-2 text-center small"
-                 th:text="${success}"></div>
+            <!-- Alerts -->
+            <div th:if="${success}" class="st-alert" style="background:rgba(6,214,160,0.1); border-left:4px solid #06d6a0; margin-bottom:12px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06d6a0" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                <span class="small" th:text="${success}"></span>
+            </div>
+            <div th:if="${error}" class="st-alert" style="background:rgba(239,71,111,0.1); border-left:4px solid #ef476f; margin-bottom:12px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef476f" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span class="small" th:text="${error}"></span>
+            </div>
 
-            <!-- Error message (wrong password) -->
-            <div th:if="${error}" class="alert alert-danger py-2 text-center small"
-                 th:text="${error}"></div>
-
-            <!--
-              LOGIN FORM
-              Spring Security processes this form automatically.
-              - th:action adds CSRF token (security protection)
-              - name="email" matches SecurityConfig's usernameParameter("email")
-              - name="password" is the default password field
-              - Posts to /loginForm (configured in SecurityConfig)
-            -->
+            <!-- Login Form -->
             <form th:action="@{/loginForm}" method="post">
                 <div class="mb-3">
-                    <label class="form-label small fw-bold">Email Address</label>
-                    <input type="email" name="email" class="form-control"
+                    <label class="st-form-label">Email Address</label>
+                    <input type="email" name="email" class="form-control st-form-control"
                            placeholder="you@example.com" required/>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label small fw-bold">Password</label>
-                    <input type="password" name="password" class="form-control"
+                    <label class="st-form-label">Password</label>
+                    <input type="password" name="password" class="form-control st-form-control"
                            placeholder="Your password" required/>
                 </div>
-                <button type="submit" class="btn btn-primary w-100 fw-bold">
-                    Login <i class="bi bi-arrow-right"></i>
+                <button type="submit" class="btn st-btn st-btn-primary w-100 py-2" style="font-size:0.95rem;">
+                    Login
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                    </svg>
                 </button>
             </form>
 
-            <!-- Register link (hidden for admin login) -->
+            <!-- Links -->
             <div th:unless="${isAdminLogin}" class="text-center mt-3 small text-muted">
-                Don't have an account? <a href="/register">Register here</a>
+                Don't have an account? <a href="/register" class="fw-600">Register here</a>
             </div>
             <div th:if="${isAdminLogin}" class="text-center mt-3 small">
-                <a href="/"><i class="bi bi-arrow-left"></i> Back to Home</a>
+                <a href="/" class="text-muted">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    Back to Home
+                </a>
             </div>
-
         </div>
     </div>
 </main>

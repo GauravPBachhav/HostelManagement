@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Manage Facilities - Shivtirth Hostel</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+    <style>
+        .facility-card { border-radius:12px; overflow:hidden; transition:transform 0.2s; }
+        .facility-card:hover { transform:translateY(-3px); }
+        .facility-img-wrap { position:relative; }
+        .facility-img { width:100%; height:160px; object-fit:cover; }
+        .facility-gradient { width:100%; height:160px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:2rem; }
+        .hidden-badge { position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.7); color:#fff; padding:4px 10px; border-radius:6px; font-size:0.75rem; font-weight:bold; }
+        .hidden-dim .facility-img, .hidden-dim .facility-gradient { opacity:0.4; }
+        .color-row { display:flex; align-items:center; gap:6px; }
+        .color-row input[type=color] { width:40px; height:32px; border:none; border-radius:6px; cursor:pointer; padding:0; }
+        .color-row input[type=color]::-webkit-color-swatch-wrapper { padding:2px; }
+        .color-row input[type=color]::-webkit-color-swatch { border:none; border-radius:4px; }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="flex-grow-1 py-4" style="background:#f5f6fa;">
+    <div class="container">
+
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold mb-0"><i class="bi bi-image"></i> Manage Facilities</h3>
+                <p class="text-muted small mb-0">Add, edit or remove homepage facility cards</p>
+            </div>
+            <a href="/admin/dashboard" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Flash messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle"></i> <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-circle"></i> <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- ====== ADD NEW FACILITY ====== -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-plus-circle"></i> Add New Facility</h5>
+                <form action="/admin/facilities/add" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="gradientColors" id="addGradientHidden" value="#1a1a2e,#4361ee"/>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Title *</label>
+                            <input type="text" name="title" class="form-control" placeholder="e.g. Purified Water" required/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Description *</label>
+                            <input type="text" name="description" class="form-control" placeholder="e.g. RO purified drinking water 24/7" required/>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Photo (optional)</label>
+                            <input type="file" name="photo" class="form-control" accept="image/*"/>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Gradient</label>
+                            <div class="color-row">
+                                <input type="color" id="addColor1" value="#1a1a2e" onchange="updateAddGradient()"/>
+                                <span class="text-muted small">→</span>
+                                <input type="color" id="addColor2" value="#4361ee" onchange="updateAddGradient()"/>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Order</label>
+                            <input type="number" name="displayOrder" class="form-control" value="0"/>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-plus-lg"></i> Add Facility
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ====== EXISTING FACILITIES ====== -->
+        <h5 class="fw-bold mb-3"><i class="bi bi-grid"></i> Current Facilities
+            <span class="badge bg-primary" th:text="${#lists.size(facilities)}">0</span>
+        </h5>
+
+        <div th:if="${facilities == null or #lists.isEmpty(facilities)}" class="text-center text-muted py-5">
+            <i class="bi bi-image" style="font-size:3rem;"></i>
+            <p class="mt-2">No facilities added yet. Add your first one above!</p>
+        </div>
+
+        <div class="row g-3">
+            <div th:each="f : ${facilities}" class="col-md-4">
+                <div class="card facility-card shadow-sm border-0">
+                    <!-- Image or Gradient (with dim if hidden) -->
+                    <div class="facility-img-wrap" th:classappend="${!f.active} ? 'hidden-dim'">
+                        <div th:if="${f.imagePath != null}">
+                            <img th:src="@{'/uploads/' + ${f.imagePath}}" class="facility-img" alt="Facility"/>
+                        </div>
+                        <div th:if="${f.imagePath == null}" class="facility-gradient"
+                             th:style="'background:linear-gradient(135deg,' + ${f.gradientColors} + ')'">
+                            <i class="bi bi-building"></i>
+                        </div>
+                        <!-- HIDDEN badge on top-right of image only -->
+                        <span th:if="${!f.active}" class="hidden-badge">
+                            <i class="bi bi-eye-slash"></i> HIDDEN
+                        </span>
+                    </div>
+
+                    <!-- Card body — always fully interactive -->
+                    <div class="card-body">
+                        <h6 class="card-title fw-bold" th:text="${f.title}">Title</h6>
+                        <p class="card-text small text-muted" th:text="${f.description}">Description</p>
+                        <p class="small mb-2">
+                            <span class="badge" th:classappend="${f.active} ? 'bg-success' : 'bg-secondary'"
+                                  th:text="${f.active} ? 'Active' : 'Hidden'">Status</span>
+                            <span class="badge bg-light text-dark" th:text="'Order: ' + ${f.displayOrder}">0</span>
+                        </p>
+
+                        <div class="d-flex gap-2 flex-wrap">
+                            <!-- Upload/Change Photo -->
+                            <form th:action="@{'/admin/facilities/updatePhoto/' + ${f.id}}" method="post"
+                                  enctype="multipart/form-data" class="d-inline">
+                                <input type="file" name="photo" accept="image/*" class="d-none"
+                                       th:id="'file-' + ${f.id}"
+                                       onchange="this.closest('form').submit()"/>
+                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                        th:onclick="'document.getElementById(\'file-' + ${f.id} + '\').click()'">
+                                    <i class="bi bi-camera"></i> Photo
+                                </button>
+                            </form>
+
+                            <!-- Toggle -->
+                            <form th:action="@{'/admin/facilities/toggle/' + ${f.id}}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm"
+                                        th:classappend="${f.active} ? 'btn-outline-warning' : 'btn-outline-success'">
+                                    <i class="bi" th:classappend="${f.active} ? 'bi-eye-slash' : 'bi-eye'"></i>
+                                    <span th:text="${f.active} ? 'Hide' : 'Show'">Toggle</span>
+                                </button>
+                            </form>
+
+                            <!-- Delete -->
+                            <form th:action="@{'/admin/facilities/delete/' + ${f.id}}" method="post" class="d-inline"
+                                  onsubmit="return confirm('Delete this facility?')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Sync color pickers to hidden gradient field
+function updateAddGradient() {
+    var c1 = document.getElementById('addColor1').value;
+    var c2 = document.getElementById('addColor2').value;
+    document.getElementById('addGradientHidden').value = c1 + ',' + c2;
+}
+</script>
+</body>
+</html>

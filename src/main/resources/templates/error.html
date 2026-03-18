@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Error - Shivtirth Hostel</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+</head>
+<body class="d-flex flex-column min-vh-100" style="background:#f0f2f5;">
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="flex-grow-1 d-flex align-items-center justify-content-center py-5">
+    <div class="text-center st-animate-in" style="max-width:480px;">
+        <!-- Error SVG illustration -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none"
+             stroke="#ef476f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+             style="opacity:0.7; margin-bottom:20px;">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+
+        <h2 class="fw-bold mb-2">Oops! Something went wrong</h2>
+        <p class="text-muted mb-1" th:if="${status}" th:text="'Error ' + ${status}"></p>
+        <p class="text-muted small mb-4" th:if="${message}" th:text="${message}">An unexpected error occurred.</p>
+
+        <div class="d-flex gap-2 justify-content-center">
+            <a href="/" class="btn btn-primary" style="background:#4361ee; border:none; border-radius:8px; padding:0.5rem 1.5rem; font-weight:600;">
+                <!-- Home SVG -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     style="margin-right:4px;">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                Go Home
+            </a>
+            <button onclick="history.back()" class="btn btn-outline-secondary" style="border-radius:8px; padding:0.5rem 1.5rem; font-weight:600;">
+                <!-- Arrow Left SVG -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     style="margin-right:4px;">
+                    <line x1="19" y1="12" x2="5" y2="12"/>
+                    <polyline points="12 19 5 12 12 5"/>
+                </svg>
+                Go Back
+            </button>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

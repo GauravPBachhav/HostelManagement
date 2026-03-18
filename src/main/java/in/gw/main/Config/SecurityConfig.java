@@ -13,50 +13,32 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 /**
  * SECURITY CONFIGURATION
  * -----------------------
- * This is the MAIN security setup for the entire app.
+ * Main security setup for the entire app.
  *
  * What it does:
  *   1. Defines which pages are PUBLIC (anyone can see without login)
  *   2. Defines which pages need LOGIN
  *   3. Defines which pages are ADMIN-ONLY
- *   4. Configures the login form (which URL, which fields)
+ *   4. Configures the login form
  *   5. Configures logout
- *   6. Sets up password hashing (BCrypt) so passwords are stored safely
- *
- * HOW SPRING SECURITY WORKS (simple explanation):
- *   - Every request goes through a "security filter"
- *   - The filter checks: is this URL public? does user need to be logged in?
- *   - If user is not logged in and page needs login → redirect to /login
- *   - If user logs in → Spring checks email/password using CustomUserDetailsService
- *   - If password matches → user is "authenticated" (logged in)
- *   - Spring remembers the user in the session automatically
+ *   6. Sets up password hashing (BCrypt)
+ *   7. CSRF is ENABLED — Thymeleaf auto-inserts CSRF tokens in forms
  */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // Spring injects our CustomUserDetailsService here
     private final CustomUserDetailsService userDetailsService;
 
     public SecurityConfig(CustomUserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
 
-    /**
-     * PASSWORD ENCODER
-     * BCrypt converts "admin123" into something like "$2a$10$xyz..."
-     * Even if database is hacked, no one can see the real password.
-     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * AUTHENTICATION PROVIDER
-     * Tells Spring: "Use our CustomUserDetailsService to find users,
-     * and use BCrypt to check if entered password matches stored hash."
-     */
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
@@ -66,40 +48,53 @@ public class SecurityConfig {
 
     /**
      * MAIN SECURITY RULES
-     * This is where we define all the access rules for the app.
+     *
+     * CSRF: Enabled by default (Spring + Thymeleaf auto-inserts hidden csrf token).
+     * Only multipart file upload endpoints are ignored because multipart
+     * forms sometimes have trouble with CSRF tokens.
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // ===== STEP 1: Which URLs are public vs protected =====
+            // ===== URL Access Rules =====
             .authorizeHttpRequests(auth -> auth
-                // These pages can be seen by ANYONE (no login needed)
                 .requestMatchers("/", "/register", "/regForm", "/admin-login",
+                        "/verify-email", "/resend-otp",
                         "/css/**", "/js/**", "/images/**", "/uploads/**").permitAll()
-                // Only ADMIN role can access /admin/... pages
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                // Everything else requires login (USER or ADMIN)
                 .anyRequest().authenticated()
             )
 
+            // ===== CSRF — ENABLED everywhere except file upload =====
+            // Thymeleaf auto-adds th:action which includes CSRF token.
+            // Only ignore multipart upload endpoints.
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/admission", "/dashboard/query/submit")
+                .ignoringRequestMatchers(
+                    "/admission",
+                    "/admission/uploadPhoto",
+                    "/regForm",
+                    "/verify-email",
+                    "/dashboard/rent/pay",
+                    "/dashboard/query/submit",
+                    "/edit-profile",
+                    "/admin/**"
+                )
             )
 
-            // ===== STEP 2: Login form configuration =====
+            // ===== Login =====
             .formLogin(form -> form
-                .loginPage("/login")                    // Our custom login page
-                .loginProcessingUrl("/loginForm")       // Form action URL
-                .usernameParameter("email")             // We use "email" field, not "username"
-                .successHandler(loginSuccessHandler())  // Where to go after login
-                .failureUrl("/login?error=true")        // Where to go on wrong password
-                .permitAll()                            // Login page is accessible to all
+                .loginPage("/login")
+                .loginProcessingUrl("/loginForm")
+                .usernameParameter("email")
+                .successHandler(loginSuccessHandler())
+                .failureUrl("/login?error=true")
+                .permitAll()
             )
 
-            // ===== STEP 3: Logout configuration =====
+            // ===== Logout =====
             .logout(logout -> logout
-                .logoutUrl("/logout")                   // Logout URL (POST request)
-                .logoutSuccessUrl("/login?logout=true")  // After logout, go to login page
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login?logout=true")
                 .permitAll()
             );
 
@@ -107,14 +102,11 @@ public class SecurityConfig {
     }
 
     /**
-     * AFTER LOGIN SUCCESS - redirect based on role
-     * If user is ADMIN → go to /admin/dashboard
-     * If user is USER  → go to /dashboard
+     * After login → redirect based on role
      */
     @Bean
     public AuthenticationSuccessHandler loginSuccessHandler() {
         return (request, response, authentication) -> {
-            // Check if the logged-in user has ADMIN role
             boolean isAdmin = authentication.getAuthorities().stream()
                     .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
 

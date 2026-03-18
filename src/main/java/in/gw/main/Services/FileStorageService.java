@@ -47,18 +47,27 @@ public class FileStorageService {
 
     /**
      * Generic file save method.
-     * Creates subdirectory if needed, generates unique filename, copies file.
+     * Creates subdirectory if needed, validates file type, generates unique filename, copies file.
      */
     private String saveFile(MultipartFile file, String subDir) throws IOException {
+        // --- Validate file type: only images allowed ---
+        String originalName = file.getOriginalFilename();
+        if (originalName == null || originalName.isBlank()) {
+            throw new IOException("File name is empty!");
+        }
+
+        String lowerName = originalName.toLowerCase();
+        if (!lowerName.endsWith(".jpg") && !lowerName.endsWith(".jpeg") &&
+            !lowerName.endsWith(".png") && !lowerName.endsWith(".gif") &&
+            !lowerName.endsWith(".webp")) {
+            throw new IOException("Only image files (JPG, PNG, GIF, WEBP) are allowed! Got: " + originalName);
+        }
+
         Path targetDir = uploadDir.resolve(subDir);
         Files.createDirectories(targetDir);
 
         // Generate unique filename: UUID + original extension
-        String originalName = file.getOriginalFilename();
-        String extension = "";
-        if (originalName != null && originalName.contains(".")) {
-            extension = originalName.substring(originalName.lastIndexOf("."));
-        }
+        String extension = originalName.substring(originalName.lastIndexOf("."));
         String uniqueName = UUID.randomUUID().toString() + extension;
 
         Path targetPath = targetDir.resolve(uniqueName);

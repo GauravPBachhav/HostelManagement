@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Student Records - Shivtirth Hostel</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+</head>
+<body class="d-flex flex-column min-vh-100">
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="flex-grow-1 py-4" style="background:var(--bg);">
+    <div class="container">
+
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold mb-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    Student Records
+                </h3>
+                <p class="text-muted small mb-0">Complete history of all hostel students</p>
+            </div>
+            <a href="/admin/dashboard" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="mb-3">
+            <input type="text" id="recordsSearch" class="form-control"
+                   placeholder="🔍 Search by name, email, college..." style="max-width:400px; border-radius:8px;"/>
+        </div>
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#active-tab">
+                    <i class="bi bi-person-check"></i> Active
+                    <span class="badge bg-success ms-1" th:text="${activeCount}">0</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#alumni-tab">
+                    <i class="bi bi-mortarboard"></i> Alumni
+                    <span class="badge bg-primary ms-1" th:text="${alumniCount}">0</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#rejected-tab">
+                    <i class="bi bi-x-circle"></i> Rejected
+                    <span class="badge bg-danger ms-1" th:text="${rejectedCount}">0</span>
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+
+            <!-- =========================== -->
+            <!-- ACTIVE STUDENTS             -->
+            <!-- =========================== -->
+            <div class="tab-pane show active" id="active-tab">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-people"></i> Currently Enrolled Students</h5>
+
+                        <div th:if="${activeStudents == null or #lists.isEmpty(activeStudents)}"
+                             class="text-center text-muted py-4">
+                            No active students currently enrolled.
+                        </div>
+
+                        <table th:if="${activeStudents != null and !#lists.isEmpty(activeStudents)}"
+                               class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th><th>Name</th><th>Email</th><th>Phone</th>
+                                    <th>College</th><th>Course</th><th>Room</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="s, idx : ${activeStudents}">
+                                    <td th:text="${idx.count}"></td>
+                                    <td th:text="${s.user.name}">Name</td>
+                                    <td th:text="${s.user.email}">email</td>
+                                    <td th:text="${s.phoneNumber}">-</td>
+                                    <td th:text="${s.collegeName}">-</td>
+                                    <td th:text="${s.course}">-</td>
+                                    <td>
+                                        <span th:if="${s.room != null}"
+                                              th:text="${s.room.roomNumber + ' (' + s.room.roomType + ')'}">-</span>
+                                        <span th:if="${s.room == null}" class="text-muted">Not assigned</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =========================== -->
+            <!-- ALUMNI (Completed Stay)     -->
+            <!-- =========================== -->
+            <div class="tab-pane" id="alumni-tab">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-mortarboard"></i> Alumni — Students Who Left</h5>
+
+                        <div th:if="${alumni == null or #lists.isEmpty(alumni)}"
+                             class="text-center text-muted py-4">
+                            No alumni records yet.
+                        </div>
+
+                        <table th:if="${alumni != null and !#lists.isEmpty(alumni)}"
+                               class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th><th>Name</th><th>Email</th><th>Phone</th>
+                                    <th>College</th><th>Room</th><th>Left On</th><th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="a, idx : ${alumni}">
+                                    <td th:text="${idx.count}"></td>
+                                    <td th:text="${a.studentName}">Name</td>
+                                    <td th:text="${a.email}">email</td>
+                                    <td th:text="${a.phoneNumber}">-</td>
+                                    <td th:text="${a.collegeName}">-</td>
+                                    <td>
+                                        <span th:if="${a.roomNumber != null}"
+                                              th:text="${a.roomNumber + ' (' + a.roomType + ')'}">-</span>
+                                        <span th:if="${a.roomNumber == null}" class="text-muted">N/A</span>
+                                    </td>
+                                    <td th:text="${a.checkOutDate}">-</td>
+                                    <td><small class="text-muted" th:text="${a.remarks}">-</small></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =========================== -->
+            <!-- REJECTED APPLICATIONS       -->
+            <!-- =========================== -->
+            <div class="tab-pane" id="rejected-tab">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-x-circle"></i> Rejected Applications</h5>
+
+                        <div th:if="${rejected == null or #lists.isEmpty(rejected)}"
+                             class="text-center text-muted py-4">
+                            No rejected applications.
+                        </div>
+
+                        <table th:if="${rejected != null and !#lists.isEmpty(rejected)}"
+                               class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th><th>Name</th><th>Email</th><th>Phone</th>
+                                    <th>College</th><th>Course</th><th>Rejected On</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="r, idx : ${rejected}">
+                                    <td th:text="${idx.count}"></td>
+                                    <td th:text="${r.studentName}">Name</td>
+                                    <td th:text="${r.email}">email</td>
+                                    <td th:text="${r.phoneNumber}">-</td>
+                                    <td th:text="${r.collegeName}">-</td>
+                                    <td th:text="${r.course}">-</td>
+                                    <td th:text="${r.checkOutDate}">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div><!-- end tab-content -->
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Search filter for records tables
+document.addEventListener('DOMContentLoaded', function() {
+    var input = document.getElementById('recordsSearch');
+    if (input) {
+        input.addEventListener('input', function() {
+            var q = this.value.toLowerCase().trim();
+            document.querySelectorAll('.tab-content table tbody tr').forEach(function(row) {
+                row.style.display = (q === '' || row.textContent.toLowerCase().includes(q)) ? '' : 'none';
+            });
+        });
+    }
+});
+</script>
+</body>
+</html>

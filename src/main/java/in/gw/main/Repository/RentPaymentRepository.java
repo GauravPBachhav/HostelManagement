@@ -25,4 +25,7 @@ public interface RentPaymentRepository extends JpaRepository<RentPayment, Long> 
 
     // Get 20 most recent payments (for admin overview)
     List<RentPayment> findTop20ByOrderByPaymentDateDesc();
+
+    // Check if payment already exists for a student for a given month/year
+    boolean existsByStudentProfileAndMonthAndYear(StudentProfile profile, String month, int year);
 }

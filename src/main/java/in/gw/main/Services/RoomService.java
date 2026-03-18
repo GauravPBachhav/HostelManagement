@@ -1,6 +1,7 @@
 package in.gw.main.Services;
 
 import in.gw.main.Entity.Room;
+import in.gw.main.Entity.RoomType;
 import in.gw.main.Repository.RoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -73,5 +74,15 @@ public class RoomService {
     /** Find room by ID */
     public Room findById(Long id) {
         return roomRepository.findById(id).orElse(null);
+    }
+
+    /** Update an existing room's details (capacity, rent, type) */
+    public void updateRoom(Long id, int capacity, int monthlyRent, String roomType) {
+        Room room = roomRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Room not found"));
+        room.setCapacity(capacity);
+        room.setMonthlyRent(monthlyRent);
+        room.setRoomType(RoomType.valueOf(roomType));  // Convert String → RoomType enum
+        roomRepository.save(room);
     }
 }

@@ -25,7 +25,15 @@
                 <!-- Error message -->
                 <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
-                <form th:action="@{/admission}" th:object="${profile}" method="post" enctype="multipart/form-data">
+                <!--
+                    IMPORTANT: This form uses method="post" WITHOUT enctype="multipart/form-data".
+                    Photo upload is handled separately via JavaScript to avoid HTTP 413 errors
+                    caused by Spring Boot 4.x multipart configuration issues.
+                -->
+                <form id="admissionForm" th:action="@{/admission}" th:object="${profile}" method="post">
+
+                    <!-- Hidden field to store the uploaded photo path -->
+                    <input type="hidden" name="profilePhotoPath" id="profilePhotoPath" th:field="*{profilePhotoPath}"/>
 
                     <!-- Personal Information -->
                     <h6 class="text-primary text-uppercase small fw-bold border-bottom pb-2 mb-3">
@@ -53,14 +61,15 @@
                         <small class="text-muted">Optional but recommended for verification</small>
                     </div>
 
-                    <!-- Profile Photo -->
+                    <!-- Profile Photo (uploaded via AJAX, not as part of this form) -->
                     <h6 class="text-primary text-uppercase small fw-bold border-bottom pb-2 mb-3 mt-4">
                         Profile Photo
                     </h6>
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Upload Your Photo</label>
-                        <input type="file" name="profilePhoto" class="form-control" accept="image/*"/>
-                        <small class="text-muted">Upload a passport-size photo (JPG/PNG, max 2MB)</small>
+                        <input type="file" id="profilePhotoFile" class="form-control" accept="image/*"/>
+                        <small class="text-muted">Upload a passport-size photo (JPG/PNG, max 10MB)</small>
+                        <div id="photoStatus" class="small mt-1" style="display:none;"></div>
                     </div>
 
                     <!-- Contact Information -->
@@ -126,7 +135,7 @@
                                placeholder="Parent mobile number" required/>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100 fw-bold mt-2">
+                    <button type="submit" class="btn btn-primary w-100 fw-bold mt-2" id="submitBtn">
                         <i class="bi bi-send"></i> Submit Admission Form
                     </button>
                 </form>
@@ -138,5 +147,60 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/**
+ * PHOTO UPLOAD HANDLER
+ * --------------------
+ * When user selects a photo, it is uploaded via AJAX (fetch) to /admission/uploadPhoto.
+ * The server saves the file and returns the file path.
+ * The path is stored in a hidden field and submitted with the regular form.
+ *
+ * This approach avoids enctype="multipart/form-data" on the main form,
+ * which was causing HTTP 413 errors in Spring Boot 4.x.
+ */
+document.getElementById('profilePhotoFile').addEventListener('change', function() {
+    var file = this.files[0];
+    var statusDiv = document.getElementById('photoStatus');
+
+    if (!file) return;
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+        statusDiv.className = 'small mt-1 text-danger';
+        statusDiv.textContent = 'File too large! Max 10MB allowed.';
+        statusDiv.style.display = 'block';
+        this.value = '';
+        return;
+    }
+
+    // Show uploading status
+    statusDiv.className = 'small mt-1 text-info';
+    statusDiv.textContent = 'Uploading photo...';
+    statusDiv.style.display = 'block';
+
+    // Upload via AJAX
+    var formData = new FormData();
+    formData.append('profilePhoto', file);
+
+    fetch('/admission/uploadPhoto', {
+        method: 'POST',
+        body: formData
+    })
+    .then(function(response) {
+        if (!response.ok) throw new Error('Upload failed (status ' + response.status + ')');
+        return response.text();
+    })
+    .then(function(photoPath) {
+        document.getElementById('profilePhotoPath').value = photoPath;
+        statusDiv.className = 'small mt-1 text-success';
+        statusDiv.textContent = '✅ Photo uploaded successfully!';
+    })
+    .catch(function(error) {
+        statusDiv.className = 'small mt-1 text-danger';
+        statusDiv.textContent = '❌ Upload failed: ' + error.message;
+        document.getElementById('profilePhotoPath').value = '';
+    });
+});
+</script>
 </body>
 </html>

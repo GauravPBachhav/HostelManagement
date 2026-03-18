@@ -26,6 +26,9 @@ public class User {
 
     private boolean profileCompleted = false;
 
+    @Column(nullable = false)
+    private boolean emailVerified = false;   // Must verify OTP before login
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private StudentProfile studentProfile;
 
@@ -57,4 +60,7 @@ public class User {
     public void setStudentProfile(StudentProfile studentProfile) {
         this.studentProfile = studentProfile;
     }
+
+    public boolean isEmailVerified() { return emailVerified; }
+    public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
 }

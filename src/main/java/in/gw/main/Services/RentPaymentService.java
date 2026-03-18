@@ -24,9 +24,14 @@ public class RentPaymentService {
 
     /**
      * Record a new rent payment.
-     * The amount is automatically taken from the student's assigned room rent.
+     * Throws exception if payment already recorded for same month/year.
      */
     public void recordPayment(StudentProfile profile, String month, int year, String paymentMode) {
+        // --- Duplicate check ---
+        if (rentPaymentRepository.existsByStudentProfileAndMonthAndYear(profile, month, year)) {
+            throw new RuntimeException("Payment for " + month + " " + year + " is already recorded!");
+        }
+
         RentPayment payment = new RentPayment();
         payment.setStudentProfile(profile);
 
@@ -49,6 +54,11 @@ public class RentPaymentService {
     /** Get all payments for a specific student (for student dashboard) */
     public List<RentPayment> findByProfile(StudentProfile profile) {
         return rentPaymentRepository.findByStudentProfileOrderByYearDescMonthDesc(profile);
+    }
+
+    /** Find a single payment by ID (for PDF receipt download) */
+    public RentPayment findById(Long id) {
+        return rentPaymentRepository.findById(id).orElse(null);
     }
 
     /** Get 20 most recent payments across all students (for admin overview) */
