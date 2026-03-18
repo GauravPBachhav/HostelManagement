@@ -479,6 +479,12 @@ document.addEventListener('DOMContentLoaded', function() {
             new bootstrap.Tab(tabButton).show();
         }
     }
+    // Deep-link via ?tab=rent or ?tab=query
+    var tab = new URLSearchParams(window.location.search).get('tab');
+    if (tab) {
+        var btn = document.querySelector('[data-bs-target="#tab-' + tab + '"]');
+        if (btn) new bootstrap.Tab(btn).show();
+    }
 });
 </script>
 </body>

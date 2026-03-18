@@ -113,7 +113,7 @@ public class SecurityConfig {
             if (isAdmin) {
                 response.sendRedirect("/admin/dashboard");
             } else {
-                response.sendRedirect("/dashboard");
+                response.sendRedirect("/");
             }
         };
     }
