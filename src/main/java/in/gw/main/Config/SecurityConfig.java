@@ -60,6 +60,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/register", "/regForm", "/admin-login",
                         "/verify-email", "/resend-otp",
+                        "/checkroomavailability", "/api/rooms/**",
                         "/css/**", "/js/**", "/images/**", "/uploads/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()

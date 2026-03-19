@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Check Room Availability - Shivtirth Hostel</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content="Check room availability at Shivtirth Hostel. View floor-wise room plan with live bed availability."/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+</head>
+<body class="d-flex flex-column min-vh-100">
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="flex-grow-1">
+
+    <!-- ====== PAGE HEADER ====== -->
+    <section class="st-hero text-white py-4">
+        <div class="container st-hero-content text-center">
+            <h1 class="fw-bold mb-2" style="font-size:1.8rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" style="vertical-align:text-bottom; margin-right:6px;">
+                    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                </svg>
+                Check Room Availability
+            </h1>
+            <p class="mb-0" style="opacity:0.75;">Explore our hostel layout &amp; check live room availability floor-by-floor</p>
+        </div>
+    </section>
+
+    <!-- ====== MAP + FLOOR PLAN SECTION ====== -->
+    <div class="container my-4">
+        <div class="row g-4">
+
+            <!-- LEFT SIDE: SVG Area Map -->
+            <div class="col-lg-7">
+                <div class="st-card p-3">
+                    <h5 class="fw-bold mb-3 text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                             stroke="var(--primary)" stroke-width="2" style="vertical-align:text-bottom; margin-right:4px;">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        Hostel Area Map
+                    </h5>
+
+                    <!-- GOOGLE MAPS EMBED — marker pinned to hostel coordinates -->
+                    <div class="st-map-container" id="mapContainer" style="position:relative;">
+                        <iframe
+                            src="https://maps.google.com/maps?q=19.968450,73.666595&t=k&z=18&output=embed"
+                            width="100%" height="420" style="border:0; border-radius:var(--radius); display:block;"
+                            allowfullscreen="" loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"
+                            id="hostelMap">
+                        </iframe>
+
+                        <!-- Directions Button (bottom-left corner of map) -->
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=19.968450,73.666595&travelmode=driving"
+                           target="_blank" rel="noopener noreferrer"
+                           class="st-map-directions-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+                            </svg>
+                            Get Directions
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT SIDE: Floor Plan Detail -->
+            <div class="col-lg-5">
+                <div class="st-card p-0" id="floorPlanPanel">
+
+                    <!-- Floor Plan Header with Floor Selector -->
+                    <div class="p-3" style="background: linear-gradient(135deg, var(--dark), var(--primary-dark)); border-radius: var(--radius) var(--radius) 0 0;">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h5 class="fw-bold text-white mb-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="2" style="vertical-align:text-bottom; margin-right:4px;">
+                                    <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+                                    <path d="M9 22v-4h6v4"/>
+                                    <path d="M8 6h.01"/><path d="M16 6h.01"/>
+                                    <path d="M12 6h.01"/><path d="M12 10h.01"/>
+                                </svg>
+                                Floor Plan
+                            </h5>
+                            <select id="floorSelector" class="form-select form-select-sm" style="width:auto; min-width:140px;">
+                                <option th:each="f : ${floors}" th:value="${f}"
+                                        th:text="${f == 0 ? 'Ground Floor' : 'Floor ' + f}"
+                                        th:selected="${f == selectedFloor}"></option>
+                            </select>
+                        </div>
+                        <p class="text-white mb-0 mt-1" style="font-size:0.78rem; opacity:0.7;">
+                            Select a floor to see room layout &amp; availability
+                        </p>
+                    </div>
+
+                    <!-- Floor Plan SVG (dynamic part — changes per floor) -->
+                    <div class="p-3" id="floorPlanContent">
+                        <!-- Help text for new users -->
+                        <div class="alert alert-info py-2 px-3 mb-3" style="font-size:0.82rem; border-radius:8px;">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Tip:</strong> Click on any room in the floor plan to view its rent and availability details.
+                        </div>
+                        <div class="st-floor-plan-svg-wrap" id="floorSvgWrap">
+                            <!-- This SVG is generated dynamically by JavaScript -->
+                        </div>
+
+                        <!-- Room Detail Card (appears when clicking a room) -->
+                        <div id="roomDetailCard" class="st-room-detail-card" style="display:none;">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="fw-bold mb-0" id="roomDetailTitle">Room 101</h6>
+                                <button class="btn-close btn-close-sm" onclick="document.getElementById('roomDetailCard').style.display='none'"></button>
+                            </div>
+                            <div class="row g-2 text-center">
+                                <div class="col-4">
+                                    <div class="st-room-detail-stat">
+                                        <div class="st-room-detail-value" id="roomDetailType">—</div>
+                                        <div class="st-room-detail-label">Type</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="st-room-detail-stat">
+                                        <div class="st-room-detail-value" id="roomDetailBeds">—</div>
+                                        <div class="st-room-detail-label">Available</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="st-room-detail-stat">
+                                        <div class="st-room-detail-value" id="roomDetailRent">—</div>
+                                        <div class="st-room-detail-label">Rent/Mo</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-2 text-center">
+                                <span class="st-badge" id="roomDetailStatus">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="p-3 pt-0">
+                        <div class="d-flex gap-3 justify-content-center flex-wrap" style="font-size:0.78rem;">
+                            <span><span class="st-legend-dot" style="background:#06d6a0;"></span> Available</span>
+                            <span><span class="st-legend-dot" style="background:#ffd166;"></span> Almost Full</span>
+                            <span><span class="st-legend-dot" style="background:#ef476f;"></span> Full</span>
+                            <span><span class="st-legend-dot" style="background:#dee2e6;"></span> No Data</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- ====== FLOOR PLAN JAVASCRIPT ====== -->
+<script>
+/**
+ * FLOOR PLAN INTERACTIVE LOGIC
+ * =============================
+ * Simple and readable:
+ *   1. loadFloorPlan(floor) → fetches room data from API → draws SVG rooms
+ *   2. Floor selector dropdown → calls loadFloorPlan()
+ *   3. Clicking hostel on the map → opens floor panel (scroll to it on mobile)
+ *   4. Clicking a room → shows detail card
+ */
+
+// ====== FLOOR SELECTOR CHANGE ======
+document.getElementById('floorSelector').addEventListener('change', function() {
+    loadFloorPlan(this.value);
+});
+
+
+
+// ====== LOAD FLOOR PLAN (Main function) ======
+function loadFloorPlan(floor) {
+    var wrap = document.getElementById('floorSvgWrap');
+    wrap.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted small">Loading floor plan...</p></div>';
+
+    // Hide room detail card when switching floors
+    document.getElementById('roomDetailCard').style.display = 'none';
+
+    // Fetch rooms from API
+    fetch('/api/rooms/floor/' + floor)
+        .then(function(response) { return response.json(); })
+        .then(function(rooms) {
+            drawFloorPlan(rooms, floor);
+        })
+        .catch(function(error) {
+            wrap.innerHTML = '<div class="text-center py-4 text-danger"><p>Failed to load floor data.</p></div>';
+        });
+}
+
+// ====== DRAW FLOOR PLAN SVG (custom layout matching hostel blueprint) ======
+function drawFloorPlan(rooms, floor) {
+    var wrap = document.getElementById('floorSvgWrap');
+
+    // If no rooms on this floor
+    if (rooms.length === 0) {
+        var floorName = (floor == 0) ? 'Ground Floor' : 'Floor ' + floor;
+        wrap.innerHTML = '<div class="text-center py-5">' +
+            '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/></svg>' +
+            '<p class="mt-2 text-muted">No rooms configured for <strong>' + floorName + '</strong></p>' +
+            '</div>';
+        return;
+    }
+
+    // ===== FLOOR COLORS =====
+    var bgColor;
+    if (floor == 1) {
+        bgColor = '#7BA3D4';  // Blue for Floor 1
+    } else if (floor == 2) {
+        bgColor = '#B8A9D4';  // Purple for Floor 2
+    } else {
+        bgColor = '#A8C686';  // Green for other floors
+    }
+
+    // ===== BUILD ROOM LOOKUP MAP =====
+    var roomMap = {};
+    for (var i = 0; i < rooms.length; i++) {
+        roomMap[rooms[i].roomNumber] = rooms[i];
+    }
+
+    // ===== ROOM POSITIONS (matching the image layout) =====
+    var prefix = 'F' + floor;
+    var roomSlots = [
+        { label: prefix + '2', x: 30,  y: 45  },   // Top-left
+        { label: prefix + '1', x: 240, y: 45  },   // Top-right
+        { label: prefix + '3', x: 30,  y: 330 },   // Bot-left
+        { label: prefix + '4', x: 240, y: 330 }    // Bot-right
+    ];
+    var roomW = 175, roomH = 140;
+
+    // ===== FLOOR LABEL =====
+    var floorLabel = (floor == 1) ? 'FIRST FLOOR' : (floor == 2) ? 'FLOOR TWO' : 'FLOOR ' + floor;
+
+    // ===== SVG START =====
+    var svg = '<svg viewBox="0 0 750 520" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto;">';
+
+    // === Building outline ===
+    svg += '<rect x="12" y="18" width="440" height="480" rx="6" fill="' + bgColor + '" stroke="#222" stroke-width="3"/>';
+
+    // === Compass labels (bigger, bolder, dark) ===
+    svg += '<text x="232" y="12" text-anchor="middle" font-size="15" fill="#111" font-weight="800" font-family="Inter, sans-serif">EAST</text>';
+    svg += '<text x="232" y="514" text-anchor="middle" font-size="15" fill="#111" font-weight="800" font-family="Inter, sans-serif">WEST</text>';
+    svg += '<text x="6" y="260" text-anchor="middle" font-size="15" fill="#111" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-90, 6, 260)">NORTH</text>';
+    svg += '<text x="510" y="290" text-anchor="start" font-size="15" fill="#111" font-weight="800" font-family="Inter, sans-serif">SOUTH</text>';
+
+    // === Floor label in center ===
+    svg += '<text x="232" y="245" text-anchor="middle" font-size="20" fill="#222" font-weight="900" font-family="Inter, sans-serif" letter-spacing="1">' + floorLabel + '</text>';
+
+    // === Washroom area (middle-left) ===
+    svg += '<rect x="30" y="210" width="170" height="95" rx="4" fill="#fff" stroke="#222" stroke-width="2.5"/>';
+    svg += '<text x="115" y="265" text-anchor="middle" font-size="12" fill="#999" font-weight="600" font-family="Inter, sans-serif">Washroom</text>';
+
+    // === Staircase (center-right, hatched area) ===
+    svg += '<rect x="255" y="205" width="130" height="60" rx="4" fill="#e8e8e8" stroke="#777" stroke-width="2"/>';
+    for (var s = 0; s < 9; s++) {
+        svg += '<line x1="' + (266 + s * 13) + '" y1="209" x2="' + (266 + s * 13) + '" y2="261" stroke="#bbb" stroke-width="1.5"/>';
+    }
+    svg += '<text x="320" y="200" font-size="14" fill="#555" text-anchor="middle" font-weight="600" font-family="Inter, sans-serif">↑ Stairs ↓</text>';
+
+    // === Draw each room ===
+    for (var r = 0; r < roomSlots.length; r++) {
+        var slot = roomSlots[r];
+        var room = roomMap[slot.label] || null;
+
+        // Room box — white with dark border
+        svg += '<rect x="' + slot.x + '" y="' + slot.y + '" width="' + roomW + '" height="' + roomH + '" rx="5" fill="#fff" stroke="#1a1a2e" stroke-width="2.5"/>';
+
+        // Room number label — BIGGER
+        svg += '<text x="' + (slot.x + roomW/2) + '" y="' + (slot.y + 26) + '" text-anchor="middle" font-size="16" fill="#1a1a2e" font-weight="800" font-family="Inter, sans-serif">ROOM No. ' + slot.label + '</text>';
+
+        // Availability circle — MUCH BIGGER
+        var available = room ? (room.capacity - room.currentOccupancy) : 0;
+        var total = room ? room.capacity : 0;
+        var circleColor, circleStroke, textInCircle;
+
+        if (!room) {
+            circleColor = '#ccc'; circleStroke = '#999';
+            textInCircle = '—';
+        } else if (available <= 0) {
+            circleColor = '#ef476f'; circleStroke = '#c62828';
+            textInCircle = '0';
+        } else if (available <= Math.ceil(total * 0.25)) {
+            circleColor = '#ffc857'; circleStroke = '#e6a800';
+            textInCircle = available.toString();
+        } else {
+            circleColor = '#70b855'; circleStroke = '#4a8a35';
+            textInCircle = available.toString();
+        }
+
+        var cx = slot.x + roomW/2;
+        var cy = slot.y + 78;
+
+        // Circle with thick stroke
+        svg += '<circle cx="' + cx + '" cy="' + cy + '" r="34" fill="' + circleColor + '" stroke="' + circleStroke + '" stroke-width="3"/>';
+        // Count number inside circle — BIG
+        svg += '<text x="' + cx + '" y="' + (cy + 9) + '" text-anchor="middle" font-size="26" fill="#fff" font-weight="900" font-family="Inter, sans-serif">' + textInCircle + '</text>';
+
+        // "X/Y beds free" label below circle — bigger
+        if (room) {
+            svg += '<text x="' + (slot.x + roomW/2) + '" y="' + (slot.y + 128) + '" text-anchor="middle" font-size="12" fill="#444" font-weight="700" font-family="Inter, sans-serif">' + available + '/' + total + ' beds free</text>';
+        }
+
+        // Make room clickable
+        if (room) {
+            svg += '<rect x="' + slot.x + '" y="' + slot.y + '" width="' + roomW + '" height="' + roomH + '" rx="5" fill="transparent" stroke="transparent" style="cursor:pointer;" onclick="showRoomDetail(' + JSON.stringify(room).replace(/"/g, '&quot;') + ')"/>';
+        }
+    }
+
+    // ===== TRIMBAKESHWAR ROAD (right side) =====
+    svg += '<rect x="540" y="0" width="35" height="520" fill="#e0e0e0" stroke="#333" stroke-width="2"/>';
+    svg += '<line x1="557" y1="0" x2="557" y2="520" stroke="#333" stroke-width="1.5" stroke-dasharray="10,7"/>';
+    svg += '<text x="557" y="260" text-anchor="middle" font-size="13" fill="#222" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-90, 557, 260)" letter-spacing="3">TRIMBAKESHWAR ROAD</text>';
+
+    // Connection line from building to road
+    svg += '<line x1="452" y1="55" x2="540" y2="55" stroke="#333" stroke-width="2"/>';
+
+    // ===== SANDIP FOUNDATION (far right) =====
+    svg += '<rect x="620" y="55" width="110" height="90" rx="6" fill="#fff" stroke="#222" stroke-width="2"/>';
+    svg += '<text x="675" y="85" text-anchor="middle" font-size="20" fill="#333">🏫</text>';
+    svg += '<text x="675" y="108" text-anchor="middle" font-size="11" fill="#222" font-weight="800" font-family="Inter, sans-serif">Sandip Foundations</text>';
+    svg += '<text x="675" y="125" text-anchor="middle" font-size="11" fill="#555" font-weight="700" font-family="Inter, sans-serif">College</text>';
+    svg += '<line x1="575" y1="100" x2="620" y2="100" stroke="#333" stroke-width="2"/>';
+
+    svg += '</svg>';
+    wrap.innerHTML = svg;
+}
+
+// ====== SHOW ROOM DETAIL (when clicking a room) ======
+function showRoomDetail(room) {
+    var available = (room.availableBeds !== undefined) ? room.availableBeds : (room.capacity - room.currentOccupancy);
+
+    document.getElementById('roomDetailTitle').textContent = 'Room ' + room.roomNumber;
+    document.getElementById('roomDetailType').textContent = room.roomType;
+    document.getElementById('roomDetailBeds').textContent = available + '/' + room.capacity;
+    document.getElementById('roomDetailRent').textContent = '₹' + room.monthlyRent;
+
+    // Status badge
+    var statusEl = document.getElementById('roomDetailStatus');
+    if (available <= 0) {
+        statusEl.textContent = 'FULLY OCCUPIED';
+        statusEl.className = 'st-badge st-badge-rejected';
+    } else if (available === 1) {
+        statusEl.textContent = 'ALMOST FULL — 1 BED LEFT';
+        statusEl.className = 'st-badge st-badge-pending';
+    } else {
+        statusEl.textContent = available + ' BEDS AVAILABLE';
+        statusEl.className = 'st-badge st-badge-approved';
+    }
+
+    document.getElementById('roomDetailCard').style.display = 'block';
+}
+
+
+
+// ====== LOAD DEFAULT FLOOR ON PAGE LOAD ======
+(function() {
+    var selector = document.getElementById('floorSelector');
+    if (selector.value !== undefined && selector.value !== '') {
+        loadFloorPlan(selector.value);
+    }
+})();
+</script>
+
+</body>
+</html>

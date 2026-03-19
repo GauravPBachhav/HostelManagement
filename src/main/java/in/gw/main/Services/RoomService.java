@@ -59,10 +59,26 @@ public class RoomService {
                 .sum();
     }
 
-    /** Add a new room to the hostel */
+    /** Add a new room to the hostel (auto-detects floor from room number) */
     public void addRoom(Room room) {
         room.setActive(true);
         room.setCurrentOccupancy(0);
+
+        // Auto-detect floor from room number (e.g., "F11" → floor 1, "F24" → floor 2)
+        String rn = room.getRoomNumber();
+        if (rn != null && rn.length() >= 2 && (rn.charAt(0) == 'F' || rn.charAt(0) == 'f')) {
+            try {
+                room.setFloor(Character.getNumericValue(rn.charAt(1)));
+            } catch (Exception e) {
+                // keep whatever floor was set
+            }
+        }
+
+        // Default room type if not set
+        if (room.getRoomType() == null) {
+            room.setRoomType(RoomType.SINGLE);
+        }
+
         roomRepository.save(room);
     }
 
@@ -85,4 +101,15 @@ public class RoomService {
         room.setRoomType(RoomType.valueOf(roomType));  // Convert String → RoomType enum
         roomRepository.save(room);
     }
+
+    /** Get active rooms on a specific floor */
+    public List<Room> getActiveRoomsByFloor(int floor) {
+        return roomRepository.findByFloorAndActiveTrue(floor);
+    }
+
+    /** Get all distinct floor numbers that have active rooms */
+    public List<Integer> getDistinctFloors() {
+        return roomRepository.findDistinctFloors();
+    }
 }
+

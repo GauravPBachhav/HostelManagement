@@ -363,35 +363,22 @@
                         </h5>
                         <form th:action="@{/admin/rooms/add}" th:object="${newRoom}"
                               method="post" class="row g-3">
-                            <div class="col-md-2">
+                            <div class="col-md-3">
                                 <label class="form-label small fw-bold">Room No.</label>
                                 <input type="text" th:field="*{roomNumber}"
-                                       class="form-control" placeholder="101" required/>
+                                       class="form-control" placeholder="F11" required/>
                             </div>
-                            <div class="col-md-2">
-                                <label class="form-label small fw-bold">Floor</label>
-                                <input type="number" th:field="*{floor}"
-                                       class="form-control" placeholder="1" required/>
-                            </div>
-                            <div class="col-md-2">
-                                <label class="form-label small fw-bold">Type</label>
-                                <select th:field="*{roomType}" class="form-select" required>
-                                    <option value="SINGLE">Single</option>
-                                    <option value="DOUBLE">Double</option>
-                                    <option value="TRIPLE">Triple</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2">
+                            <div class="col-md-3">
                                 <label class="form-label small fw-bold">Capacity</label>
                                 <input type="number" th:field="*{capacity}"
-                                       class="form-control" placeholder="2" required/>
+                                       class="form-control" placeholder="6" required/>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-3">
                                 <label class="form-label small fw-bold">Rent (&#8377;)</label>
                                 <input type="number" th:field="*{monthlyRent}"
                                        class="form-control" placeholder="5000" required/>
                             </div>
-                            <div class="col-md-2 d-flex align-items-end">
+                            <div class="col-md-3 d-flex align-items-end">
                                 <button type="submit" class="btn btn-primary w-100">
                                     <i class="bi bi-plus"></i> Add
                                 </button>
@@ -416,7 +403,7 @@
                                class="table table-striped table-hover">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>Room No</th><th>Floor</th><th>Type</th>
+                                    <th>Room No</th>
                                     <th>Capacity</th><th>Occupied</th><th>Available</th>
                                     <th>Rent</th><th>Action</th>
                                 </tr>
@@ -424,11 +411,6 @@
                             <tbody>
                                 <tr th:each="r : ${rooms}">
                                     <td><strong th:text="${r.roomNumber}"></strong></td>
-                                    <td th:text="${r.floor}"></td>
-                                    <td>
-                                        <span class="badge bg-secondary"
-                                              th:text="${r.roomType}"></span>
-                                    </td>
                                     <td th:text="${r.capacity}"></td>
                                     <td th:text="${r.currentOccupancy}"></td>
                                     <td>
@@ -459,19 +441,13 @@
                                 </tr>
                                 <!-- INLINE EDIT ROW (hidden by default) -->
                                 <tr th:each="r : ${rooms}" th:id="'editRow-' + ${r.id}" style="display:none;">
-                                    <td colspan="8">
+                                    <td colspan="6">
                                         <form th:action="@{/admin/rooms/edit/{id}(id=${r.id})}"
                                               method="post" class="row g-2 align-items-center p-2 bg-light rounded">
                                             <div class="col-auto">
                                                 <small class="fw-bold">Edit Room <span th:text="${r.roomNumber}"></span>:</small>
                                             </div>
-                                            <div class="col-auto">
-                                                <select name="roomType" class="form-select form-select-sm">
-                                                    <option value="SINGLE" th:selected="${r.roomType.name() == 'SINGLE'}">Single</option>
-                                                    <option value="DOUBLE" th:selected="${r.roomType.name() == 'DOUBLE'}">Double</option>
-                                                    <option value="TRIPLE" th:selected="${r.roomType.name() == 'TRIPLE'}">Triple</option>
-                                                </select>
-                                            </div>
+                                            <input type="hidden" name="roomType" value="SINGLE"/>
                                             <div class="col-auto">
                                                 <input type="number" name="capacity" class="form-control form-control-sm"
                                                        th:value="${r.capacity}" style="width:70px;" placeholder="Cap" required/>

@@ -21,3 +21,4 @@ public interface StudentProfileRepository
 
     // ✅ REMOVED: findByQueryTextNotNull() — field doesn't exist in entity yet
 }
+

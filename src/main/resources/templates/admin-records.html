@@ -28,6 +28,12 @@
             </a>
         </div>
 
+        <!-- Flash Messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
         <!-- Search Bar -->
         <div class="mb-3">
             <input type="text" id="recordsSearch" class="form-control"
@@ -118,7 +124,7 @@
                             <thead class="table-dark">
                                 <tr>
                                     <th>#</th><th>Name</th><th>Email</th><th>Phone</th>
-                                    <th>College</th><th>Room</th><th>Left On</th><th>Remarks</th>
+                                    <th>College</th><th>Room</th><th>Left On</th><th>Remarks</th><th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -135,6 +141,14 @@
                                     </td>
                                     <td th:text="${a.checkOutDate}">-</td>
                                     <td><small class="text-muted" th:text="${a.remarks}">-</small></td>
+                                    <td>
+                                        <form th:action="@{/admin/records/delete/{id}(id=${a.id})}" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                    onclick="return confirm('Delete this record? Email will be freed for re-registration.')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -160,7 +174,7 @@
                             <thead class="table-dark">
                                 <tr>
                                     <th>#</th><th>Name</th><th>Email</th><th>Phone</th>
-                                    <th>College</th><th>Course</th><th>Rejected On</th>
+                                    <th>College</th><th>Course</th><th>Rejected On</th><th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -172,6 +186,14 @@
                                     <td th:text="${r.collegeName}">-</td>
                                     <td th:text="${r.course}">-</td>
                                     <td th:text="${r.checkOutDate}">-</td>
+                                    <td>
+                                        <form th:action="@{/admin/records/delete/{id}(id=${r.id})}" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                    onclick="return confirm('Delete this record? Email will be freed for re-registration.')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>

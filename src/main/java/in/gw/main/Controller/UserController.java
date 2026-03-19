@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -18,6 +19,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import in.gw.main.Config.CustomUserDetails;
 import in.gw.main.Entity.ProfileStatus;
+import in.gw.main.Entity.Room;
 import in.gw.main.Entity.StudentProfile;
 import in.gw.main.Entity.User;
 import in.gw.main.Services.FileStorageService;
@@ -81,6 +83,50 @@ public class UserController {
         model.addAttribute("rooms", roomService.getAllActiveRooms());
         model.addAttribute("facilities", facilityService.getActiveFacilities());
         return "index";
+    }
+
+    // ===================================================================
+    //  CHECK ROOM AVAILABILITY — Interactive Floor Plan (PUBLIC)
+    // ===================================================================
+
+    /**
+     * FLOOR PLAN PAGE — shows SVG map with floor-wise room availability.
+     * Public page, no login required.
+     */
+    @GetMapping("/checkroomavailability")
+    public String checkRoomAvailability(Model model) {
+        java.util.List<Integer> floors = roomService.getDistinctFloors();
+        model.addAttribute("floors", floors);
+
+        // Load ground floor (0) rooms by default, or first available floor
+        int defaultFloor = floors.isEmpty() ? 0 : floors.get(0);
+        model.addAttribute("selectedFloor", defaultFloor);
+        model.addAttribute("rooms", roomService.getActiveRoomsByFloor(defaultFloor));
+
+        return "check-room-availability";
+    }
+
+    /**
+     * AJAX API — returns rooms for a specific floor as JSON.
+     * Called by JavaScript when user switches floor in the floor plan.
+     */
+    @GetMapping("/api/rooms/floor/{floor}")
+    @ResponseBody
+    public java.util.List<java.util.Map<String, Object>> getRoomsByFloor(@PathVariable int floor) {
+        java.util.List<Room> rooms = roomService.getActiveRoomsByFloor(floor);
+        java.util.List<java.util.Map<String, Object>> result = new java.util.ArrayList<>();
+
+        for (Room room : rooms) {
+            java.util.Map<String, Object> map = new java.util.LinkedHashMap<>();
+            map.put("roomNumber", room.getRoomNumber());
+            map.put("roomType", room.getRoomType().name());
+            map.put("capacity", room.getCapacity());
+            map.put("currentOccupancy", room.getCurrentOccupancy());
+            map.put("availableBeds", room.getCapacity() - room.getCurrentOccupancy());
+            map.put("monthlyRent", room.getMonthlyRent());
+            result.add(map);
+        }
+        return result;
     }
 
     /**

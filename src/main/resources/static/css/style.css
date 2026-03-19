@@ -685,3 +685,159 @@ main {
         padding: 0.5rem 0.6rem;
     }
 }
+
+
+/* ===== 17. FLOOR PLAN / MAP ===== */
+.st-map-container {
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: relative;
+}
+
+.st-map-container iframe {
+    border-radius: var(--radius);
+}
+
+/* Floating label overlay on top of the map */
+.st-map-label-overlay {
+    position: absolute;
+    top: 45%;
+    left: 40%;
+    transform: translate(-50%, -100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 10;
+    pointer-events: auto;
+}
+
+.st-map-pin {
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    animation: pinBounce 2s ease-in-out infinite;
+}
+
+@keyframes pinBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+.st-map-label-box {
+    background: #fff;
+    border-radius: 8px;
+    padding: 6px 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    text-align: center;
+    margin-top: -4px;
+    font-family: 'Inter', sans-serif;
+}
+
+.st-map-label-box strong {
+    display: block;
+    font-size: 0.85rem;
+    color: #1a1a2e;
+}
+
+.st-map-label-sub {
+    display: block;
+    font-size: 0.68rem;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* Directions button on map */
+.st-map-directions-btn {
+    position: absolute;
+    bottom: 14px;
+    left: 14px;
+    z-index: 10;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #4285f4;
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    border-radius: 8px;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    transition: var(--transition);
+}
+
+.st-map-directions-btn:hover {
+    background: #1a73e8;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+}
+
+/* Floor plan panel highlight animation */
+.st-map-highlight {
+    animation: mapHighlight 0.5s ease-out;
+    box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.4) !important;
+}
+@keyframes mapHighlight {
+    0% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.6); }
+    100% { box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.4); }
+}
+
+/* Room detail card */
+.st-room-detail-card {
+    margin-top: 12px;
+    padding: 14px;
+    border-radius: var(--radius);
+    background: var(--gray-100);
+    border: 1px solid var(--gray-300);
+    animation: slideDown 0.3s var(--ease) both;
+}
+
+.st-room-detail-stat {
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    background: var(--white);
+}
+
+.st-room-detail-value {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--dark);
+}
+
+.st-room-detail-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--gray-500);
+}
+
+/* Legend dots */
+.st-legend-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+/* Floor plan SVG wrapper */
+.st-floor-plan-svg-wrap {
+    min-height: 200px;
+}
+
+/* SVG floor room hover */
+.st-floor-room:hover rect {
+    filter: brightness(0.92);
+    stroke-width: 3;
+}
+
+/* Responsive - Map */
+@media (max-width: 992px) {
+    .st-map-container {
+        margin-bottom: 1rem;
+    }
+    .st-map-label-overlay {
+        top: 25%;
+        left: 30%;
+    }
+}

@@ -169,4 +169,12 @@ public class UserService {
     public java.util.List<User> findAll() {
         return userRepository.findAll();
     }
+
+    /** Delete user by email (used when removing alumni to free email for re-registration) */
+    public void deleteByEmail(String email) {
+        User user = userRepository.findByEmail(email.toLowerCase());
+        if (user != null) {
+            userRepository.delete(user);
+        }
+    }
 }

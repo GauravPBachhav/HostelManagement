@@ -89,4 +89,14 @@ public class StudentArchiveService {
     public List<StudentArchive> search(String query) {
         return archiveRepository.searchByNameOrEmail(query);
     }
+
+    /** Find a single archive record by ID */
+    public StudentArchive findById(Long id) {
+        return archiveRepository.findById(id).orElse(null);
+    }
+
+    /** Delete an archive record (frees email for re-registration) */
+    public void deleteById(Long id) {
+        archiveRepository.deleteById(id);
+    }
 }

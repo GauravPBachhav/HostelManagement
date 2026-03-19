@@ -267,6 +267,41 @@ public class AdminController {
         return "admin-records";
     }
 
+    /**
+     * Delete alumni/rejected record — frees email for re-registration.
+     * Deletes: archive record + student profile + user account (by email).
+     */
+    @PostMapping("/records/delete/{id}")
+    @org.springframework.transaction.annotation.Transactional
+    public String deleteAlumniRecord(@PathVariable Long id, RedirectAttributes ra) {
+        StudentArchive archive = archiveService.findById(id);
+        if (archive == null) {
+            ra.addFlashAttribute("success", "Record not found.");
+            return "redirect:/admin/records";
+        }
+
+        String email = archive.getEmail();
+
+        // 1. Delete student profile if exists (FK to user)
+        if (email != null) {
+            User user = userService.findByEmail(email);
+            if (user != null) {
+                studentProfileService.deleteByUser(user);
+            }
+        }
+
+        // 2. Delete user account (frees email)
+        if (email != null) {
+            userService.deleteByEmail(email);
+        }
+
+        // 3. Delete archive record
+        archiveService.deleteById(id);
+
+        ra.addFlashAttribute("success", "Record deleted. Email '" + email + "' is now free for re-registration.");
+        return "redirect:/admin/records";
+    }
+
     // =============================================
     // FACILITY MANAGEMENT (Homepage Cards)
     // =============================================
