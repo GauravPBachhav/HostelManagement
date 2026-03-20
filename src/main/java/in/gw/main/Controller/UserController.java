@@ -69,9 +69,102 @@ public class UserController {
     @Autowired
     private FacilityService facilityService;
 
+    @Autowired
+    private in.gw.main.Services.ContactQueryService contactQueryService;
+
     // ===================================================================
     //  PUBLIC PAGES (no login needed - configured in SecurityConfig)
     // ===================================================================
+
+    /** Contact Us form submit (public — no login needed) */
+    @PostMapping("/contact/submit")
+    public String submitContactForm(@RequestParam String name,
+                                    @RequestParam String mobile,
+                                    @RequestParam String email,
+                                    @RequestParam(required = false) String message,
+                                    RedirectAttributes ra) {
+        contactQueryService.save(name, mobile, email, message);
+        ra.addFlashAttribute("contactSuccess", "Your query has been submitted! We will contact you soon.");
+        return "redirect:/checkroomavailability";
+    }
+
+    // ===================================================================
+    //  FORGOT PASSWORD (public — no login needed)
+    // ===================================================================
+
+    /** Step 1: Show forgot password page (enter email) */
+    @GetMapping("/forgot-password")
+    public String forgotPasswordPage(Model model) {
+        model.addAttribute("step", "email");
+        return "forgot-password";
+    }
+
+    /** Step 2: Send OTP to entered email */
+    @PostMapping("/forgot-password")
+    public String sendForgotPasswordOtp(@RequestParam String email, Model model) {
+        boolean sent = userService.sendForgotPasswordOtp(email);
+        if (!sent) {
+            model.addAttribute("step", "email");
+            model.addAttribute("error", "No account found with this email address.");
+            return "forgot-password";
+        }
+        model.addAttribute("step", "otp");
+        model.addAttribute("email", email.toLowerCase());
+        model.addAttribute("success", "OTP sent to " + email + ". Check your inbox!");
+        return "forgot-password";
+    }
+
+    /** Step 3: Verify OTP */
+    @PostMapping("/forgot-password/verify")
+    public String verifyForgotPasswordOtp(@RequestParam String email,
+                                          @RequestParam String otp, Model model) {
+        boolean valid = userService.verifyForgotPasswordOtp(email, otp);
+        if (!valid) {
+            model.addAttribute("step", "otp");
+            model.addAttribute("email", email);
+            model.addAttribute("error", "Invalid or expired OTP. Please try again.");
+            return "forgot-password";
+        }
+        // OTP valid — show reset password page
+        model.addAttribute("email", email);
+        return "reset-password";
+    }
+
+    /** Resend OTP */
+    @PostMapping("/forgot-password/resend")
+    public String resendForgotPasswordOtp(@RequestParam String email, Model model) {
+        userService.sendForgotPasswordOtp(email);
+        model.addAttribute("step", "otp");
+        model.addAttribute("email", email);
+        model.addAttribute("success", "New OTP sent to " + email + "!");
+        return "forgot-password";
+    }
+
+    /** Step 4: Set new password */
+    @PostMapping("/reset-password")
+    public String resetPassword(@RequestParam String email,
+                                @RequestParam String password,
+                                @RequestParam String confirmPassword,
+                                Model model, RedirectAttributes ra) {
+        if (!password.equals(confirmPassword)) {
+            model.addAttribute("email", email);
+            model.addAttribute("error", "Passwords do not match!");
+            return "reset-password";
+        }
+        if (password.length() < 6) {
+            model.addAttribute("email", email);
+            model.addAttribute("error", "Password must be at least 6 characters.");
+            return "reset-password";
+        }
+        boolean done = userService.resetForgotPassword(email, password);
+        if (!done) {
+            model.addAttribute("email", email);
+            model.addAttribute("error", "Session expired. Please start the forgot password process again.");
+            return "reset-password";
+        }
+        ra.addFlashAttribute("success", "Password reset successful! Login with your new password.");
+        return "redirect:/login";
+    }
 
     /**
      * HOME PAGE - shows hostel info + live vacancy count
@@ -96,10 +189,14 @@ public class UserController {
     @GetMapping("/checkroomavailability")
     public String checkRoomAvailability(Model model) {
         java.util.List<Integer> floors = roomService.getDistinctFloors();
+        // Always include ground, 1st, 2nd floor even without rooms
+        java.util.Set<Integer> floorSet = new java.util.TreeSet<>(floors);
+        floorSet.add(0); floorSet.add(1); floorSet.add(2);
+        floors = new java.util.ArrayList<>(floorSet);
         model.addAttribute("floors", floors);
 
         // Load ground floor (0) rooms by default, or first available floor
-        int defaultFloor = floors.isEmpty() ? 0 : floors.get(0);
+        int defaultFloor = 0;
         model.addAttribute("selectedFloor", defaultFloor);
         model.addAttribute("rooms", roomService.getActiveRoomsByFloor(defaultFloor));
 

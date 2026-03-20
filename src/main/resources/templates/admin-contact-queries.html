@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Contact Queries - Admin</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+</head>
+<body class="d-flex flex-column min-vh-100">
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="flex-grow-1">
+    <section class="st-hero text-white py-3">
+        <div class="container st-hero-content">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h1 class="fw-bold mb-1" style="font-size:1.5rem;">
+                        <i class="bi bi-chat-dots"></i> Contact Queries
+                    </h1>
+                    <p class="mb-0" style="opacity:0.75; font-size:0.85rem;">
+                        Manage queries from visitors who used the Contact Us form
+                    </p>
+                </div>
+                <a href="/admin/dashboard" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <div class="container my-4">
+
+        <!-- Flash Messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Stats -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="st-card p-3 text-center">
+                    <div style="font-size:1.8rem; font-weight:800; color:var(--primary);" th:text="${#lists.size(queries)}">0</div>
+                    <div class="text-muted small">Total Queries</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="st-card p-3 text-center">
+                    <div style="font-size:1.8rem; font-weight:800; color:#ef476f;" th:text="${openCount}">0</div>
+                    <div class="text-muted small">Open (Not Contacted)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Queries Table -->
+        <div class="st-card">
+            <div class="p-0">
+                <table class="st-table">
+                    <thead>
+                        <tr class="table-dark">
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Mobile</th>
+                            <th>Email</th>
+                            <th>Message</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(queries)}">
+                            <td colspan="8" class="text-center text-muted py-4">No contact queries yet.</td>
+                        </tr>
+                        <tr th:each="q, idx : ${queries}">
+                            <td th:text="${idx.count}">1</td>
+                            <td><strong th:text="${q.name}">Name</strong></td>
+                            <td>
+                                <a th:href="'tel:' + ${q.mobile}" th:text="${q.mobile}" class="text-decoration-none">-</a>
+                            </td>
+                            <td>
+                                <a th:href="'mailto:' + ${q.email}" th:text="${q.email}" class="text-decoration-none" style="font-size:0.85rem;">-</a>
+                            </td>
+                            <td>
+                                <small class="text-muted" th:text="${q.message != null ? q.message : '—'}">-</small>
+                            </td>
+                            <td>
+                                <small th:text="${#temporals.format(q.createdAt, 'dd MMM yy, hh:mm a')}">-</small>
+                            </td>
+                            <td>
+                                <span th:if="${q.status.name() == 'OPEN'}" class="st-badge st-badge-rejected">NOT CONTACTED</span>
+                                <span th:if="${q.status.name() == 'RESOLVED'}" class="st-badge st-badge-approved">CONTACTED ✓</span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <form th:action="@{/admin/contact-queries/toggle/{id}(id=${q.id})}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm"
+                                                th:classappend="${q.status.name() == 'OPEN'} ? 'btn-outline-success' : 'btn-outline-warning'"
+                                                th:text="${q.status.name() == 'OPEN'} ? 'Mark Contacted' : 'Reopen'">
+                                        </button>
+                                    </form>
+                                    <form th:action="@{/admin/contact-queries/delete/{id}(id=${q.id})}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                onclick="return confirm('Delete this query?')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

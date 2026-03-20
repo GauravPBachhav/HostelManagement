@@ -188,13 +188,20 @@
         </div><!-- end tab-pane roomAvailabilityTab -->
 
         <!-- ============================================ -->
-        <!-- TAB 2: CONTACT US (map + owner details)      -->
+        <!-- TAB 2: CONTACT US (map + contact form)       -->
         <!-- ============================================ -->
         <div class="tab-pane fade" id="contactUsTab">
+
+        <!-- Success flash message -->
+        <div th:if="${contactSuccess}" class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+            <i class="bi bi-check-circle"></i> <span th:text="${contactSuccess}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
         <div class="row g-4">
 
-            <!-- LEFT: Google Map -->
-            <div class="col-lg-7">
+            <!-- LEFT: Google Map (smaller) -->
+            <div class="col-lg-6">
                 <div class="st-card p-3">
                     <h5 class="fw-bold mb-3 text-center">
                         <i class="bi bi-geo-alt" style="color: var(--primary);"></i>
@@ -203,7 +210,7 @@
                     <div style="position:relative;">
                         <iframe
                             src="https://maps.google.com/maps?q=19.968450,73.666595&t=k&z=18&output=embed"
-                            width="100%" height="420" style="border:0; border-radius:var(--radius, 12px); display:block;"
+                            width="100%" height="280" style="border:0; border-radius:var(--radius, 12px); display:block;"
                             allowfullscreen="" loading="lazy"
                             referrerpolicy="no-referrer-when-downgrade">
                         </iframe>
@@ -216,54 +223,36 @@
                 </div>
             </div>
 
-            <!-- RIGHT: Contact Details -->
-            <div class="col-lg-5">
+            <!-- RIGHT: Contact Form -->
+            <div class="col-lg-6">
                 <div class="st-contact-card">
                     <h5 class="fw-bold mb-1">
-                        <i class="bi bi-building" style="color: var(--primary);"></i>
-                        Shivtirth Hostel
+                        <i class="bi bi-chat-dots" style="color: var(--primary);"></i>
+                        Get In Touch
                     </h5>
-                    <p class="text-muted small mb-4">Get in touch with us for admissions, queries, or visit.</p>
+                    <p class="text-muted small mb-3">Fill the form below and we will contact you shortly.</p>
 
-                    <div class="st-contact-item">
-                        <div class="st-contact-icon"><i class="bi bi-person"></i></div>
-                        <div class="st-contact-text">
-                            <strong>Owner Name</strong>
-                            <span>Hostel Administrator</span>
+                    <form action="/contact/submit" method="post">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Your Name *</label>
+                            <input type="text" name="name" class="form-control" placeholder="Enter your full name" required/>
                         </div>
-                    </div>
-
-                    <div class="st-contact-item">
-                        <div class="st-contact-icon"><i class="bi bi-telephone"></i></div>
-                        <div class="st-contact-text">
-                            <strong>+91 XXXXX XXXXX</strong>
-                            <span>Call us for inquiries</span>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Mobile Number *</label>
+                            <input type="tel" name="mobile" class="form-control" placeholder="e.g. +91 98765 43210" required/>
                         </div>
-                    </div>
-
-                    <div class="st-contact-item">
-                        <div class="st-contact-icon"><i class="bi bi-envelope"></i></div>
-                        <div class="st-contact-text">
-                            <strong>info@shivtirthhostel.com</strong>
-                            <span>Email for admissions</span>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Email Address *</label>
+                            <input type="email" name="email" class="form-control" placeholder="e.g. name@example.com" required/>
                         </div>
-                    </div>
-
-                    <div class="st-contact-item">
-                        <div class="st-contact-icon"><i class="bi bi-geo-alt"></i></div>
-                        <div class="st-contact-text">
-                            <strong>Near Sandip Foundation</strong>
-                            <span>Trimbakeshwar Road, Nashik</span>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Message <span class="text-muted">(optional)</span></label>
+                            <textarea name="message" class="form-control" rows="3" placeholder="Any specific query or question..."></textarea>
                         </div>
-                    </div>
-
-                    <div class="st-contact-item">
-                        <div class="st-contact-icon"><i class="bi bi-clock"></i></div>
-                        <div class="st-contact-text">
-                            <strong>Office Hours</strong>
-                            <span>Mon – Sat, 9:00 AM – 6:00 PM</span>
-                        </div>
-                    </div>
+                        <button type="submit" class="btn w-100 fw-bold" style="background: var(--primary, #1a73e8); color:#fff; border-radius:8px; padding:10px;">
+                            <i class="bi bi-send"></i> Submit Query
+                        </button>
+                    </form>
                 </div>
             </div>
 
@@ -321,18 +310,8 @@ function loadFloorPlan(floor) {
 function drawFloorPlan(rooms, floor) {
     var wrap = document.getElementById('floorSvgWrap');
 
-    // If no rooms on this floor
-    if (rooms.length === 0) {
-        var floorName = (floor == 0) ? 'Ground Floor' : 'Floor ' + floor;
-        wrap.innerHTML = '<div class="text-center py-5">' +
-            '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/></svg>' +
-            '<p class="mt-2 text-muted">No rooms configured for <strong>' + floorName + '</strong></p>' +
-            '</div>';
-        return;
-    }
-
     // ===== COLORS =====
-    var bgColor = (floor == 1) ? '#7BA3D4' : (floor == 2) ? '#B8A9D4' : '#A8C686';
+    var bgColor = (floor == 0) ? '#A8C686' : (floor == 1) ? '#7BA3D4' : '#B8A9D4';
 
     // ===== ROOM LOOKUP =====
     var roomMap = {};
@@ -340,79 +319,154 @@ function drawFloorPlan(rooms, floor) {
         roomMap[rooms[i].roomNumber] = rooms[i];
     }
 
-    // ===== LAYOUT CONSTANTS =====
-    var bx = 35, by = 35;          // Building top-left
-    var bw = 480, bh = 530;        // Building size (wide!)
-    var roomW = 195, roomH = 145;  // Room size
-    var gap = 25;                   // Gap from building edge to rooms
+    // ===== PREFIX =====
+    var prefix = (floor == 0) ? 'G1' : (floor == 1) ? 'F1' : (floor == 2) ? 'S1' : 'F' + floor;
 
-    // Room positions — 2 columns, 2 rows with big center gap
-    var prefix = 'F' + floor;
-    var topY = by + gap;                      // Top rooms Y
-    var botY = by + bh - gap - roomH;         // Bottom rooms Y
-    var leftX = bx + gap;                     // Left column X
-    var rightX = bx + bw - gap - roomW;       // Right column X
+    var floorLabel = (floor == 0) ? 'GROUND FLOOR' : (floor == 1) ? 'FIRST FLOOR' : (floor == 2) ? 'SECOND FLOOR' : 'FLOOR ' + floor;
+
+    // ============================
+    //  GROUND FLOOR (special)
+    // ============================
+    if (floor == 0) {
+        var svg = '<svg viewBox="0 0 780 400" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto;">';
+        var bx = 35, by = 35, bw = 480, bh = 340;
+        var roomW = 200, roomH = 190;
+
+        // Building outline
+        svg += '<rect x="' + bx + '" y="' + by + '" width="' + bw + '" height="' + bh + '" rx="6" fill="' + bgColor + '" stroke="#222" stroke-width="3"/>';
+
+        // Floor label banner at top
+        svg += '<rect x="' + (bx + 40) + '" y="' + (by + 8) + '" width="' + (bw - 80) + '" height="42" rx="8" fill="rgba(255,255,255,0.25)"/>';
+        svg += '<text x="' + (bx + bw/2) + '" y="' + (by + 36) + '" text-anchor="middle" font-size="22" fill="#1a1a2e" font-weight="900" font-family="Inter, sans-serif" letter-spacing="3">' + floorLabel + '</text>';
+
+        // Compass labels
+        svg += '<text x="' + (bx + bw/2) + '" y="' + (by - 8) + '" text-anchor="middle" font-size="14" fill="#333" font-weight="800" font-family="Inter, sans-serif" letter-spacing="2">EAST</text>';
+        svg += '<text x="' + (bx + bw/2) + '" y="' + (by + bh + 22) + '" text-anchor="middle" font-size="14" fill="#333" font-weight="800" font-family="Inter, sans-serif" letter-spacing="2">WEST</text>';
+        svg += '<text x="' + (bx - 12) + '" y="' + (by + bh/2) + '" text-anchor="middle" font-size="14" fill="#333" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-90, ' + (bx - 12) + ', ' + (by + bh/2) + ')">NORTH</text>';
+        svg += '<text x="' + (bx + bw + 15) + '" y="' + (by + bh/2) + '" text-anchor="middle" font-size="14" fill="#333" font-weight="800" font-family="Inter, sans-serif" transform="rotate(90, ' + (bx + bw + 15) + ', ' + (by + bh/2) + ')">SOUTH</text>';
+
+        // Room G11 (west half — left side, under banner)
+        var roomX = bx + 25, roomY = by + 65;
+        var room = roomMap[prefix + '1'] || null;
+        svg += '<rect x="' + roomX + '" y="' + roomY + '" width="' + roomW + '" height="' + roomH + '" rx="6" fill="#fff" stroke="#1a1a2e" stroke-width="2.5"/>';
+        svg += '<text x="' + (roomX + roomW/2) + '" y="' + (roomY + 28) + '" text-anchor="middle" font-size="16" fill="#1a1a2e" font-weight="800" font-family="Inter, sans-serif">ROOM No. ' + prefix + '1</text>';
+
+        // Availability circle
+        var available = room ? (room.capacity - room.currentOccupancy) : 0;
+        var total = room ? room.capacity : 0;
+        var cc, cs, ct;
+        if (!room) { cc = '#ccc'; cs = '#999'; ct = '—'; }
+        else if (available <= 0) { cc = '#ef476f'; cs = '#c62828'; ct = '0'; }
+        else if (available <= Math.ceil(total * 0.25)) { cc = '#ffc857'; cs = '#e6a800'; ct = available.toString(); }
+        else { cc = '#70b855'; cs = '#4a8a35'; ct = available.toString(); }
+
+        var cx = roomX + roomW/2, cy = roomY + 100;
+        svg += '<circle cx="' + cx + '" cy="' + cy + '" r="34" fill="' + cc + '" stroke="' + cs + '" stroke-width="3"/>';
+        svg += '<text x="' + cx + '" y="' + (cy + 9) + '" text-anchor="middle" font-size="26" fill="#fff" font-weight="900" font-family="Inter, sans-serif">' + ct + '</text>';
+        if (room) {
+            svg += '<text x="' + (roomX + roomW/2) + '" y="' + (roomY + roomH - 14) + '" text-anchor="middle" font-size="13" fill="#444" font-weight="700" font-family="Inter, sans-serif">' + available + '/' + total + ' beds free</text>';
+            svg += '<rect x="' + roomX + '" y="' + roomY + '" width="' + roomW + '" height="' + roomH + '" rx="6" fill="transparent" stroke="transparent" style="cursor:pointer;" onclick="showRoomDetail(' + JSON.stringify(room).replace(/"/g, '&quot;') + ')"/>';
+        } else {
+            svg += '<text x="' + (roomX + roomW/2) + '" y="' + (roomY + roomH - 14) + '" text-anchor="middle" font-size="12" fill="#999" font-weight="600" font-family="Inter, sans-serif">No Data</text>';
+        }
+
+        // Open Space (east half — right side)
+        var osX = roomX + roomW + 25, osY = roomY, osW = bw - roomW - 75, osH = roomH - 60;
+        svg += '<rect x="' + osX + '" y="' + osY + '" width="' + osW + '" height="' + osH + '" rx="6" fill="rgba(255,255,255,0.15)" stroke="#fff" stroke-width="2" stroke-dasharray="6,4"/>';
+        svg += '<text x="' + (osX + osW/2) + '" y="' + (osY + osH/2 + 6) + '" text-anchor="middle" font-size="16" fill="#2a4a2a" font-weight="700" font-family="Inter, sans-serif">Open Space</text>';
+
+        // Water Purifier block (corner, below open space)
+        var wpX = osX + osW - 100, wpY = osY + osH + 15, wpW = 100, wpH = 55;
+        svg += '<rect x="' + wpX + '" y="' + wpY + '" width="' + wpW + '" height="' + wpH + '" rx="5" fill="#fff" stroke="#0077b6" stroke-width="2"/>';
+        svg += '<text x="' + (wpX + wpW/2) + '" y="' + (wpY + 22) + '" text-anchor="middle" font-size="18">💧</text>';
+        svg += '<text x="' + (wpX + wpW/2) + '" y="' + (wpY + 40) + '" text-anchor="middle" font-size="10" fill="#0077b6" font-weight="700" font-family="Inter, sans-serif">Water Filter</text>';
+
+        // Road
+        var roadX = bx + bw + 50, roadW = 35;
+        svg += '<rect x="' + roadX + '" y="0" width="' + roadW + '" height="400" fill="#ddd" stroke="#555" stroke-width="2"/>';
+        svg += '<line x1="' + (roadX + roadW/2) + '" y1="0" x2="' + (roadX + roadW/2) + '" y2="400" stroke="#555" stroke-width="1.5" stroke-dasharray="10,8"/>';
+        svg += '<text x="' + (roadX + roadW/2) + '" y="200" text-anchor="middle" font-size="12" fill="#333" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-90, ' + (roadX + roadW/2) + ', 200)" letter-spacing="3">TRIMBAKESHWAR ROAD</text>';
+        svg += '<line x1="' + (bx + bw) + '" y1="' + (by + 60) + '" x2="' + roadX + '" y2="' + (by + 60) + '" stroke="#555" stroke-width="2"/>';
+
+        // Sandip Foundation
+        var sfX = roadX + roadW + 30;
+        svg += '<rect x="' + sfX + '" y="60" width="115" height="90" rx="6" fill="#fff" stroke="#333" stroke-width="2"/>';
+        svg += '<text x="' + (sfX + 57) + '" y="90" text-anchor="middle" font-size="20">🏫</text>';
+        svg += '<text x="' + (sfX + 57) + '" y="112" text-anchor="middle" font-size="11" fill="#222" font-weight="800" font-family="Inter, sans-serif">Sandip Foundations</text>';
+        svg += '<text x="' + (sfX + 57) + '" y="128" text-anchor="middle" font-size="11" fill="#555" font-weight="700" font-family="Inter, sans-serif">College</text>';
+        svg += '<line x1="' + (roadX + roadW) + '" y1="105" x2="' + sfX + '" y2="105" stroke="#555" stroke-width="2"/>';
+
+        svg += '</svg>';
+        wrap.innerHTML = svg;
+        return;
+    }
+
+    // ============================
+    //  FLOOR 1 & 2 (4-room layout)
+    // ============================
+    var bx = 35, by = 35;
+    var bw = 480, bh = 580;
+    var roomW = 195, roomH = 145;
+    var gap = 25;
+
+    var labelBannerH = 50;
+    var topY = by + gap + labelBannerH;
+    var botY = by + bh - gap - roomH;
+    var leftX = bx + gap;
+    var rightX = bx + bw - gap - roomW;
 
     var roomSlots = [
-        { label: prefix + '2', x: leftX,  y: topY },   // Top-left
-        { label: prefix + '1', x: rightX, y: topY },   // Top-right
-        { label: prefix + '3', x: leftX,  y: botY },   // Bot-left
-        { label: prefix + '4', x: rightX, y: botY }    // Bot-right
+        { label: prefix + '2', x: leftX,  y: topY },
+        { label: prefix + '1', x: rightX, y: topY },
+        { label: prefix + '3', x: leftX,  y: botY },
+        { label: prefix + '4', x: rightX, y: botY }
     ];
 
-    // Center area Y positions
-    var centerY = by + gap + roomH + 20;       // Start of center area
-    var centerH = botY - centerY - 20;         // Height of center area
+    var centerY = topY + roomH + 15;
+    var centerH = botY - centerY - 15;
 
-    // Road & external
-    var roadX = bx + bw + 50;     // Road X start (well separated)
+    var roadX = bx + bw + 50;
     var roadW = 35;
 
-    var floorLabel = (floor == 1) ? 'FIRST FLOOR' : (floor == 2) ? 'FLOOR TWO' : 'FLOOR ' + floor;
+    var svg = '<svg viewBox="0 0 780 650" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto;">';
 
-    // ===== SVG (wider viewBox) =====
-    var svg = '<svg viewBox="0 0 780 600" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto;">';
-
-    // === Building outline ===
+    // Building outline
     svg += '<rect x="' + bx + '" y="' + by + '" width="' + bw + '" height="' + bh + '" rx="6" fill="' + bgColor + '" stroke="#222" stroke-width="3"/>';
 
-    // === Compass labels (OUTSIDE the building, clearly visible) ===
+    // Floor label banner at top
+    var bannerY = by + 8;
+    var bannerH = labelBannerH - 8;
+    svg += '<rect x="' + (bx + 40) + '" y="' + bannerY + '" width="' + (bw - 80) + '" height="' + bannerH + '" rx="8" fill="rgba(255,255,255,0.25)"/>';
+    svg += '<text x="' + (bx + bw/2) + '" y="' + (bannerY + bannerH/2 + 7) + '" text-anchor="middle" font-size="22" fill="#1a1a2e" font-weight="900" font-family="Inter, sans-serif" letter-spacing="3">' + floorLabel + '</text>';
+
+    // Compass labels
     svg += '<text x="' + (bx + bw/2) + '" y="' + (by - 8) + '" text-anchor="middle" font-size="14" fill="#333" font-weight="800" font-family="Inter, sans-serif" letter-spacing="2">EAST</text>';
     svg += '<text x="' + (bx + bw/2) + '" y="' + (by + bh + 22) + '" text-anchor="middle" font-size="14" fill="#333" font-weight="800" font-family="Inter, sans-serif" letter-spacing="2">WEST</text>';
     svg += '<text x="' + (bx - 12) + '" y="' + (by + bh/2) + '" text-anchor="middle" font-size="14" fill="#333" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-90, ' + (bx - 12) + ', ' + (by + bh/2) + ')">NORTH</text>';
     svg += '<text x="' + (bx + bw + 15) + '" y="' + (by + bh/2) + '" text-anchor="middle" font-size="14" fill="#333" font-weight="800" font-family="Inter, sans-serif" transform="rotate(90, ' + (bx + bw + 15) + ', ' + (by + bh/2) + ')">SOUTH</text>';
 
-    // === Floor label — in center between rooms ===
-    var floorLabelY = centerY + centerH/2 + 5;
-    svg += '<text x="' + (bx + bw/2) + '" y="' + floorLabelY + '" text-anchor="middle" font-size="22" fill="#1a1a2e" font-weight="900" font-family="Inter, sans-serif" letter-spacing="2">' + floorLabel + '</text>';
-
-    // === Washroom area (left half of center area) ===
-    var washX = leftX, washY = centerY + 15, washW = roomW, washH = centerH - 50;
+    // Washroom
+    var washX = leftX, washY = centerY + 10, washW = roomW, washH = centerH - 20;
     svg += '<rect x="' + washX + '" y="' + washY + '" width="' + washW + '" height="' + washH + '" rx="5" fill="#fff" stroke="#222" stroke-width="2"/>';
     svg += '<text x="' + (washX + washW/2) + '" y="' + (washY + washH/2 + 5) + '" text-anchor="middle" font-size="14" fill="#888" font-weight="700" font-family="Inter, sans-serif">🚿 Washroom</text>';
 
-    // === Staircase (right half of center area) ===
-    var stairX = rightX + 10, stairY = centerY + 20, stairW = roomW - 20, stairH = centerH - 60;
+    // Staircase
+    var stairX = rightX + 10, stairY = centerY + 15, stairW = roomW - 20, stairH = centerH - 30;
     svg += '<rect x="' + stairX + '" y="' + stairY + '" width="' + stairW + '" height="' + stairH + '" rx="5" fill="#eaeaea" stroke="#888" stroke-width="2"/>';
-    // Stair lines (vertical hatching)
     var numLines = Math.floor(stairW / 14);
     for (var s = 1; s < numLines; s++) {
         svg += '<line x1="' + (stairX + s * 14) + '" y1="' + (stairY + 3) + '" x2="' + (stairX + s * 14) + '" y2="' + (stairY + stairH - 3) + '" stroke="#ccc" stroke-width="1.5"/>';
     }
     svg += '<text x="' + (stairX + stairW/2) + '" y="' + (stairY - 6) + '" text-anchor="middle" font-size="13" fill="#555" font-weight="700" font-family="Inter, sans-serif">↑ Stairs ↓</text>';
 
-    // === Draw each room ===
+    // Draw each room
     for (var r = 0; r < roomSlots.length; r++) {
         var slot = roomSlots[r];
         var room = roomMap[slot.label] || null;
 
-        // Room box
         svg += '<rect x="' + slot.x + '" y="' + slot.y + '" width="' + roomW + '" height="' + roomH + '" rx="6" fill="#fff" stroke="#1a1a2e" stroke-width="2.5"/>';
-
-        // Room number label
         svg += '<text x="' + (slot.x + roomW/2) + '" y="' + (slot.y + 28) + '" text-anchor="middle" font-size="16" fill="#1a1a2e" font-weight="800" font-family="Inter, sans-serif">ROOM No. ' + slot.label + '</text>';
 
-        // Availability
         var available = room ? (room.capacity - room.currentOccupancy) : 0;
         var total = room ? room.capacity : 0;
         var circleColor, circleStroke, textInCircle;
@@ -435,6 +489,8 @@ function drawFloorPlan(rooms, floor) {
 
         if (room) {
             svg += '<text x="' + (slot.x + roomW/2) + '" y="' + (slot.y + 132) + '" text-anchor="middle" font-size="13" fill="#444" font-weight="700" font-family="Inter, sans-serif">' + available + '/' + total + ' beds free</text>';
+        } else {
+            svg += '<text x="' + (slot.x + roomW/2) + '" y="' + (slot.y + 132) + '" text-anchor="middle" font-size="12" fill="#999" font-weight="600" font-family="Inter, sans-serif">No Data</text>';
         }
 
         // Make room clickable
@@ -444,9 +500,9 @@ function drawFloorPlan(rooms, floor) {
     }
 
     // ===== TRIMBAKESHWAR ROAD =====
-    svg += '<rect x="' + roadX + '" y="0" width="' + roadW + '" height="600" fill="#ddd" stroke="#555" stroke-width="2"/>';
-    svg += '<line x1="' + (roadX + roadW/2) + '" y1="0" x2="' + (roadX + roadW/2) + '" y2="600" stroke="#555" stroke-width="1.5" stroke-dasharray="10,8"/>';
-    svg += '<text x="' + (roadX + roadW/2) + '" y="300" text-anchor="middle" font-size="12" fill="#333" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-90, ' + (roadX + roadW/2) + ', 300)" letter-spacing="3">TRIMBAKESHWAR ROAD</text>';
+    svg += '<rect x="' + roadX + '" y="0" width="' + roadW + '" height="650" fill="#ddd" stroke="#555" stroke-width="2"/>';
+    svg += '<line x1="' + (roadX + roadW/2) + '" y1="0" x2="' + (roadX + roadW/2) + '" y2="650" stroke="#555" stroke-width="1.5" stroke-dasharray="10,8"/>';
+    svg += '<text x="' + (roadX + roadW/2) + '" y="325" text-anchor="middle" font-size="12" fill="#333" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-90, ' + (roadX + roadW/2) + ', 325)" letter-spacing="3">TRIMBAKESHWAR ROAD</text>';
 
     // Connection: building → road
     svg += '<line x1="' + (bx + bw) + '" y1="' + (topY + 40) + '" x2="' + roadX + '" y2="' + (topY + 40) + '" stroke="#555" stroke-width="2"/>';

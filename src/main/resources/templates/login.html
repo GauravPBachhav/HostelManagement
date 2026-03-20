@@ -78,8 +78,15 @@
                 </button>
             </form>
 
+            <!-- Forgot Password (student only) -->
+            <div th:unless="${isAdminLogin}" class="text-center mt-2">
+                <a href="/forgot-password" class="small text-muted" style="text-decoration:none; opacity:0.75;">
+                    Forgot Password?
+                </a>
+            </div>
+
             <!-- Links -->
-            <div th:unless="${isAdminLogin}" class="text-center mt-3 small text-muted">
+            <div th:unless="${isAdminLogin}" class="text-center mt-2 small text-muted">
                 Don't have an account? <a href="/register" class="fw-600">Register here</a>
             </div>
             <div th:if="${isAdminLogin}" class="text-center mt-3 small">

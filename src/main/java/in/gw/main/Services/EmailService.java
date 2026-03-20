@@ -96,4 +96,28 @@ public class EmailService {
             System.err.println("⚠ OTP EMAIL SEND FAILED: " + e.getMessage());
         }
     }
+
+    /**
+     * Send 6-digit OTP for password reset (forgot password).
+     */
+    public void sendPasswordResetOtp(String toEmail, String otp) {
+        try {
+            SimpleMailMessage msg = new SimpleMailMessage();
+            msg.setTo(toEmail);
+            msg.setSubject("Password Reset OTP - Shivtirth Hostel");
+            msg.setText(
+                "Hello,\n\n"
+                + "You requested a password reset for your Shivtirth Hostel account.\n\n"
+                + "Your OTP is:\n\n"
+                + "    " + otp + "\n\n"
+                + "This code is valid for 10 minutes.\n"
+                + "If you did not request this, please ignore this email.\n\n"
+                + "Best regards,\n"
+                + "Shivtirth Hostel Management"
+            );
+            mailSender.send(msg);
+        } catch (Exception e) {
+            System.err.println("⚠ PASSWORD RESET OTP EMAIL SEND FAILED: " + e.getMessage());
+        }
+    }
 }

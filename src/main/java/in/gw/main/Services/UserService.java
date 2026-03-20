@@ -12,6 +12,7 @@ import in.gw.main.Repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * USER SERVICE
@@ -176,5 +177,68 @@ public class UserService {
         if (user != null) {
             userRepository.delete(user);
         }
+    }
+
+    // =====================================================
+    // FORGOT PASSWORD — OTP via email
+    // =====================================================
+
+    // In-memory OTP store: email → [otp, expiryTimeMillis]
+    private static final ConcurrentHashMap<String, String[]> forgotOtpStore = new ConcurrentHashMap<>();
+
+    /**
+     * Generate OTP, store in memory, and send via email.
+     * Returns true if user exists and OTP was sent.
+     */
+    public boolean sendForgotPasswordOtp(String email) {
+        email = email.toLowerCase();
+        User user = userRepository.findByEmail(email);
+        if (user == null) return false;
+
+        String otp = String.format("%06d", new Random().nextInt(999999));
+        long expiryMillis = System.currentTimeMillis() + (10 * 60 * 1000); // 10 min
+        forgotOtpStore.put(email, new String[]{otp, String.valueOf(expiryMillis)});
+
+        emailService.sendPasswordResetOtp(email, otp);
+        return true;
+    }
+
+    /**
+     * Verify the forgot password OTP.
+     */
+    public boolean verifyForgotPasswordOtp(String email, String enteredOtp) {
+        email = email.toLowerCase();
+        String[] data = forgotOtpStore.get(email);
+        if (data == null) return false;
+
+        long expiryMillis = Long.parseLong(data[1]);
+        if (System.currentTimeMillis() > expiryMillis) {
+            forgotOtpStore.remove(email);
+            return false; // expired
+        }
+
+        if (!data[0].equals(enteredOtp.trim())) {
+            return false; // wrong OTP
+        }
+
+        return true; // valid — don't remove yet, remove after password reset
+    }
+
+    /**
+     * Reset password after successful OTP verification.
+     */
+    public boolean resetForgotPassword(String email, String newPassword) {
+        email = email.toLowerCase();
+        // Verify OTP was already validated (entry still exists)
+        if (!forgotOtpStore.containsKey(email)) return false;
+
+        User user = userRepository.findByEmail(email);
+        if (user == null) return false;
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        forgotOtpStore.remove(email); // cleanup
+        return true;
     }
 }

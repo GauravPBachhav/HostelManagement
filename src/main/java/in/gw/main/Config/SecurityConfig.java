@@ -61,6 +61,8 @@ public class SecurityConfig {
                 .requestMatchers("/", "/register", "/regForm", "/admin-login",
                         "/verify-email", "/resend-otp",
                         "/checkroomavailability", "/api/rooms/**",
+                        "/contact/submit",
+                        "/forgot-password", "/forgot-password/**", "/reset-password",
                         "/css/**", "/js/**", "/images/**", "/uploads/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
@@ -78,6 +80,8 @@ public class SecurityConfig {
                     "/dashboard/rent/pay",
                     "/dashboard/query/submit",
                     "/edit-profile",
+                    "/contact/submit",
+                    "/forgot-password", "/forgot-password/**", "/reset-password",
                     "/admin/**"
                 )
             )

@@ -79,6 +79,10 @@ public class AdminController {
         // Notices
         model.addAttribute("notices", noticeService.getAllNotices());
 
+        // Contact queries from public visitors
+        model.addAttribute("contactQueries", contactQueryService.findAll());
+        model.addAttribute("openContactCount", contactQueryService.countOpen());
+
         return "admin-dashboard";
     }
 
@@ -371,5 +375,36 @@ public class AdminController {
         facilityService.delete(id);
         redirectAttributes.addFlashAttribute("success", "Facility deleted!");
         return "redirect:/admin/facilities";
+    }
+
+    // =============================================
+    // CONTACT QUERIES MANAGEMENT
+    // =============================================
+
+    @Autowired
+    private in.gw.main.Services.ContactQueryService contactQueryService;
+
+    /** Contact queries page */
+    @GetMapping("/contact-queries")
+    public String contactQueries(Model model) {
+        model.addAttribute("queries", contactQueryService.findAll());
+        model.addAttribute("openCount", contactQueryService.countOpen());
+        return "admin-contact-queries";
+    }
+
+    /** Toggle query status (solved/unsolved) */
+    @PostMapping("/contact-queries/toggle/{id}")
+    public String toggleContactQuery(@PathVariable Long id, RedirectAttributes ra) {
+        contactQueryService.toggleStatus(id);
+        ra.addFlashAttribute("success", "Query status updated!");
+        return "redirect:/admin/dashboard#tab-contact";
+    }
+
+    /** Delete contact query */
+    @PostMapping("/contact-queries/delete/{id}")
+    public String deleteContactQuery(@PathVariable Long id, RedirectAttributes ra) {
+        contactQueryService.delete(id);
+        ra.addFlashAttribute("success", "Query deleted!");
+        return "redirect:/admin/dashboard#tab-contact";
     }
 }
