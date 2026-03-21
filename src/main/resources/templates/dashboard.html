@@ -6,35 +6,137 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <style>
+        * { font-family:'Inter',sans-serif; }
+        body { background:#f0f2f5; margin:0; overflow-x:hidden; }
+
+        /* ─── SIDEBAR ─── */
+        .sb { position:fixed; top:0; left:0; width:240px; height:100vh; background:#1a1a2e; color:#fff; display:flex; flex-direction:column; z-index:1000; transition:transform .3s; }
+        .sb-brand { padding:24px 20px 18px; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; gap:10px; }
+        .sb-brand i { font-size:24px; color:#60a5fa; }
+        .sb-brand span { font-size:18px; font-weight:800; letter-spacing:0.5px; }
+        .sb-profile { padding:20px; text-align:center; border-bottom:1px solid rgba(255,255,255,0.08); }
+        .sb-profile img { width:72px; height:72px; border-radius:50%; object-fit:cover; border:3px solid rgba(255,255,255,0.15); margin-bottom:10px; }
+        .sb-profile .avatar-placeholder { width:72px; height:72px; border-radius:50%; background:#3b82f6; color:#fff; display:flex; align-items:center; justify-content:center; font-size:28px; margin:0 auto 10px; border:3px solid rgba(255,255,255,0.15); }
+        .sb-profile h6 { margin:0; font-weight:700; font-size:15px; }
+        .sb-profile small { color:rgba(255,255,255,0.45); font-size:12px; }
+        .sb-nav { flex:1; padding:12px 0; overflow-y:auto; }
+        .sb-item { display:flex; align-items:center; gap:12px; padding:11px 22px; color:rgba(255,255,255,0.55); font-size:14px; font-weight:500; cursor:pointer; border-left:3px solid transparent; transition:all .2s; text-decoration:none; }
+        .sb-item:hover { color:#fff; background:rgba(255,255,255,0.06); }
+        .sb-item.active { color:#fff; background:rgba(96,165,250,0.15); border-left-color:#60a5fa; }
+        .sb-item i { font-size:17px; width:22px; text-align:center; }
+        .sb-sep { height:1px; background:rgba(255,255,255,0.08); margin:8px 20px; }
+        .sb-footer { padding:16px 20px; border-top:1px solid rgba(255,255,255,0.08); }
+        .sb-footer a { color:rgba(255,255,255,0.5); text-decoration:none; font-size:13px; display:flex; align-items:center; gap:8px; transition:color .2s; }
+        .sb-footer a:hover { color:#ef476f; }
+
+        /* ─── MAIN CONTENT ─── */
+        .main { margin-left:240px; min-height:100vh; }
+        .top-bar { background:#fff; padding:14px 28px; display:flex; align-items:center; gap:16px; border-bottom:1px solid #e5e7eb; position:sticky; top:0; z-index:100; }
+        .top-bar .right { margin-left:auto; display:flex; align-items:center; gap:12px; }
+
+        /* ─── STAT CARDS ─── */
+        .stat-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; padding:20px 28px; }
+        .stat-card { border-radius:14px; padding:18px 20px; display:flex; align-items:center; gap:14px; }
+        .stat-card .icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; }
+        .stat-card h3 { margin:0; font-size:22px; font-weight:800; }
+        .stat-card small { color:#666; font-size:12px; font-weight:500; }
+        .sc-1 { background:linear-gradient(135deg,#dbeafe,#bfdbfe); }
+        .sc-1 .icon { background:#3b82f6; color:#fff; }
+        .sc-2 { background:linear-gradient(135deg,#d1fae5,#a7f3d0); }
+        .sc-2 .icon { background:#10b981; color:#fff; }
+        .sc-3 { background:linear-gradient(135deg,#fef3c7,#fde68a); }
+        .sc-3 .icon { background:#f59e0b; color:#fff; }
+        .sc-4 { background:linear-gradient(135deg,#ede9fe,#ddd6fe); }
+        .sc-4 .icon { background:#8b5cf6; color:#fff; }
+
+        /* ─── CONTENT AREA ─── */
+        .content { padding:0 28px 28px; }
+        .section { display:none; }
+        .section.active { display:block; }
+
+        /* ─── MOBILE ─── */
+        .sb-toggle { display:none; background:none; border:none; font-size:24px; color:#333; cursor:pointer; }
+        @media(max-width:991px) {
+            .sb { transform:translateX(-100%); }
+            .sb.open { transform:translateX(0); }
+            .main { margin-left:0; }
+            .stat-row { grid-template-columns:repeat(2,1fr); padding:16px; }
+            .content { padding:0 16px 16px; }
+            .sb-toggle { display:block; }
+            .sb-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); z-index:999; display:none; }
+            .sb-overlay.show { display:block; }
+        }
+    </style>
 </head>
-<body class="d-flex flex-column min-vh-100" style="background:#f5f6fa;">
-<div th:replace="~{fragments/header :: header}"></div>
+<body>
 
-<main class="flex-grow-1">
+<!-- ═══ MOBILE OVERLAY ═══ -->
+<div class="sb-overlay" id="sbOverlay" onclick="toggleSidebar()"></div>
 
-    <!-- ====== PAGE HEADER ====== -->
-    <div class="bg-white border-bottom p-3">
-        <div class="container d-flex align-items-center gap-3">
-            <!-- Show profile photo if available, else default icon -->
-            <div th:if="${profile != null and profile.profilePhotoPath != null}">
-                <img th:src="@{'/uploads/' + ${profile.profilePhotoPath}}"
-                     alt="Profile Photo" class="rounded-circle"
-                     style="width:46px;height:46px;object-fit:cover;"/>
-            </div>
-            <div th:if="${profile == null or profile.profilePhotoPath == null}"
-                 class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
-                 style="width:46px;height:46px;font-size:20px;">
-                <i class="bi bi-person"></i>
-            </div>
-            <div>
-                <h5 class="mb-0" th:text="${loggedUser.name}">Student Name</h5>
-                <small class="text-muted" th:text="${loggedUser.email}">email</small>
-            </div>
+<!-- ═══════════════════════════════ -->
+<!-- SIDEBAR                         -->
+<!-- ═══════════════════════════════ -->
+<aside class="sb" id="sidebar">
+    <div class="sb-brand">
+        <i class="bi bi-building"></i>
+        <span>HOSTEL</span>
+    </div>
+
+    <!-- Profile in sidebar -->
+    <div class="sb-profile">
+        <div th:if="${profile != null and profile.profilePhotoPath != null}">
+            <img th:src="@{'/uploads/' + ${profile.profilePhotoPath}}" alt="Profile"/>
+        </div>
+        <div th:if="${profile == null or profile.profilePhotoPath == null}">
+            <div class="avatar-placeholder"><i class="bi bi-person"></i></div>
+        </div>
+        <h6 th:text="${loggedUser.name}">Student Name</h6>
+        <small th:text="${loggedUser.email}">email</small>
+    </div>
+
+    <nav class="sb-nav">
+        <a class="sb-item active" onclick="showSection('status',this)">
+            <i class="bi bi-bar-chart"></i> Status
+        </a>
+        <a class="sb-item" onclick="showSection('profile',this)" th:if="${profile != null}">
+            <i class="bi bi-person-badge"></i> My Profile
+        </a>
+        <div class="sb-sep"></div>
+        <a class="sb-item" onclick="showSection('rent',this)"
+           th:if="${profile != null and profile.status.name() == 'APPROVED'}">
+            <i class="bi bi-cash-coin"></i> Rent Payment
+        </a>
+        <a class="sb-item" onclick="showSection('query',this)"
+           th:if="${profile != null and profile.status.name() == 'APPROVED'}">
+            <i class="bi bi-chat-dots"></i> Query / Support
+        </a>
+    </nav>
+    <div class="sb-footer">
+        <form action="/logout" method="post" style="margin:0;">
+            <button type="submit" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.5);font-size:13px;display:flex;align-items:center;gap:8px;padding:0;font-family:inherit;">
+                <i class="bi bi-box-arrow-left"></i> Logout
+            </button>
+        </form>
+    </div>
+</aside>
+
+<!-- ═══════════════════════════════ -->
+<!-- MAIN CONTENT                    -->
+<!-- ═══════════════════════════════ -->
+<div class="main">
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <button class="sb-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+        <h6 class="mb-0 fw-bold">My Dashboard</h6>
+        <div class="right">
+            <a href="/" class="btn btn-outline-secondary btn-sm"><i class="bi bi-house"></i> Home</a>
         </div>
     </div>
 
-    <!-- ====== NOTICES (visible to all logged-in students) ====== -->
-    <div class="container mt-3" th:if="${notices != null and !#lists.isEmpty(notices)}">
+    <!-- NOTICES -->
+    <div class="px-4 pt-3" th:if="${notices != null and !#lists.isEmpty(notices)}">
         <div th:each="n : ${notices}" class="alert alert-info alert-dismissible fade show py-2" role="alert">
             <i class="bi bi-megaphone"></i>
             <strong th:text="${n.title}"></strong> &mdash;
@@ -43,447 +145,310 @@
         </div>
     </div>
 
-    <!-- ====== TAB NAVIGATION ====== -->
-    <div class="bg-white border-bottom">
-        <div class="container">
-            <ul class="nav nav-tabs border-0" role="tablist">
-                <li class="nav-item">
-                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-status">
-                        <i class="bi bi-bar-chart"></i> Status
-                    </button>
-                </li>
-                <li class="nav-item" th:if="${profile != null}">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-profile">
-                        <i class="bi bi-person-badge"></i> My Profile
-                    </button>
-                </li>
-                <!-- Rent & Query tabs only visible after APPROVAL -->
-                <li class="nav-item" th:if="${profile != null and profile.status.name() == 'APPROVED'}">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-rent">
-                        <i class="bi bi-cash-coin"></i> Rent Payment
-                    </button>
-                </li>
-                <li class="nav-item" th:if="${profile != null and profile.status.name() == 'APPROVED'}">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-query">
-                        <i class="bi bi-chat-dots"></i> Query / Support
-                    </button>
-                </li>
-            </ul>
+    <!-- STAT CARDS -->
+    <div class="stat-row">
+        <div class="stat-card sc-1">
+            <div class="icon"><i class="bi bi-bar-chart"></i></div>
+            <div>
+                <h3 th:if="${profile != null}" th:text="${profile.status}">—</h3>
+                <h3 th:if="${profile == null}">—</h3>
+                <small>Status</small>
+            </div>
+        </div>
+        <div class="stat-card sc-2">
+            <div class="icon"><i class="bi bi-door-open"></i></div>
+            <div>
+                <h3 th:if="${profile != null and profile.room != null}" th:text="${profile.room.roomNumber}">—</h3>
+                <h3 th:if="${profile == null or profile.room == null}">—</h3>
+                <small>My Room</small>
+            </div>
+        </div>
+        <div class="stat-card sc-3">
+            <div class="icon"><i class="bi bi-cash-coin"></i></div>
+            <div>
+                <h3 th:if="${profile != null and profile.room != null}">&#8377;<span th:text="${profile.room.monthlyRent}">0</span></h3>
+                <h3 th:if="${profile == null or profile.room == null}">—</h3>
+                <small>Monthly Rent</small>
+            </div>
+        </div>
+        <div class="stat-card sc-4">
+            <div class="icon"><i class="bi bi-chat-dots"></i></div>
+            <div>
+                <h3 th:if="${queries != null}" th:text="${#lists.size(queries)}">0</h3>
+                <h3 th:if="${queries == null}">0</h3>
+                <small>My Queries</small>
+            </div>
         </div>
     </div>
 
-    <!-- ====== TAB CONTENT ====== -->
-    <div class="container my-4">
-        <div class="tab-content">
+    <!-- ═══ CONTENT SECTIONS ═══ -->
+    <div class="content">
 
-            <!-- ============================================ -->
-            <!-- TAB 1: ADMISSION STATUS (shown by default)   -->
-            <!-- ============================================ -->
-            <div class="tab-pane show active" id="tab-status">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="bi bi-bar-chart"></i> Admission Progress</h5>
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <!-- SECTION: ADMISSION STATUS     -->
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <div class="section active" id="sec-status">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-bar-chart"></i> Admission Progress</h5>
 
-                        <!-- CASE 1: No profile submitted yet -->
-                        <div th:if="${profile == null}">
-                            <div class="d-flex justify-content-between text-center my-4">
-                                <div class="text-success">
-                                    <i class="bi bi-check-circle fs-3"></i><br/>
-                                    <small>Registered</small>
-                                </div>
-                                <div class="align-self-center text-muted">&rarr;</div>
-                                <div class="text-primary">
-                                    <i class="bi bi-pencil-square fs-3"></i><br/>
-                                    <small class="fw-bold">Fill Form</small>
-                                </div>
-                                <div class="align-self-center text-muted">&rarr;</div>
-                                <div class="text-muted">
-                                    <i class="bi bi-hourglass fs-3"></i><br/>
-                                    <small>Pending</small>
-                                </div>
-                                <div class="align-self-center text-muted">&rarr;</div>
-                                <div class="text-muted">
-                                    <i class="bi bi-house fs-3"></i><br/>
-                                    <small>Hostel</small>
-                                </div>
-                            </div>
-                            <p class="text-muted">You haven't submitted your admission form yet.</p>
-                            <a href="/admission" class="btn btn-primary">
-                                <i class="bi bi-clipboard-check"></i> Fill Admission Form
-                            </a>
+                    <!-- CASE 1: No profile submitted yet -->
+                    <div th:if="${profile == null}">
+                        <div class="d-flex justify-content-between text-center my-4">
+                            <div class="text-success"><i class="bi bi-check-circle fs-3"></i><br/><small>Registered</small></div>
+                            <div class="align-self-center text-muted">&rarr;</div>
+                            <div class="text-primary"><i class="bi bi-pencil-square fs-3"></i><br/><small class="fw-bold">Fill Form</small></div>
+                            <div class="align-self-center text-muted">&rarr;</div>
+                            <div class="text-muted"><i class="bi bi-hourglass fs-3"></i><br/><small>Pending</small></div>
+                            <div class="align-self-center text-muted">&rarr;</div>
+                            <div class="text-muted"><i class="bi bi-house fs-3"></i><br/><small>Hostel</small></div>
                         </div>
-
-                        <!-- CASE 2: PENDING approval -->
-                        <div th:if="${profile != null and profile.status.name() == 'PENDING'}">
-                            <div class="d-flex justify-content-between text-center my-4">
-                                <div class="text-success">
-                                    <i class="bi bi-check-circle fs-3"></i><br/>
-                                    <small>Registered</small>
-                                </div>
-                                <div class="align-self-center text-muted">&rarr;</div>
-                                <div class="text-success">
-                                    <i class="bi bi-check-circle fs-3"></i><br/>
-                                    <small>Form Done</small>
-                                </div>
-                                <div class="align-self-center text-muted">&rarr;</div>
-                                <div class="text-warning">
-                                    <i class="bi bi-hourglass-split fs-3"></i><br/>
-                                    <small class="fw-bold">Pending</small>
-                                </div>
-                                <div class="align-self-center text-muted">&rarr;</div>
-                                <div class="text-muted">
-                                    <i class="bi bi-lock fs-3"></i><br/>
-                                    <small>Hostel</small>
-                                </div>
-                            </div>
-                            <span class="badge bg-warning text-dark">
-                                <i class="bi bi-hourglass-split"></i> Pending Approval
-                            </span>
-                            <p class="text-muted small mt-2">
-                                Your form is under admin review. Features unlock after approval.
-                            </p>
-                        </div>
-
-                        <!-- CASE 3: APPROVED -->
-                        <div th:if="${profile != null and profile.status.name() == 'APPROVED'}">
-                            <div class="d-flex justify-content-between text-center my-4">
-                                <div class="text-success">
-                                    <i class="bi bi-check-circle fs-3"></i><br/>
-                                    <small>Registered</small>
-                                </div>
-                                <div class="align-self-center text-muted">&rarr;</div>
-                                <div class="text-success">
-                                    <i class="bi bi-check-circle fs-3"></i><br/>
-                                    <small>Form Done</small>
-                                </div>
-                                <div class="align-self-center text-muted">&rarr;</div>
-                                <div class="text-success">
-                                    <i class="bi bi-check-circle fs-3"></i><br/>
-                                    <small>Approved</small>
-                                </div>
-                                <div class="align-self-center text-muted">&rarr;</div>
-                                <div class="text-success">
-                                    <i class="bi bi-house-check fs-3"></i><br/>
-                                    <small class="fw-bold">Hostel</small>
-                                </div>
-                            </div>
-                            <span class="badge bg-success">
-                                <i class="bi bi-check-circle"></i> Approved
-                            </span>
-                            <p class="text-muted small mt-2">All features are now unlocked.</p>
-
-                            <!-- Show assigned room info -->
-                            <div th:if="${profile.room != null}" class="alert alert-info mt-3">
-                                <i class="bi bi-door-open"></i>
-                                <strong>Room:</strong> <span th:text="${profile.room.roomNumber}"></span> |
-                                <strong>Type:</strong> <span th:text="${profile.room.roomType}"></span> |
-                                <strong>Rent:</strong> &#8377;<span th:text="${profile.room.monthlyRent}"></span>/month
-                            </div>
-                        </div>
-
-                        <!-- CASE 4: REJECTED -->
-                        <div th:if="${profile != null and profile.status.name() == 'REJECTED'}">
-                            <div class="d-flex justify-content-between text-center my-4">
-                                <div class="text-success">
-                                    <i class="bi bi-check-circle fs-3"></i><br/>
-                                    <small>Registered</small>
-                                </div>
-                                <div class="align-self-center text-muted">&rarr;</div>
-                                <div class="text-success">
-                                    <i class="bi bi-check-circle fs-3"></i><br/>
-                                    <small>Form Done</small>
-                                </div>
-                                <div class="align-self-center text-muted">&rarr;</div>
-                                <div class="text-danger">
-                                    <i class="bi bi-x-circle fs-3"></i><br/>
-                                    <small class="fw-bold">Rejected</small>
-                                </div>
-                                <div class="align-self-center text-muted">&rarr;</div>
-                                <div class="text-muted">
-                                    <i class="bi bi-lock fs-3"></i><br/>
-                                    <small>Hostel</small>
-                                </div>
-                            </div>
-                            <span class="badge bg-danger">
-                                <i class="bi bi-x-circle"></i> Rejected
-                            </span>
-                            <p class="text-muted small mt-2">
-                                Your admission was rejected. You can re-apply with updated details.
-                            </p>
-                            <a href="/admission" class="btn btn-primary btn-sm mt-2">
-                                <i class="bi bi-arrow-repeat"></i> Re-apply Now
-                            </a>
-                        </div>
-
+                        <p class="text-muted">You haven't submitted your admission form yet.</p>
+                        <a href="/admission" class="btn btn-primary"><i class="bi bi-clipboard-check"></i> Fill Admission Form</a>
                     </div>
-                </div>
-            </div>
 
-            <!-- ============================================ -->
-            <!-- TAB 2: MY PROFILE                            -->
-            <!-- ============================================ -->
-            <div class="tab-pane" id="tab-profile" th:if="${profile != null}">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="bi bi-person-badge"></i> My Profile Details</h5>
-
-                        <!-- Profile Photo -->
-                        <div class="text-center mb-3" th:if="${profile.profilePhotoPath != null}">
-                            <img th:src="@{'/uploads/' + ${profile.profilePhotoPath}}"
-                                 alt="Profile Photo" class="rounded-circle shadow"
-                                 style="width:120px;height:120px;object-fit:cover;"/>
+                    <!-- CASE 2: PENDING -->
+                    <div th:if="${profile != null and profile.status.name() == 'PENDING'}">
+                        <div class="d-flex justify-content-between text-center my-4">
+                            <div class="text-success"><i class="bi bi-check-circle fs-3"></i><br/><small>Registered</small></div>
+                            <div class="align-self-center text-muted">&rarr;</div>
+                            <div class="text-success"><i class="bi bi-check-circle fs-3"></i><br/><small>Form Done</small></div>
+                            <div class="align-self-center text-muted">&rarr;</div>
+                            <div class="text-warning"><i class="bi bi-hourglass-split fs-3"></i><br/><small class="fw-bold">Pending</small></div>
+                            <div class="align-self-center text-muted">&rarr;</div>
+                            <div class="text-muted"><i class="bi bi-lock fs-3"></i><br/><small>Hostel</small></div>
                         </div>
-
-                        <div class="row g-3 mt-2">
-                            <div class="col-md-6">
-                                <label class="text-muted text-uppercase small">Mobile</label>
-                                <p class="fw-bold" th:text="${profile.phoneNumber}"></p>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="text-muted text-uppercase small">Address</label>
-                                <p class="fw-bold" th:text="${profile.address}"></p>
-                            </div>
-                            <div class="col-md-6" th:if="${profile.dateOfBirth != null}">
-                                <label class="text-muted text-uppercase small">Date of Birth</label>
-                                <p class="fw-bold" th:text="${profile.dateOfBirth}"></p>
-                            </div>
-                            <div class="col-md-6" th:if="${profile.gender != null}">
-                                <label class="text-muted text-uppercase small">Gender</label>
-                                <p class="fw-bold" th:text="${profile.gender}"></p>
-                            </div>
-                            <div class="col-md-6" th:if="${profile.aadharNumber != null}">
-                                <label class="text-muted text-uppercase small">Aadhar Number</label>
-                                <p class="fw-bold" th:text="${profile.aadharNumber}"></p>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="text-muted text-uppercase small">College</label>
-                                <p class="fw-bold" th:text="${profile.collegeName}"></p>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="text-muted text-uppercase small">Course</label>
-                                <p class="fw-bold" th:text="${profile.course}"></p>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="text-muted text-uppercase small">Year of Study</label>
-                                <p class="fw-bold" th:text="${profile.yearOfStudy}"></p>
-                            </div>
-                            <div class="col-md-6" th:if="${profile.academicYear != null}">
-                                <label class="text-muted text-uppercase small">Academic Year</label>
-                                <p class="fw-bold" th:text="${profile.academicYear}"></p>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="text-muted text-uppercase small">Parent Name</label>
-                                <p class="fw-bold" th:text="${profile.parentName}"></p>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="text-muted text-uppercase small">Parent Contact</label>
-                                <p class="fw-bold" th:text="${profile.parentContact}"></p>
-                            </div>
-                            <div class="col-md-6" th:if="${profile.room != null}">
-                                <label class="text-muted text-uppercase small">Room Assigned</label>
-                                <p class="fw-bold"
-                                   th:text="${profile.room.roomNumber + ' (' + profile.room.roomType + ')'}"></p>
-                            </div>
-                        </div>
-                        <!-- Edit Profile Button -->
-                        <div th:if="${profile != null and profile.status.name() == 'APPROVED'}" class="mt-3">
-                            <a href="/edit-profile" class="btn btn-outline-primary btn-sm">
-                                <i class="bi bi-pencil"></i> Edit Profile
-                            </a>
-                        </div>
+                        <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split"></i> Pending Approval</span>
+                        <p class="text-muted small mt-2">Your form is under admin review. Features unlock after approval.</p>
                     </div>
-                </div>
-            </div>
 
-            <!-- ============================================ -->
-            <!-- TAB 3: RENT PAYMENT                          -->
-            <!-- ============================================ -->
-            <div class="tab-pane" id="tab-rent"
-                 th:if="${profile != null and profile.status.name() == 'APPROVED'}">
-
-                <!-- Pay Rent Form -->
-                <div class="card shadow-sm border-0 mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="bi bi-cash-coin"></i> Pay Monthly Rent</h5>
-
-                        <!-- Show room & rent info -->
-                        <div th:if="${profile.room != null}" class="alert alert-light border mb-3">
+                    <!-- CASE 3: APPROVED -->
+                    <div th:if="${profile != null and profile.status.name() == 'APPROVED'}">
+                        <div class="d-flex justify-content-between text-center my-4">
+                            <div class="text-success"><i class="bi bi-check-circle fs-3"></i><br/><small>Registered</small></div>
+                            <div class="align-self-center text-muted">&rarr;</div>
+                            <div class="text-success"><i class="bi bi-check-circle fs-3"></i><br/><small>Form Done</small></div>
+                            <div class="align-self-center text-muted">&rarr;</div>
+                            <div class="text-success"><i class="bi bi-check-circle fs-3"></i><br/><small>Approved</small></div>
+                            <div class="align-self-center text-muted">&rarr;</div>
+                            <div class="text-success"><i class="bi bi-house-check fs-3"></i><br/><small class="fw-bold">Hostel</small></div>
+                        </div>
+                        <span class="badge bg-success"><i class="bi bi-check-circle"></i> Approved</span>
+                        <p class="text-muted small mt-2">All features are now unlocked.</p>
+                        <div th:if="${profile.room != null}" class="alert alert-info mt-3">
+                            <i class="bi bi-door-open"></i>
                             <strong>Room:</strong> <span th:text="${profile.room.roomNumber}"></span> |
-                            <strong>Monthly Rent:</strong>
-                            &#8377;<span th:text="${profile.room.monthlyRent}"></span>
+                            <strong>Type:</strong> <span th:text="${profile.room.roomType}"></span> |
+                            <strong>Rent:</strong> &#8377;<span th:text="${profile.room.monthlyRent}"></span>/month
                         </div>
-
-                        <form th:action="@{/dashboard/rent/pay}" method="post" class="row g-3">
-                            <div class="col-md-4">
-                                <label class="form-label small fw-bold">Month</label>
-                                <select name="month" class="form-select" required>
-                                    <option value="January">January</option>
-                                    <option value="February">February</option>
-                                    <option value="March">March</option>
-                                    <option value="April">April</option>
-                                    <option value="May">May</option>
-                                    <option value="June">June</option>
-                                    <option value="July">July</option>
-                                    <option value="August">August</option>
-                                    <option value="September">September</option>
-                                    <option value="October">October</option>
-                                    <option value="November">November</option>
-                                    <option value="December">December</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label small fw-bold">Year</label>
-                                <input type="number" name="year" class="form-control"
-                                       value="2026" required/>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label small fw-bold">Payment Mode</label>
-                                <select name="paymentMode" class="form-select" required>
-                                    <option value="CASH">Cash</option>
-                                    <option value="UPI">UPI</option>
-                                    <option value="ONLINE">Online</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2 d-flex align-items-end">
-                                <button type="submit" class="btn btn-success w-100">
-                                    <i class="bi bi-credit-card"></i> Pay
-                                </button>
-                            </div>
-                        </form>
                     </div>
-                </div>
 
-                <!-- Payment History Table -->
-                <div class="card shadow-sm border-0">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="bi bi-receipt"></i> Payment History</h5>
-
-                        <div th:if="${rentPayments == null or #lists.isEmpty(rentPayments)}"
-                             class="text-center text-muted py-4">
-                            No payments recorded yet.
+                    <!-- CASE 4: REJECTED -->
+                    <div th:if="${profile != null and profile.status.name() == 'REJECTED'}">
+                        <div class="d-flex justify-content-between text-center my-4">
+                            <div class="text-success"><i class="bi bi-check-circle fs-3"></i><br/><small>Registered</small></div>
+                            <div class="align-self-center text-muted">&rarr;</div>
+                            <div class="text-success"><i class="bi bi-check-circle fs-3"></i><br/><small>Form Done</small></div>
+                            <div class="align-self-center text-muted">&rarr;</div>
+                            <div class="text-danger"><i class="bi bi-x-circle fs-3"></i><br/><small class="fw-bold">Rejected</small></div>
+                            <div class="align-self-center text-muted">&rarr;</div>
+                            <div class="text-muted"><i class="bi bi-lock fs-3"></i><br/><small>Hostel</small></div>
                         </div>
-
-                        <table th:if="${rentPayments != null and !#lists.isEmpty(rentPayments)}"
-                               class="table table-striped table-hover">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>#</th><th>Month</th><th>Year</th>
-                                    <th>Amount</th><th>Mode</th><th>Date</th><th>Status</th><th>Receipt</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr th:each="p, s : ${rentPayments}">
-                                    <td th:text="${s.count}"></td>
-                                    <td th:text="${p.month}"></td>
-                                    <td th:text="${p.year}"></td>
-                                    <td>&#8377;<span th:text="${p.amount}"></span></td>
-                                    <td th:text="${p.paymentMode}"></td>
-                                    <td th:text="${p.paymentDate}"></td>
-                                    <td><span class="badge bg-success" th:text="${p.status}"></span></td>
-                                    <td>
-                                        <a th:href="@{/rent-receipt/{id}(id=${p.id})}"
-                                           class="btn btn-outline-primary btn-sm" title="Download PDF">
-                                            <i class="bi bi-file-earmark-pdf"></i> PDF
-                                        </a>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Rejected</span>
+                        <p class="text-muted small mt-2">Your admission was rejected. You can re-apply with updated details.</p>
+                        <a href="/admission" class="btn btn-primary btn-sm mt-2"><i class="bi bi-arrow-repeat"></i> Re-apply Now</a>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- ============================================ -->
-            <!-- TAB 4: QUERY / SUPPORT                       -->
-            <!-- ============================================ -->
-            <div class="tab-pane" id="tab-query"
-                 th:if="${profile != null and profile.status.name() == 'APPROVED'}">
-
-                <!-- Submit Query Form -->
-                <div class="card shadow-sm border-0 mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="bi bi-chat-dots"></i> Submit a Query</h5>
-                        <form th:action="@{/dashboard/query/submit}" method="post" enctype="multipart/form-data">
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold">Subject</label>
-                                <input type="text" name="subject" class="form-control"
-                                       placeholder="e.g. Water issue in room" required/>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold">Message</label>
-                                <textarea name="message" class="form-control" rows="3"
-                                          placeholder="Describe your issue in detail..." required></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold">Attach Photo (optional)</label>
-                                <input type="file" name="queryPhoto" class="form-control" accept="image/*"/>
-                                <small class="text-muted">Attach a photo of the issue if applicable (JPG/PNG, max 2MB)</small>
-                            </div>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-send"></i> Submit Query
-                            </button>
-                        </form>
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <!-- SECTION: MY PROFILE           -->
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <div class="section" id="sec-profile" th:if="${profile != null}">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-person-badge"></i> My Profile Details</h5>
+                    <div class="text-center mb-3" th:if="${profile.profilePhotoPath != null}">
+                        <img th:src="@{'/uploads/' + ${profile.profilePhotoPath}}" alt="Profile Photo" class="rounded-circle shadow" style="width:120px;height:120px;object-fit:cover;"/>
+                    </div>
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-6"><label class="text-muted text-uppercase small">Mobile</label><p class="fw-bold" th:text="${profile.phoneNumber}"></p></div>
+                        <div class="col-md-6"><label class="text-muted text-uppercase small">Address</label><p class="fw-bold" th:text="${profile.address}"></p></div>
+                        <div class="col-md-6" th:if="${profile.dateOfBirth != null}"><label class="text-muted text-uppercase small">Date of Birth</label><p class="fw-bold" th:text="${profile.dateOfBirth}"></p></div>
+                        <div class="col-md-6" th:if="${profile.gender != null}"><label class="text-muted text-uppercase small">Gender</label><p class="fw-bold" th:text="${profile.gender}"></p></div>
+                        <div class="col-md-6" th:if="${profile.aadharNumber != null}"><label class="text-muted text-uppercase small">Aadhar Number</label><p class="fw-bold" th:text="${profile.aadharNumber}"></p></div>
+                        <div class="col-md-6"><label class="text-muted text-uppercase small">College</label><p class="fw-bold" th:text="${profile.collegeName}"></p></div>
+                        <div class="col-md-6"><label class="text-muted text-uppercase small">Course</label><p class="fw-bold" th:text="${profile.course}"></p></div>
+                        <div class="col-md-6"><label class="text-muted text-uppercase small">Year of Study</label><p class="fw-bold" th:text="${profile.yearOfStudy}"></p></div>
+                        <div class="col-md-6" th:if="${profile.academicYear != null}"><label class="text-muted text-uppercase small">Academic Year</label><p class="fw-bold" th:text="${profile.academicYear}"></p></div>
+                        <div class="col-md-6"><label class="text-muted text-uppercase small">Parent Name</label><p class="fw-bold" th:text="${profile.parentName}"></p></div>
+                        <div class="col-md-6"><label class="text-muted text-uppercase small">Parent Contact</label><p class="fw-bold" th:text="${profile.parentContact}"></p></div>
+                        <div class="col-md-6" th:if="${profile.room != null}"><label class="text-muted text-uppercase small">Room Assigned</label><p class="fw-bold" th:text="${profile.room.roomNumber + ' (' + profile.room.roomType + ')'}"></p></div>
+                    </div>
+                    <div th:if="${profile != null and profile.status.name() == 'APPROVED'}" class="mt-3">
+                        <a href="/edit-profile" class="btn btn-outline-primary btn-sm"><i class="bi bi-pencil"></i> Edit Profile</a>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Query History -->
-                <div class="card shadow-sm border-0">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="bi bi-clock-history"></i> My Queries</h5>
-
-                        <div th:if="${queries == null or #lists.isEmpty(queries)}"
-                             class="text-center text-muted py-4">
-                            No queries submitted yet.
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <!-- SECTION: RENT PAYMENT         -->
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <div class="section" id="sec-rent" th:if="${profile != null and profile.status.name() == 'APPROVED'}">
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-cash-coin"></i> Pay Monthly Rent</h5>
+                    <div th:if="${profile.room != null}" class="alert alert-light border mb-3">
+                        <strong>Room:</strong> <span th:text="${profile.room.roomNumber}"></span> |
+                        <strong>Monthly Rent:</strong> &#8377;<span th:text="${profile.room.monthlyRent}"></span>
+                    </div>
+                    <form th:action="@{/dashboard/rent/pay}" method="post" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Month</label>
+                            <select name="month" class="form-select" required>
+                                <option value="January">January</option><option value="February">February</option>
+                                <option value="March">March</option><option value="April">April</option>
+                                <option value="May">May</option><option value="June">June</option>
+                                <option value="July">July</option><option value="August">August</option>
+                                <option value="September">September</option><option value="October">October</option>
+                                <option value="November">November</option><option value="December">December</option>
+                            </select>
                         </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Year</label>
+                            <input type="number" name="year" class="form-control" value="2026" required/>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Payment Mode</label>
+                            <select name="paymentMode" class="form-select" required>
+                                <option value="CASH">Cash</option><option value="UPI">UPI</option><option value="ONLINE">Online</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-success w-100"><i class="bi bi-credit-card"></i> Pay</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-receipt"></i> Payment History</h5>
+                    <div th:if="${rentPayments == null or #lists.isEmpty(rentPayments)}" class="text-center text-muted py-4">No payments recorded yet.</div>
+                    <table th:if="${rentPayments != null and !#lists.isEmpty(rentPayments)}" class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr><th>#</th><th>Month</th><th>Year</th><th>Amount</th><th>Mode</th><th>Date</th><th>Status</th><th>Receipt</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="p, s : ${rentPayments}">
+                                <td th:text="${s.count}"></td>
+                                <td th:text="${p.month}"></td>
+                                <td th:text="${p.year}"></td>
+                                <td>&#8377;<span th:text="${p.amount}"></span></td>
+                                <td th:text="${p.paymentMode}"></td>
+                                <td th:text="${p.paymentDate}"></td>
+                                <td><span class="badge bg-success" th:text="${p.status}"></span></td>
+                                <td>
+                                    <a th:href="@{/rent-receipt/{id}(id=${p.id})}" class="btn btn-outline-primary btn-sm" title="Download PDF">
+                                        <i class="bi bi-file-earmark-pdf"></i> PDF
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-                        <div th:each="q : ${queries}" class="border rounded p-3 mb-2">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <strong th:text="${q.subject}"></strong>
-                                <span class="badge"
-                                      th:classappend="${q.status.name() == 'OPEN'} ? 'bg-warning text-dark' : 'bg-success'"
-                                      th:text="${q.status}"></span>
-                            </div>
-                            <p class="text-muted small mb-1 mt-1" th:text="${q.message}"></p>
-                            <!-- Query attached photo -->
-                            <div th:if="${q.photoPath != null}" class="mb-2">
-                                <img th:src="@{'/uploads/' + ${q.photoPath}}"
-                                     alt="Query Photo" class="img-thumbnail"
-                                     style="max-width:300px;max-height:200px;"/>
-                            </div>
-                            <small class="text-muted" th:text="${q.createdAt}"></small>
-                            <!-- Admin's reply -->
-                            <div th:if="${q.adminReply != null}"
-                                 class="alert alert-info mt-2 mb-0 py-2 small">
-                                <strong><i class="bi bi-reply"></i> Admin Reply:</strong>
-                                <span th:text="${q.adminReply}"></span>
-                            </div>
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <!-- SECTION: QUERY / SUPPORT      -->
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <div class="section" id="sec-query" th:if="${profile != null and profile.status.name() == 'APPROVED'}">
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-chat-dots"></i> Submit a Query</h5>
+                    <form th:action="@{/dashboard/query/submit}" method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Subject</label>
+                            <input type="text" name="subject" class="form-control" placeholder="e.g. Water issue in room" required/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Message</label>
+                            <textarea name="message" class="form-control" rows="3" placeholder="Describe your issue in detail..." required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Attach Photo (optional)</label>
+                            <input type="file" name="queryPhoto" class="form-control" accept="image/*"/>
+                            <small class="text-muted">Attach a photo of the issue if applicable (JPG/PNG, max 2MB)</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-send"></i> Submit Query</button>
+                    </form>
+                </div>
+            </div>
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-clock-history"></i> My Queries</h5>
+                    <div th:if="${queries == null or #lists.isEmpty(queries)}" class="text-center text-muted py-4">No queries submitted yet.</div>
+                    <div th:each="q : ${queries}" class="border rounded p-3 mb-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong th:text="${q.subject}"></strong>
+                            <span class="badge" th:classappend="${q.status.name() == 'OPEN'} ? 'bg-warning text-dark' : 'bg-success'" th:text="${q.status}"></span>
+                        </div>
+                        <p class="text-muted small mb-1 mt-1" th:text="${q.message}"></p>
+                        <div th:if="${q.photoPath != null}" class="mb-2">
+                            <img th:src="@{'/uploads/' + ${q.photoPath}}" alt="Query Photo" class="img-thumbnail" style="max-width:300px;max-height:200px;"/>
+                        </div>
+                        <small class="text-muted" th:text="${q.createdAt}"></small>
+                        <div th:if="${q.adminReply != null}" class="alert alert-info mt-2 mb-0 py-2 small">
+                            <strong><i class="bi bi-reply"></i> Admin Reply:</strong>
+                            <span th:text="${q.adminReply}"></span>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-        </div><!-- end tab-content -->
-    </div>
-</main>
-
-<div th:replace="~{fragments/footer :: footer}"></div>
+    </div><!-- end content -->
+</div><!-- end main -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Script: open correct tab when redirected with hash (e.g., #tab-rent) -->
 <script>
+// ─── Sidebar Section Switching ───
+function showSection(name, el) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    var sec = document.getElementById('sec-' + name);
+    if (sec) sec.classList.add('active');
+    document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+    if (el) el.classList.add('active');
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sbOverlay').classList.remove('show');
+}
+
+// ─── Mobile Sidebar Toggle ───
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sbOverlay').classList.toggle('show');
+}
+
+// ─── Deep link via hash ───
 document.addEventListener('DOMContentLoaded', function() {
     var hash = window.location.hash;
     if (hash) {
-        var tabButton = document.querySelector('[data-bs-target="' + hash + '"]');
-        if (tabButton) {
-            new bootstrap.Tab(tabButton).show();
+        var sectionName = hash.replace('#tab-', '');
+        var sec = document.getElementById('sec-' + sectionName);
+        if (sec) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            sec.classList.add('active');
         }
     }
-    // Deep-link via ?tab=rent or ?tab=query
     var tab = new URLSearchParams(window.location.search).get('tab');
     if (tab) {
-        var btn = document.querySelector('[data-bs-target="#tab-' + tab + '"]');
-        if (btn) new bootstrap.Tab(btn).show();
+        var sec = document.getElementById('sec-' + tab);
+        if (sec) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            sec.classList.add('active');
+        }
     }
 });
 </script>

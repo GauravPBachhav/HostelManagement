@@ -220,6 +220,22 @@
                             <i class="bi bi-cursor"></i> Get Directions
                         </a>
                     </div>
+
+                    <!-- Contact Details below map -->
+                    <div class="mt-3 px-2">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-telephone-fill me-2" style="color:var(--primary); font-size:1.1rem;"></i>
+                            <a href="tel:+919876543210" class="text-white text-decoration-none fw-semibold" style="font-size:0.95rem;">+91 98765 43210</a>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-envelope-fill me-2" style="color:var(--primary); font-size:1.1rem;"></i>
+                            <a href="mailto:info@shivtirthhostel.com" class="text-white text-decoration-none fw-semibold" style="font-size:0.95rem;">info@shivtirthhostel.com</a>
+                        </div>
+                        <div class="d-flex align-items-start mb-1">
+                            <i class="bi bi-geo-alt-fill me-2 mt-1" style="color:var(--primary); font-size:1.1rem;"></i>
+                            <span class="text-white fw-semibold" style="font-size:0.95rem;">Near City Center, Maharashtra</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -328,26 +344,64 @@ function drawFloorPlan(rooms, floor) {
     //  GROUND FLOOR (special)
     // ============================
     if (floor == 0) {
-        var svg = '<svg viewBox="0 0 780 400" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto;">';
-        var bx = 35, by = 35, bw = 480, bh = 340;
-        var roomW = 200, roomH = 190;
+        var svg = '<svg viewBox="0 0 780 480" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto;">';
+        var bx = 55, by = 55, bw = 440, bh = 390;
 
-        // Building outline
+        // ── Building outline ──
         svg += '<rect x="' + bx + '" y="' + by + '" width="' + bw + '" height="' + bh + '" rx="6" fill="' + bgColor + '" stroke="#222" stroke-width="3"/>';
 
-        // Floor label banner at top
-        svg += '<rect x="' + (bx + 40) + '" y="' + (by + 8) + '" width="' + (bw - 80) + '" height="42" rx="8" fill="rgba(255,255,255,0.25)"/>';
-        svg += '<text x="' + (bx + bw/2) + '" y="' + (by + 36) + '" text-anchor="middle" font-size="22" fill="#1a1a2e" font-weight="900" font-family="Inter, sans-serif" letter-spacing="3">' + floorLabel + '</text>';
+        // ── Floor label banner ──
+        var bannerX = bx + 60, bannerW = bw - 120, bannerH = 38, bannerY = by + 6;
+        svg += '<rect x="' + bannerX + '" y="' + bannerY + '" width="' + bannerW + '" height="' + bannerH + '" rx="8" fill="rgba(255,255,255,0.28)"/>';
+        svg += '<text x="' + (bx + bw/2) + '" y="' + (bannerY + 27) + '" text-anchor="middle" font-size="22" fill="#1a1a2e" font-weight="900" font-family="Inter, sans-serif" letter-spacing="3">' + floorLabel + '</text>';
 
-        // Compass labels
-        svg += '<text x="' + (bx + bw/2) + '" y="' + (by - 8) + '" text-anchor="middle" font-size="14" fill="#333" font-weight="800" font-family="Inter, sans-serif" letter-spacing="2">EAST</text>';
+        // ── Compass labels ──
+        svg += '<text x="' + (bx + bw/2) + '" y="' + (by - 10) + '" text-anchor="middle" font-size="14" fill="#333" font-weight="800" font-family="Inter, sans-serif" letter-spacing="2">EAST</text>';
         svg += '<text x="' + (bx + bw/2) + '" y="' + (by + bh + 22) + '" text-anchor="middle" font-size="14" fill="#333" font-weight="800" font-family="Inter, sans-serif" letter-spacing="2">WEST</text>';
-        svg += '<text x="' + (bx - 12) + '" y="' + (by + bh/2) + '" text-anchor="middle" font-size="14" fill="#333" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-90, ' + (bx - 12) + ', ' + (by + bh/2) + ')">NORTH</text>';
-        svg += '<text x="' + (bx + bw + 15) + '" y="' + (by + bh/2) + '" text-anchor="middle" font-size="14" fill="#333" font-weight="800" font-family="Inter, sans-serif" transform="rotate(90, ' + (bx + bw + 15) + ', ' + (by + bh/2) + ')">SOUTH</text>';
+        svg += '<text x="' + (bx - 14) + '" y="' + (by + bh/2) + '" text-anchor="middle" font-size="14" fill="#333" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-90, ' + (bx - 14) + ', ' + (by + bh/2) + ')">NORTH</text>';
+        svg += '<text x="' + (bx + bw + 16) + '" y="' + (by + bh/2) + '" text-anchor="middle" font-size="14" fill="#333" font-weight="800" font-family="Inter, sans-serif" transform="rotate(90, ' + (bx + bw + 16) + ', ' + (by + bh/2) + ')">SOUTH</text>';
 
-        // Room G11 (west half — left side, under banner)
-        var roomX = bx + 25, roomY = by + 65;
+        // ── CCTV at top-left corner (outside building) ──
+        var cctvX = bx - 42, cctvY = by - 8;
+        svg += '<rect x="' + cctvX + '" y="' + cctvY + '" width="38" height="28" rx="4" fill="#333" stroke="#111" stroke-width="1.5"/>';
+        svg += '<circle cx="' + (cctvX + 19) + '" cy="' + (cctvY + 14) + '" r="7" fill="#555" stroke="#888" stroke-width="1"/>';
+        svg += '<circle cx="' + (cctvX + 19) + '" cy="' + (cctvY + 14) + '" r="3" fill="#4af"/>';
+        svg += '<line x1="' + (cctvX + 38) + '" y1="' + (cctvY + 14) + '" x2="' + (bx + 2) + '" y2="' + (by + 2) + '" stroke="#555" stroke-width="2"/>';
+        svg += '<text x="' + (cctvX - 2) + '" y="' + (cctvY - 4) + '" font-size="11" fill="#555" font-weight="800" font-family="Inter, sans-serif">CC TV</text>';
+
+        // ── Parking Area at top-right (outside building) ──
+        var pkX = bx + bw - 80, pkY = by - 40;
+        svg += '<text x="' + (pkX + 50) + '" y="' + (pkY + 6) + '" text-anchor="middle" font-size="12" fill="#c62828" font-weight="800" font-family="Inter, sans-serif">Parking Area</text>';
+        // Red barriers
+        for (var pi = 0; pi < 4; pi++) {
+            var px = pkX + 20 + pi * 18;
+            svg += '<rect x="' + px + '" y="' + (pkY + 10) + '" width="10" height="22" rx="1" fill="#e53935" stroke="#b71c1c" stroke-width="1"/>';
+            svg += '<rect x="' + px + '" y="' + (pkY + 10) + '" width="10" height="4" rx="1" fill="#f44336"/>';
+        }
+
+        // ── Gate / Entry point on SOUTH side (right wall) ──
+        var gateY = by + 48;
+        svg += '<rect x="' + (bx + bw - 2) + '" y="' + gateY + '" width="22" height="40" rx="0" fill="#f5f6fa" stroke="#888" stroke-width="1.5"/>';
+        svg += '<polygon points="' + (bx + bw + 20) + ',' + (gateY + 12) + ' ' + (bx + bw + 32) + ',' + (gateY + 20) + ' ' + (bx + bw + 20) + ',' + (gateY + 28) + '" fill="#4361ee"/>';
+
+        // ── INTERIOR: Open Space (upper half) ──
+        var osX = bx + 20, osY = by + 52, osW = bw - 40, osH = 140;
+        svg += '<rect x="' + osX + '" y="' + osY + '" width="' + osW + '" height="' + osH + '" rx="6" fill="rgba(255,255,255,0.12)" stroke="#fff" stroke-width="2.5" stroke-dasharray="8,5"/>';
+        svg += '<text x="' + (osX + osW/2) + '" y="' + (osY + osH/2 + 6) + '" text-anchor="middle" font-size="20" fill="#2a4a2a" font-weight="700" font-style="italic" font-family="Inter, sans-serif" opacity="0.8">Open Space</text>';
+
+        // Small staircase block inside open space (bottom-right corner)
+        var stX = osX + osW - 85, stY = osY + osH - 55, stW = 65, stH = 40;
+        svg += '<rect x="' + stX + '" y="' + stY + '" width="' + stW + '" height="' + stH + '" rx="3" fill="#eaeaea" stroke="#aaa" stroke-width="1.5" stroke-dasharray="3,2"/>';
+        var numSt = Math.floor(stW / 10);
+        for (var si = 1; si < numSt; si++) {
+            svg += '<line x1="' + (stX + si * 10) + '" y1="' + (stY + 3) + '" x2="' + (stX + si * 10) + '" y2="' + (stY + stH - 3) + '" stroke="#ccc" stroke-width="1"/>';
+        }
+
+        // ── INTERIOR: Room G11 (lower-left) ──
+        var roomW = 230, roomH = 155;
+        var roomX = bx + 20, roomY = by + bh - roomH - 25;
         var room = roomMap[prefix + '1'] || null;
+
         svg += '<rect x="' + roomX + '" y="' + roomY + '" width="' + roomW + '" height="' + roomH + '" rx="6" fill="#fff" stroke="#1a1a2e" stroke-width="2.5"/>';
         svg += '<text x="' + (roomX + roomW/2) + '" y="' + (roomY + 28) + '" text-anchor="middle" font-size="16" fill="#1a1a2e" font-weight="800" font-family="Inter, sans-serif">ROOM No. ' + prefix + '1</text>';
 
@@ -360,7 +414,7 @@ function drawFloorPlan(rooms, floor) {
         else if (available <= Math.ceil(total * 0.25)) { cc = '#ffc857'; cs = '#e6a800'; ct = available.toString(); }
         else { cc = '#70b855'; cs = '#4a8a35'; ct = available.toString(); }
 
-        var cx = roomX + roomW/2, cy = roomY + 100;
+        var cx = roomX + roomW/2, cy = roomY + 85;
         svg += '<circle cx="' + cx + '" cy="' + cy + '" r="34" fill="' + cc + '" stroke="' + cs + '" stroke-width="3"/>';
         svg += '<text x="' + cx + '" y="' + (cy + 9) + '" text-anchor="middle" font-size="26" fill="#fff" font-weight="900" font-family="Inter, sans-serif">' + ct + '</text>';
         if (room) {
@@ -370,31 +424,27 @@ function drawFloorPlan(rooms, floor) {
             svg += '<text x="' + (roomX + roomW/2) + '" y="' + (roomY + roomH - 14) + '" text-anchor="middle" font-size="12" fill="#999" font-weight="600" font-family="Inter, sans-serif">No Data</text>';
         }
 
-        // Open Space (east half — right side)
-        var osX = roomX + roomW + 25, osY = roomY, osW = bw - roomW - 75, osH = roomH - 60;
-        svg += '<rect x="' + osX + '" y="' + osY + '" width="' + osW + '" height="' + osH + '" rx="6" fill="rgba(255,255,255,0.15)" stroke="#fff" stroke-width="2" stroke-dasharray="6,4"/>';
-        svg += '<text x="' + (osX + osW/2) + '" y="' + (osY + osH/2 + 6) + '" text-anchor="middle" font-size="16" fill="#2a4a2a" font-weight="700" font-family="Inter, sans-serif">Open Space</text>';
+        // ── Water Filter (lower-right, next to room) ──
+        var wfW = 90, wfH = 72;
+        var wfX = roomX + roomW + 25, wfY = roomY + (roomH - wfH) / 2;
+        svg += '<rect x="' + wfX + '" y="' + wfY + '" width="' + wfW + '" height="' + wfH + '" rx="6" fill="#fff" stroke="#0288d1" stroke-width="2"/>';
+        svg += '<text x="' + (wfX + wfW/2) + '" y="' + (wfY + 30) + '" text-anchor="middle" font-size="26">💧</text>';
+        svg += '<text x="' + (wfX + wfW/2) + '" y="' + (wfY + 50) + '" text-anchor="middle" font-size="11" fill="#0288d1" font-weight="800" font-family="Inter, sans-serif">Water Filter</text>';
 
-        // Water Purifier block (corner, below open space)
-        var wpX = osX + osW - 100, wpY = osY + osH + 15, wpW = 100, wpH = 55;
-        svg += '<rect x="' + wpX + '" y="' + wpY + '" width="' + wpW + '" height="' + wpH + '" rx="5" fill="#fff" stroke="#0077b6" stroke-width="2"/>';
-        svg += '<text x="' + (wpX + wpW/2) + '" y="' + (wpY + 22) + '" text-anchor="middle" font-size="18">💧</text>';
-        svg += '<text x="' + (wpX + wpW/2) + '" y="' + (wpY + 40) + '" text-anchor="middle" font-size="10" fill="#0077b6" font-weight="700" font-family="Inter, sans-serif">Water Filter</text>';
+        // ── Road ──
+        var roadX = bx + bw + 50, rdW = 35;
+        svg += '<rect x="' + roadX + '" y="0" width="' + rdW + '" height="480" fill="#ddd" stroke="#555" stroke-width="2"/>';
+        svg += '<line x1="' + (roadX + rdW/2) + '" y1="0" x2="' + (roadX + rdW/2) + '" y2="480" stroke="#555" stroke-width="1.5" stroke-dasharray="10,8"/>';
+        svg += '<text x="' + (roadX + rdW/2) + '" y="240" text-anchor="middle" font-size="12" fill="#333" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-90, ' + (roadX + rdW/2) + ', 240)" letter-spacing="3">TRIMBAKESHWAR ROAD</text>';
+        svg += '<line x1="' + (bx + bw) + '" y1="' + (by + 68) + '" x2="' + roadX + '" y2="' + (by + 68) + '" stroke="#555" stroke-width="2"/>';
 
-        // Road
-        var roadX = bx + bw + 50, roadW = 35;
-        svg += '<rect x="' + roadX + '" y="0" width="' + roadW + '" height="400" fill="#ddd" stroke="#555" stroke-width="2"/>';
-        svg += '<line x1="' + (roadX + roadW/2) + '" y1="0" x2="' + (roadX + roadW/2) + '" y2="400" stroke="#555" stroke-width="1.5" stroke-dasharray="10,8"/>';
-        svg += '<text x="' + (roadX + roadW/2) + '" y="200" text-anchor="middle" font-size="12" fill="#333" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-90, ' + (roadX + roadW/2) + ', 200)" letter-spacing="3">TRIMBAKESHWAR ROAD</text>';
-        svg += '<line x1="' + (bx + bw) + '" y1="' + (by + 60) + '" x2="' + roadX + '" y2="' + (by + 60) + '" stroke="#555" stroke-width="2"/>';
-
-        // Sandip Foundation
-        var sfX = roadX + roadW + 30;
-        svg += '<rect x="' + sfX + '" y="60" width="115" height="90" rx="6" fill="#fff" stroke="#333" stroke-width="2"/>';
-        svg += '<text x="' + (sfX + 57) + '" y="90" text-anchor="middle" font-size="20">🏫</text>';
-        svg += '<text x="' + (sfX + 57) + '" y="112" text-anchor="middle" font-size="11" fill="#222" font-weight="800" font-family="Inter, sans-serif">Sandip Foundations</text>';
-        svg += '<text x="' + (sfX + 57) + '" y="128" text-anchor="middle" font-size="11" fill="#555" font-weight="700" font-family="Inter, sans-serif">College</text>';
-        svg += '<line x1="' + (roadX + roadW) + '" y1="105" x2="' + sfX + '" y2="105" stroke="#555" stroke-width="2"/>';
+        // ── Sandip Foundation ──
+        var sfX = roadX + rdW + 25;
+        svg += '<rect x="' + sfX + '" y="80" width="115" height="90" rx="6" fill="#fff" stroke="#333" stroke-width="2"/>';
+        svg += '<text x="' + (sfX + 57) + '" y="110" text-anchor="middle" font-size="20">🏫</text>';
+        svg += '<text x="' + (sfX + 57) + '" y="130" text-anchor="middle" font-size="11" fill="#222" font-weight="800" font-family="Inter, sans-serif">Sandip Foundations</text>';
+        svg += '<text x="' + (sfX + 57) + '" y="146" text-anchor="middle" font-size="11" fill="#555" font-weight="700" font-family="Inter, sans-serif">College</text>';
+        svg += '<line x1="' + (roadX + rdW) + '" y1="125" x2="' + sfX + '" y2="125" stroke="#555" stroke-width="2"/>';
 
         svg += '</svg>';
         wrap.innerHTML = svg;

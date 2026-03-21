@@ -82,6 +82,7 @@ public class SecurityConfig {
                     "/edit-profile",
                     "/contact/submit",
                     "/forgot-password", "/forgot-password/**", "/reset-password",
+                    "/logout",
                     "/admin/**"
                 )
             )
@@ -100,6 +101,8 @@ public class SecurityConfig {
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout=true")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
                 .permitAll()
             );
 
@@ -118,7 +121,7 @@ public class SecurityConfig {
             if (isAdmin) {
                 response.sendRedirect("/admin/dashboard");
             } else {
-                response.sendRedirect("/");
+                response.sendRedirect("/dashboard");
             }
         };
     }

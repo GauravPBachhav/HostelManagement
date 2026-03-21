@@ -6,37 +6,74 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
     <style>
+        * { font-family:'Inter',sans-serif; }
+        body { background:#f0f2f5; margin:0; overflow-x:hidden; }
+        .sb { position:fixed; top:0; left:0; width:240px; height:100vh; background:#1a1a2e; color:#fff; display:flex; flex-direction:column; z-index:1000; transition:transform .3s; }
+        .sb-brand { padding:24px 20px 18px; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; gap:10px; }
+        .sb-brand i { font-size:24px; color:#a78bfa; }
+        .sb-brand span { font-size:18px; font-weight:800; letter-spacing:0.5px; }
+        .sb-nav { flex:1; padding:12px 0; overflow-y:auto; }
+        .sb-item { display:flex; align-items:center; gap:12px; padding:11px 22px; color:rgba(255,255,255,0.55); font-size:14px; font-weight:500; cursor:pointer; border-left:3px solid transparent; transition:all .2s; text-decoration:none; }
+        .sb-item:hover { color:#fff; background:rgba(255,255,255,0.06); }
+        .sb-item.active { color:#fff; background:rgba(167,139,250,0.15); border-left-color:#a78bfa; }
+        .sb-item i { font-size:17px; width:22px; text-align:center; }
+        .sb-sep { height:1px; background:rgba(255,255,255,0.08); margin:8px 20px; }
+        .sb-footer { padding:16px 20px; border-top:1px solid rgba(255,255,255,0.08); }
+        .main { margin-left:240px; min-height:100vh; }
+        .top-bar { background:#fff; padding:14px 28px; display:flex; align-items:center; gap:16px; border-bottom:1px solid #e5e7eb; position:sticky; top:0; z-index:100; }
+        .top-bar .right { margin-left:auto; display:flex; align-items:center; gap:12px; }
+        .content { padding:20px 28px; }
         .facility-card { border-radius:12px; overflow:hidden; transition:transform 0.2s; }
         .facility-card:hover { transform:translateY(-3px); }
-        .facility-img-wrap { position:relative; }
         .facility-img { width:100%; height:160px; object-fit:cover; }
         .facility-gradient { width:100%; height:160px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:2rem; }
         .hidden-badge { position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.7); color:#fff; padding:4px 10px; border-radius:6px; font-size:0.75rem; font-weight:bold; }
         .hidden-dim .facility-img, .hidden-dim .facility-gradient { opacity:0.4; }
         .color-row { display:flex; align-items:center; gap:6px; }
         .color-row input[type=color] { width:40px; height:32px; border:none; border-radius:6px; cursor:pointer; padding:0; }
-        .color-row input[type=color]::-webkit-color-swatch-wrapper { padding:2px; }
-        .color-row input[type=color]::-webkit-color-swatch { border:none; border-radius:4px; }
+        .sb-toggle { display:none; background:none; border:none; font-size:24px; color:#333; cursor:pointer; }
+        @media(max-width:991px) {
+            .sb { transform:translateX(-100%); }
+            .sb.open { transform:translateX(0); }
+            .main { margin-left:0; }
+            .content { padding:16px; }
+            .sb-toggle { display:block; }
+            .sb-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); z-index:999; display:none; }
+            .sb-overlay.show { display:block; }
+        }
     </style>
 </head>
-<body class="d-flex flex-column min-vh-100">
-<div th:replace="~{fragments/header :: header}"></div>
+<body>
+<div class="sb-overlay" id="sbOverlay" onclick="toggleSidebar()"></div>
+<aside class="sb" id="sidebar">
+    <div class="sb-brand"><i class="bi bi-building"></i><span>HOSTEL</span></div>
+    <nav class="sb-nav">
+        <a class="sb-item" href="/admin/dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <div class="sb-sep"></div>
+        <a class="sb-item active" href="/admin/facilities"><i class="bi bi-image"></i> Facilities</a>
+        <a class="sb-item" href="/admin/records"><i class="bi bi-archive"></i> Records</a>
+    </nav>
+    <div class="sb-footer">
+        <form action="/logout" method="post" style="margin:0;">
+            <button type="submit" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.5);font-size:13px;display:flex;align-items:center;gap:8px;padding:0;font-family:inherit;">
+                <i class="bi bi-box-arrow-left"></i> Logout
+            </button>
+        </form>
+    </div>
+</aside>
 
-<main class="flex-grow-1 py-4" style="background:#f5f6fa;">
-    <div class="container">
-
-        <!-- Page Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h3 class="fw-bold mb-0"><i class="bi bi-image"></i> Manage Facilities</h3>
-                <p class="text-muted small mb-0">Add, edit or remove homepage facility cards</p>
-            </div>
-            <a href="/admin/dashboard" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-arrow-left"></i> Back to Dashboard
-            </a>
+<div class="main">
+    <div class="top-bar">
+        <button class="sb-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+        <h6 class="mb-0 fw-bold"><i class="bi bi-image"></i> Manage Facilities</h6>
+        <div class="right">
+            <a href="/admin/dashboard" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Dashboard</a>
         </div>
+    </div>
 
+    <div class="content">
         <!-- Flash messages -->
         <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
             <i class="bi bi-check-circle"></i> <span th:text="${success}"></span>
@@ -47,7 +84,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
 
-        <!-- ====== ADD NEW FACILITY ====== -->
+        <!-- Add New Facility -->
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body">
                 <h5 class="card-title"><i class="bi bi-plus-circle"></i> Add New Facility</h5>
@@ -79,30 +116,25 @@
                             <input type="number" name="displayOrder" class="form-control" value="0"/>
                         </div>
                         <div class="col-md-3 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary w-100">
-                                <i class="bi bi-plus-lg"></i> Add Facility
-                            </button>
+                            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-lg"></i> Add Facility</button>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
 
-        <!-- ====== EXISTING FACILITIES ====== -->
+        <!-- Existing Facilities -->
         <h5 class="fw-bold mb-3"><i class="bi bi-grid"></i> Current Facilities
             <span class="badge bg-primary" th:text="${#lists.size(facilities)}">0</span>
         </h5>
-
         <div th:if="${facilities == null or #lists.isEmpty(facilities)}" class="text-center text-muted py-5">
             <i class="bi bi-image" style="font-size:3rem;"></i>
             <p class="mt-2">No facilities added yet. Add your first one above!</p>
         </div>
-
         <div class="row g-3">
             <div th:each="f : ${facilities}" class="col-md-4">
                 <div class="card facility-card shadow-sm border-0">
-                    <!-- Image or Gradient (with dim if hidden) -->
-                    <div class="facility-img-wrap" th:classappend="${!f.active} ? 'hidden-dim'">
+                    <div class="facility-img-wrap" style="position:relative;" th:classappend="${!f.active} ? 'hidden-dim'">
                         <div th:if="${f.imagePath != null}">
                             <img th:src="@{'/uploads/' + ${f.imagePath}}" class="facility-img" alt="Facility"/>
                         </div>
@@ -110,50 +142,28 @@
                              th:style="'background:linear-gradient(135deg,' + ${f.gradientColors} + ')'">
                             <i class="bi bi-building"></i>
                         </div>
-                        <!-- HIDDEN badge on top-right of image only -->
-                        <span th:if="${!f.active}" class="hidden-badge">
-                            <i class="bi bi-eye-slash"></i> HIDDEN
-                        </span>
+                        <span th:if="${!f.active}" class="hidden-badge"><i class="bi bi-eye-slash"></i> HIDDEN</span>
                     </div>
-
-                    <!-- Card body — always fully interactive -->
                     <div class="card-body">
                         <h6 class="card-title fw-bold" th:text="${f.title}">Title</h6>
                         <p class="card-text small text-muted" th:text="${f.description}">Description</p>
                         <p class="small mb-2">
-                            <span class="badge" th:classappend="${f.active} ? 'bg-success' : 'bg-secondary'"
-                                  th:text="${f.active} ? 'Active' : 'Hidden'">Status</span>
+                            <span class="badge" th:classappend="${f.active} ? 'bg-success' : 'bg-secondary'" th:text="${f.active} ? 'Active' : 'Hidden'">Status</span>
                             <span class="badge bg-light text-dark" th:text="'Order: ' + ${f.displayOrder}">0</span>
                         </p>
-
                         <div class="d-flex gap-2 flex-wrap">
-                            <!-- Upload/Change Photo -->
-                            <form th:action="@{'/admin/facilities/updatePhoto/' + ${f.id}}" method="post"
-                                  enctype="multipart/form-data" class="d-inline">
-                                <input type="file" name="photo" accept="image/*" class="d-none"
-                                       th:id="'file-' + ${f.id}"
-                                       onchange="this.closest('form').submit()"/>
-                                <button type="button" class="btn btn-sm btn-outline-primary"
-                                        th:onclick="'document.getElementById(\'file-' + ${f.id} + '\').click()'">
-                                    <i class="bi bi-camera"></i> Photo
-                                </button>
+                            <form th:action="@{'/admin/facilities/updatePhoto/' + ${f.id}}" method="post" enctype="multipart/form-data" class="d-inline">
+                                <input type="file" name="photo" accept="image/*" class="d-none" th:id="'file-' + ${f.id}" onchange="this.closest('form').submit()"/>
+                                <button type="button" class="btn btn-sm btn-outline-primary" th:onclick="'document.getElementById(\'file-' + ${f.id} + '\').click()'"><i class="bi bi-camera"></i> Photo</button>
                             </form>
-
-                            <!-- Toggle -->
                             <form th:action="@{'/admin/facilities/toggle/' + ${f.id}}" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-sm"
-                                        th:classappend="${f.active} ? 'btn-outline-warning' : 'btn-outline-success'">
+                                <button type="submit" class="btn btn-sm" th:classappend="${f.active} ? 'btn-outline-warning' : 'btn-outline-success'">
                                     <i class="bi" th:classappend="${f.active} ? 'bi-eye-slash' : 'bi-eye'"></i>
                                     <span th:text="${f.active} ? 'Hide' : 'Show'">Toggle</span>
                                 </button>
                             </form>
-
-                            <!-- Delete -->
-                            <form th:action="@{'/admin/facilities/delete/' + ${f.id}}" method="post" class="d-inline"
-                                  onsubmit="return confirm('Delete this facility?')">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                            <form th:action="@{'/admin/facilities/delete/' + ${f.id}}" method="post" class="d-inline" onsubmit="return confirm('Delete this facility?')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                             </form>
                         </div>
                     </div>
@@ -161,12 +171,14 @@
             </div>
         </div>
     </div>
-</main>
+</div>
 
-<div th:replace="~{fragments/footer :: footer}"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// Sync color pickers to hidden gradient field
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sbOverlay').classList.toggle('show');
+}
 function updateAddGradient() {
     var c1 = document.getElementById('addColor1').value;
     var c2 = document.getElementById('addColor2').value;
