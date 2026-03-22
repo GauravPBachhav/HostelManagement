@@ -3,10 +3,14 @@ package in.gw.main.Entity;
 /**
  * Status of a rent payment.
  *
- * PAID    = rent has been paid
- * PENDING = rent is due but not yet paid
+ * PAID                  = rent verified and confirmed by admin
+ * PENDING               = rent is due but not yet paid
+ * VERIFICATION_PENDING  = student uploaded proof, waiting for admin verification
+ * REJECTED              = admin rejected the payment proof
  */
 public enum PaymentStatus {
     PAID,
-    PENDING
+    PENDING,
+    VERIFICATION_PENDING,
+    REJECTED
 }

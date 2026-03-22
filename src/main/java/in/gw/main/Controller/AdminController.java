@@ -1,6 +1,9 @@
 package in.gw.main.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -51,6 +54,9 @@ public class AdminController {
     @Autowired
     private StudentArchiveService archiveService;
 
+    @Autowired
+    private PdfService pdfService;
+
     /**
      * ADMIN DASHBOARD - main page
      * Loads ALL data needed for admin tabs
@@ -71,6 +77,10 @@ public class AdminController {
 
         // Rent overview
         model.addAttribute("recentPayments", rentPaymentService.getRecentPayments());
+
+        // Payment verification (UPI screenshots pending admin approval)
+        model.addAttribute("pendingPayments", rentPaymentService.getPendingVerifications());
+        model.addAttribute("pendingPaymentsCount", rentPaymentService.countPendingVerifications());
 
         // Student queries (open + all)
         model.addAttribute("openQueries", supportQueryService.getOpenQueries());
@@ -100,6 +110,23 @@ public class AdminController {
         model.addAttribute("profile", profile);
         model.addAttribute("availableRooms", roomService.getAvailableRooms());
         return "student-detail";
+    }
+
+    /**
+     * DOWNLOAD ADMISSION FORM AS PDF
+     */
+    @GetMapping("/student/{id}/pdf")
+    public ResponseEntity<byte[]> downloadAdmissionPdf(@PathVariable Long id) {
+        StudentProfile profile = studentProfileService.findById(id);
+        if (profile == null) {
+            return ResponseEntity.notFound().build();
+        }
+        byte[] pdf = pdfService.generateAdmissionForm(profile);
+        String filename = "Admission_" + profile.getUser().getName().replaceAll("\\s+", "_") + ".pdf";
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 
     /**
@@ -153,8 +180,13 @@ public class AdminController {
 
     /** DELETE a room */
     @PostMapping("/rooms/delete/{id}")
-    public String deleteRoom(@PathVariable Long id) {
-        roomService.deleteRoom(id);
+    public String deleteRoom(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            roomService.deleteRoom(id);
+            redirectAttributes.addFlashAttribute("success", "Room deleted successfully!");
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/admin/dashboard#tab-rooms";
     }
 
@@ -164,6 +196,29 @@ public class AdminController {
                              @RequestParam String adminReply) {
         supportQueryService.replyToQuery(id, adminReply);
         return "redirect:/admin/dashboard#tab-queries";
+    }
+
+    // =============================================
+    // PAYMENT VERIFICATION (UPI screenshot approval)
+    // =============================================
+
+    /** APPROVE a payment — marks as PAID */
+    @PostMapping("/payments/{id}/approve")
+    public String approvePayment(@PathVariable Long id,
+                                  RedirectAttributes redirectAttributes) {
+        rentPaymentService.approvePayment(id);
+        redirectAttributes.addFlashAttribute("success", "Payment approved!");
+        return "redirect:/admin/dashboard#tab-payments";
+    }
+
+    /** REJECT a payment — marks as REJECTED with remarks */
+    @PostMapping("/payments/{id}/reject")
+    public String rejectPayment(@PathVariable Long id,
+                                 @RequestParam(required = false) String remarks,
+                                 RedirectAttributes redirectAttributes) {
+        rentPaymentService.rejectPayment(id, remarks != null ? remarks : "Payment proof not valid");
+        redirectAttributes.addFlashAttribute("success", "Payment rejected.");
+        return "redirect:/admin/dashboard#tab-payments";
     }
 
     /**

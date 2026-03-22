@@ -82,8 +82,19 @@ public class RoomService {
         roomRepository.save(room);
     }
 
-    /** Delete a room */
+    /** Delete a room (only if no students are assigned) */
     public void deleteRoom(Long id) {
+        Room room = roomRepository.findById(id).orElse(null);
+        if (room == null) {
+            throw new RuntimeException("Room not found!");
+        }
+        if (room.getCurrentOccupancy() > 0) {
+            throw new RuntimeException(
+                "Cannot delete Room " + room.getRoomNumber() +
+                " because " + room.getCurrentOccupancy() +
+                " student(s) are currently admitted in this room. " +
+                "Please vacate all students first before deleting the room.");
+        }
         roomRepository.deleteById(id);
     }
 

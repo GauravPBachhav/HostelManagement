@@ -100,6 +100,10 @@
         <a class="sb-item" onclick="showSection('rent',this)">
             <i class="bi bi-cash-coin"></i> Rent
         </a>
+        <a class="sb-item" onclick="showSection('payments',this)">
+            <i class="bi bi-credit-card-2-front"></i> Payments
+            <span th:if="${pendingPaymentsCount > 0}" class="badge bg-warning text-dark" th:text="${pendingPaymentsCount}">0</span>
+        </a>
         <a class="sb-item" onclick="showSection('queries',this)">
             <i class="bi bi-chat-dots"></i> Queries
             <span class="badge bg-danger" th:text="${#lists.size(openQueries)}">0</span>
@@ -146,6 +150,12 @@
     <div class="px-4 pt-3" th:if="${success}">
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="bi bi-check-circle"></i> <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+    <div class="px-4 pt-3" th:if="${error}">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${error}"></span>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     </div>
@@ -427,10 +437,83 @@
                                     <td>&#8377;<span th:text="${p.amount}"></span></td>
                                     <td th:text="${p.paymentMode}"></td>
                                     <td th:text="${p.paymentDate}"></td>
-                                    <td><span class="badge bg-success" th:text="${p.status}"></span></td>
+                                    <td>
+                                        <span th:if="${p.status.name() == 'PAID'}" class="badge bg-success">PAID</span>
+                                        <span th:if="${p.status.name() == 'VERIFICATION_PENDING'}" class="badge bg-warning text-dark">PENDING</span>
+                                        <span th:if="${p.status.name() == 'REJECTED'}" class="badge bg-danger">REJECTED</span>
+                                        <span th:if="${p.status.name() == 'PENDING'}" class="badge bg-secondary">PENDING</span>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <!-- SECTION: PAYMENT VERIFICATION -->
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <div class="section" id="sec-payments">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-credit-card-2-front"></i> Payment Verification
+                        <span th:if="${pendingPaymentsCount > 0}" class="badge bg-warning text-dark ms-2" th:text="${pendingPaymentsCount} + ' pending'">0 pending</span>
+                    </h5>
+                    <p class="text-muted small">Review student UPI payment screenshots and approve or reject them.</p>
+
+                    <div th:if="${pendingPayments == null or #lists.isEmpty(pendingPayments)}" class="text-center text-muted py-5">
+                        <i class="bi bi-check-circle fs-1 text-success"></i>
+                        <p class="mt-2">No pending payments to verify. All clear!</p>
+                    </div>
+
+                    <div th:each="p : ${pendingPayments}" class="border rounded-3 p-3 mb-3" style="background:#fefce8;">
+                        <div class="row g-3">
+                            <!-- Student Info -->
+                            <div class="col-md-4">
+                                <h6 class="mb-1" th:text="${p.studentProfile != null and p.studentProfile.user != null ? p.studentProfile.user.name : 'Unknown'}">Student</h6>
+                                <small class="text-muted d-block">
+                                    <i class="bi bi-door-open"></i> Room: <span th:text="${p.studentProfile != null and p.studentProfile.room != null ? p.studentProfile.room.roomNumber : '-'}"></span>
+                                </small>
+                                <small class="text-muted d-block">
+                                    <i class="bi bi-calendar"></i> <span th:text="${p.month + ' ' + p.year}"></span>
+                                </small>
+                                <div class="mt-2">
+                                    <span class="fs-5 fw-bold text-success">&#8377;<span th:text="${p.amount}"></span></span>
+                                </div>
+                                <small class="text-muted d-block mt-1">
+                                    <i class="bi bi-clock"></i> Submitted: <span th:text="${p.paymentDate}"></span>
+                                </small>
+                                <small th:if="${p.upiTransactionId != null and p.upiTransactionId != ''}" class="text-muted d-block">
+                                    <i class="bi bi-hash"></i> UPI Txn: <strong th:text="${p.upiTransactionId}"></strong>
+                                </small>
+                            </div>
+                            <!-- Screenshot -->
+                            <div class="col-md-4 text-center">
+                                <label class="form-label small fw-bold">Payment Screenshot</label>
+                                <div th:if="${p.screenshotPath != null}">
+                                    <a th:href="@{'/uploads/' + ${p.screenshotPath}}" target="_blank">
+                                        <img th:src="@{'/uploads/' + ${p.screenshotPath}}" alt="Payment Proof" class="img-thumbnail" style="max-height:200px; cursor:pointer;"/>
+                                    </a>
+                                    <br/><small class="text-muted">Click to view full size</small>
+                                </div>
+                                <div th:if="${p.screenshotPath == null}" class="text-danger small">No screenshot uploaded</div>
+                            </div>
+                            <!-- Actions -->
+                            <div class="col-md-4 d-flex flex-column justify-content-center gap-2">
+                                <form th:action="@{/admin/payments/{id}/approve(id=${p.id})}" method="post">
+                                    <button type="submit" class="btn btn-success w-100" onclick="return confirm('Approve this payment?')">
+                                        <i class="bi bi-check-circle"></i> Approve Payment
+                                    </button>
+                                </form>
+                                <form th:action="@{/admin/payments/{id}/reject(id=${p.id})}" method="post" class="mt-1">
+                                    <input type="text" name="remarks" class="form-control form-control-sm mb-2" placeholder="Rejection reason (optional)"/>
+                                    <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Reject this payment?')">
+                                        <i class="bi bi-x-circle"></i> Reject Payment
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

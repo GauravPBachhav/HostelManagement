@@ -3,6 +3,7 @@ package in.gw.main.Services;
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.*;
 import in.gw.main.Entity.RentPayment;
+import in.gw.main.Entity.StudentProfile;
 import org.springframework.stereotype.Service;
 
 import java.awt.Color;
@@ -136,5 +137,162 @@ public class PdfService {
         valueCell.setBorder(Rectangle.NO_BORDER);
         valueCell.setPadding(6);
         table.addCell(valueCell);
+    }
+
+    // =============================================
+    // ADMISSION FORM PDF GENERATION
+    // =============================================
+
+    /**
+     * Generate an Admission Form PDF for a student.
+     * Includes personal details, academic details, parent/guardian info.
+     */
+    public byte[] generateAdmissionForm(StudentProfile profile) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Document doc = new Document(PageSize.A4, 40, 40, 40, 40);
+
+        try {
+            PdfWriter.getInstance(doc, out);
+            doc.open();
+
+            // --- Fonts ---
+            Font titleFont   = new Font(Font.HELVETICA, 20, Font.BOLD, new Color(26, 26, 46));
+            Font headingFont = new Font(Font.HELVETICA, 14, Font.BOLD, new Color(67, 97, 238));
+            Font sectionFont = new Font(Font.HELVETICA, 12, Font.BOLD, new Color(26, 26, 46));
+            Font normalFont  = new Font(Font.HELVETICA, 10, Font.NORMAL, Color.DARK_GRAY);
+            Font boldFont    = new Font(Font.HELVETICA, 10, Font.BOLD, Color.BLACK);
+            Font smallFont   = new Font(Font.HELVETICA, 8, Font.NORMAL, Color.GRAY);
+
+            // --- Header ---
+            Paragraph title = new Paragraph("SHIVTIRTH HOSTEL", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            doc.add(title);
+
+            Paragraph subtitle = new Paragraph("Student Admission Form", headingFont);
+            subtitle.setAlignment(Element.ALIGN_CENTER);
+            subtitle.setSpacingAfter(5);
+            doc.add(subtitle);
+
+            // --- Status Badge ---
+            String statusText = profile.getStatus() != null ? profile.getStatus().name() : "N/A";
+            Paragraph statusPara = new Paragraph("Status: " + statusText, boldFont);
+            statusPara.setAlignment(Element.ALIGN_CENTER);
+            statusPara.setSpacingAfter(15);
+            doc.add(statusPara);
+
+            // --- Divider ---
+            addDivider(doc);
+
+            // --- PERSONAL INFORMATION ---
+            Paragraph personalTitle = new Paragraph("Personal Information", sectionFont);
+            personalTitle.setSpacingBefore(10);
+            personalTitle.setSpacingAfter(8);
+            doc.add(personalTitle);
+
+            PdfPTable personalTable = new PdfPTable(2);
+            personalTable.setWidthPercentage(100);
+            personalTable.setWidths(new float[]{1f, 1.5f});
+
+            String name = profile.getUser() != null ? profile.getUser().getName() : "-";
+            String email = profile.getUser() != null ? profile.getUser().getEmail() : "-";
+
+            addRow(personalTable, "Full Name", name, boldFont, normalFont);
+            addRow(personalTable, "Email", email, boldFont, normalFont);
+            addRow(personalTable, "Mobile Number", profile.getPhoneNumber(), boldFont, normalFont);
+            addRow(personalTable, "Date of Birth", profile.getDateOfBirth(), boldFont, normalFont);
+            addRow(personalTable, "Gender", profile.getGender(), boldFont, normalFont);
+            addRow(personalTable, "Aadhar Number", profile.getAadharNumber(), boldFont, normalFont);
+            addRow(personalTable, "Permanent Address", profile.getAddress(), boldFont, normalFont);
+
+            doc.add(personalTable);
+
+            // --- ACADEMIC DETAILS ---
+            addDivider(doc);
+            Paragraph academicTitle = new Paragraph("Academic Details", sectionFont);
+            academicTitle.setSpacingBefore(10);
+            academicTitle.setSpacingAfter(8);
+            doc.add(academicTitle);
+
+            PdfPTable academicTable = new PdfPTable(2);
+            academicTable.setWidthPercentage(100);
+            academicTable.setWidths(new float[]{1f, 1.5f});
+
+            addRow(academicTable, "College Name", profile.getCollegeName(), boldFont, normalFont);
+            addRow(academicTable, "Course", profile.getCourse(), boldFont, normalFont);
+            addRow(academicTable, "Year of Study", profile.getYearOfStudy(), boldFont, normalFont);
+            addRow(academicTable, "Academic Year", profile.getAcademicYear(), boldFont, normalFont);
+
+            doc.add(academicTable);
+
+            // --- PARENT / GUARDIAN DETAILS ---
+            addDivider(doc);
+            Paragraph parentTitle = new Paragraph("Parent / Guardian Details", sectionFont);
+            parentTitle.setSpacingBefore(10);
+            parentTitle.setSpacingAfter(8);
+            doc.add(parentTitle);
+
+            PdfPTable parentTable = new PdfPTable(2);
+            parentTable.setWidthPercentage(100);
+            parentTable.setWidths(new float[]{1f, 1.5f});
+
+            addRow(parentTable, "Parent/Guardian Name", profile.getParentName(), boldFont, normalFont);
+            addRow(parentTable, "Parent Contact", profile.getParentContact(), boldFont, normalFont);
+
+            doc.add(parentTable);
+
+            // --- ROOM DETAILS (if assigned) ---
+            if (profile.getRoom() != null) {
+                addDivider(doc);
+                Paragraph roomTitle = new Paragraph("Room Assignment", sectionFont);
+                roomTitle.setSpacingBefore(10);
+                roomTitle.setSpacingAfter(8);
+                doc.add(roomTitle);
+
+                PdfPTable roomTable = new PdfPTable(2);
+                roomTable.setWidthPercentage(100);
+                roomTable.setWidths(new float[]{1f, 1.5f});
+
+                addRow(roomTable, "Room Number", profile.getRoom().getRoomNumber(), boldFont, normalFont);
+                addRow(roomTable, "Room Type", profile.getRoom().getRoomType().name(), boldFont, normalFont);
+                addRow(roomTable, "Floor", String.valueOf(profile.getRoom().getFloor()), boldFont, normalFont);
+                addRow(roomTable, "Monthly Rent", "₹" + String.format("%.0f", profile.getRoom().getMonthlyRent()), boldFont, normalFont);
+
+                doc.add(roomTable);
+            }
+
+            // --- Footer ---
+            doc.add(Chunk.NEWLINE);
+            doc.add(Chunk.NEWLINE);
+            Paragraph footer = new Paragraph("This is a computer-generated document. No signature required.", smallFont);
+            footer.setAlignment(Element.ALIGN_CENTER);
+            doc.add(footer);
+
+            Paragraph brand = new Paragraph("© 2026 Shivtirth Hostel Management System", smallFont);
+            brand.setAlignment(Element.ALIGN_CENTER);
+            doc.add(brand);
+
+        } catch (Exception e) {
+            System.err.println("⚠ ADMISSION PDF GENERATION FAILED: " + e.getMessage());
+        } finally {
+            doc.close();
+        }
+
+        return out.toByteArray();
+    }
+
+    /** Helper: add a blue divider line */
+    private void addDivider(Document doc) throws DocumentException {
+        PdfPTable divider = new PdfPTable(1);
+        divider.setWidthPercentage(100);
+        divider.setSpacingBefore(5);
+        PdfPCell divCell = new PdfPCell();
+        divCell.setBorderWidthBottom(1.5f);
+        divCell.setBorderColorBottom(new Color(67, 97, 238));
+        divCell.setBorderWidthTop(0);
+        divCell.setBorderWidthLeft(0);
+        divCell.setBorderWidthRight(0);
+        divCell.setFixedHeight(3);
+        divider.addCell(divCell);
+        doc.add(divider);
     }
 }

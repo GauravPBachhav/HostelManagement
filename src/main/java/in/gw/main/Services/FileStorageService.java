@@ -46,6 +46,15 @@ public class FileStorageService {
     }
 
     /**
+     * Save a payment proof screenshot. Returns the relative path stored in DB.
+     * @param file the uploaded screenshot
+     * @return relative path like "payments/uuid-filename.jpg"
+     */
+    public String savePaymentProof(MultipartFile file) throws IOException {
+        return saveFile(file, "payments");
+    }
+
+    /**
      * Generic file save method.
      * Creates subdirectory if needed, validates file type, generates unique filename, copies file.
      */

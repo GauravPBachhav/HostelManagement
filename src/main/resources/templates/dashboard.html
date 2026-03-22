@@ -145,6 +145,22 @@
         </div>
     </div>
 
+    <!-- FLASH MESSAGES (success / error from redirects) -->
+    <div class="px-4 pt-2" th:if="${success}">
+        <div class="alert alert-success alert-dismissible fade show py-2" role="alert">
+            <i class="bi bi-check-circle-fill me-1"></i>
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+    <div class="px-4 pt-2" th:if="${error}">
+        <div class="alert alert-danger alert-dismissible fade show py-2" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+
     <!-- STAT CARDS -->
     <div class="stat-row">
         <div class="stat-card sc-1">
@@ -297,15 +313,44 @@
         <!-- SECTION: RENT PAYMENT         -->
         <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
         <div class="section" id="sec-rent" th:if="${profile != null and profile.status.name() == 'APPROVED'}">
+            <!-- UPI PAYMENT CARD -->
             <div class="card shadow-sm border-0 mb-3">
                 <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-cash-coin"></i> Pay Monthly Rent</h5>
+                    <h5 class="card-title"><i class="bi bi-phone"></i> Pay Rent via UPI</h5>
+
+                    <!-- Room & Rent Info -->
                     <div th:if="${profile.room != null}" class="alert alert-light border mb-3">
                         <strong>Room:</strong> <span th:text="${profile.room.roomNumber}"></span> |
                         <strong>Monthly Rent:</strong> &#8377;<span th:text="${profile.room.monthlyRent}"></span>
                     </div>
-                    <form th:action="@{/dashboard/rent/pay}" method="post" class="row g-3">
-                        <div class="col-md-4">
+
+                    <!-- Instructions -->
+                    <div class="alert alert-info border-0" style="background:linear-gradient(135deg,#dbeafe,#e0f2fe);">
+                        <h6 class="mb-2"><i class="bi bi-info-circle"></i> How to Pay:</h6>
+                        <ol class="mb-0 ps-3" style="font-size:13px;">
+                            <li>Click the <strong>"Pay via UPI"</strong> button below to open your UPI app (GPay/PhonePe).</li>
+                            <li>Complete the payment in your UPI app.</li>
+                            <li>Take a <strong>screenshot</strong> of the payment confirmation.</li>
+                            <li>Upload the screenshot below and submit.</li>
+                            <li>Admin will verify and approve your payment.</li>
+                        </ol>
+                    </div>
+
+                    <!-- UPI Deep Link Button -->
+                    <div th:if="${profile.room != null}" class="text-center my-3">
+                        <a th:href="'upi://pay?pa=shivtirthhostel@upi&pn=Shivtirth Hostel&am=' + ${profile.room.monthlyRent} + '&cu=INR&tn=Rent Payment'"
+                           class="btn btn-lg text-white px-5 py-3" style="background:linear-gradient(135deg,#7c3aed,#4f46e5); border:none; border-radius:12px; font-weight:700; font-size:16px;">
+                            <i class="bi bi-phone me-2"></i> Pay &#8377;<span th:text="${profile.room.monthlyRent}"></span> via UPI
+                        </a>
+                        <p class="text-muted small mt-2">Opens Google Pay, PhonePe, or any UPI app on your phone</p>
+                    </div>
+
+                    <hr/>
+
+                    <!-- Screenshot Upload Form -->
+                    <h6 class="mt-3 mb-3"><i class="bi bi-cloud-arrow-up"></i> Upload Payment Proof</h6>
+                    <form th:action="@{/dashboard/rent/pay}" method="post" enctype="multipart/form-data" class="row g-3">
+                        <div class="col-md-3">
                             <label class="form-label small fw-bold">Month</label>
                             <select name="month" class="form-select" required>
                                 <option value="January">January</option><option value="February">February</option>
@@ -316,22 +361,26 @@
                                 <option value="November">November</option><option value="December">December</option>
                             </select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label class="form-label small fw-bold">Year</label>
                             <input type="number" name="year" class="form-control" value="2026" required/>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label small fw-bold">Payment Mode</label>
-                            <select name="paymentMode" class="form-select" required>
-                                <option value="CASH">Cash</option><option value="UPI">UPI</option><option value="ONLINE">Online</option>
-                            </select>
+                            <label class="form-label small fw-bold">Payment Screenshot <span class="text-danger">*</span></label>
+                            <input type="file" name="screenshot" class="form-control" accept="image/*" required/>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold">UPI Txn ID <span class="text-muted">(optional)</span></label>
+                            <input type="text" name="upiTransactionId" class="form-control" placeholder="e.g. 426xxxxxx"/>
                         </div>
                         <div class="col-md-2 d-flex align-items-end">
-                            <button type="submit" class="btn btn-success w-100"><i class="bi bi-credit-card"></i> Pay</button>
+                            <button type="submit" class="btn btn-success w-100"><i class="bi bi-upload"></i> Submit</button>
                         </div>
                     </form>
                 </div>
             </div>
+
+            <!-- PAYMENT HISTORY -->
             <div class="card shadow-sm border-0">
                 <div class="card-body">
                     <h5 class="card-title"><i class="bi bi-receipt"></i> Payment History</h5>
@@ -348,11 +397,18 @@
                                 <td>&#8377;<span th:text="${p.amount}"></span></td>
                                 <td th:text="${p.paymentMode}"></td>
                                 <td th:text="${p.paymentDate}"></td>
-                                <td><span class="badge bg-success" th:text="${p.status}"></span></td>
                                 <td>
-                                    <a th:href="@{/rent-receipt/{id}(id=${p.id})}" class="btn btn-outline-primary btn-sm" title="Download PDF">
+                                    <span th:if="${p.status.name() == 'PAID'}" class="badge bg-success"><i class="bi bi-check-circle"></i> Approved</span>
+                                    <span th:if="${p.status.name() == 'VERIFICATION_PENDING'}" class="badge bg-warning text-dark"><i class="bi bi-hourglass-split"></i> Pending</span>
+                                    <span th:if="${p.status.name() == 'REJECTED'}" class="badge bg-danger"><i class="bi bi-x-circle"></i> Rejected</span>
+                                    <span th:if="${p.status.name() == 'PENDING'}" class="badge bg-secondary">Pending</span>
+                                </td>
+                                <td>
+                                    <a th:if="${p.status.name() == 'PAID'}" th:href="@{/rent-receipt/{id}(id=${p.id})}" class="btn btn-outline-primary btn-sm" title="Download PDF">
                                         <i class="bi bi-file-earmark-pdf"></i> PDF
                                     </a>
+                                    <!-- Show rejection reason -->
+                                    <small th:if="${p.status.name() == 'REJECTED' and p.adminRemarks != null}" class="text-danger d-block" th:text="${p.adminRemarks}"></small>
                                 </td>
                             </tr>
                         </tbody>
@@ -432,23 +488,28 @@ function toggleSidebar() {
 }
 
 // ─── Deep link via hash ───
+function activateTab(sectionName) {
+    var sec = document.getElementById('sec-' + sectionName);
+    if (sec) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        sec.classList.add('active');
+        // Also highlight the correct sidebar item
+        document.querySelectorAll('.sb-item').forEach(function(item) {
+            item.classList.remove('active');
+            if (item.getAttribute('onclick') && item.getAttribute('onclick').indexOf("'" + sectionName + "'") !== -1) {
+                item.classList.add('active');
+            }
+        });
+    }
+}
 document.addEventListener('DOMContentLoaded', function() {
     var hash = window.location.hash;
     if (hash) {
-        var sectionName = hash.replace('#tab-', '');
-        var sec = document.getElementById('sec-' + sectionName);
-        if (sec) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            sec.classList.add('active');
-        }
+        activateTab(hash.replace('#tab-', ''));
     }
     var tab = new URLSearchParams(window.location.search).get('tab');
     if (tab) {
-        var sec = document.getElementById('sec-' + tab);
-        if (sec) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            sec.classList.add('active');
-        }
+        activateTab(tab);
     }
 });
 </script>

@@ -418,20 +418,36 @@ public class UserController {
         return "dashboard";
     }
 
-    /** PAY RENT */
+    /**
+     * SUBMIT RENT PAYMENT WITH UPI SCREENSHOT PROOF.
+     * Creates payment request with VERIFICATION_PENDING status.
+     * Admin must approve after verifying the screenshot.
+     */
     @PostMapping("/dashboard/rent/pay")
     public String payRent(@RequestParam String month,
                           @RequestParam int year,
-                          @RequestParam String paymentMode,
+                          @RequestParam(value = "screenshot", required = false) MultipartFile screenshot,
+                          @RequestParam(value = "upiTransactionId", required = false) String upiTransactionId,
                           @AuthenticationPrincipal CustomUserDetails userDetails,
                           RedirectAttributes redirectAttributes) {
         User user = userService.findById(userDetails.getUserId());
         StudentProfile profile = studentProfileService.findByUser(user);
+
+        // Screenshot is mandatory
+        if (screenshot == null || screenshot.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Payment screenshot is required! Please upload your UPI payment proof.");
+            return "redirect:/dashboard#tab-rent";
+        }
+
         try {
-            rentPaymentService.recordPayment(profile, month, year, paymentMode);
-            redirectAttributes.addFlashAttribute("success", "Rent paid for " + month + " " + year + "!");
+            String screenshotPath = fileStorageService.savePaymentProof(screenshot);
+            rentPaymentService.submitPaymentRequest(profile, month, year, screenshotPath, upiTransactionId);
+            redirectAttributes.addFlashAttribute("success",
+                "Payment proof for " + month + " " + year + " submitted! Waiting for admin verification.");
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to upload screenshot: " + e.getMessage());
         }
         return "redirect:/dashboard#tab-rent";
     }

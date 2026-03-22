@@ -8,16 +8,11 @@ import java.time.LocalDate;
  * --------------------
  * Records each rent payment made by a student.
  *
- * Each payment records:
- *   - Which student paid (linked to StudentProfile)
- *   - How much was paid
- *   - For which month and year
- *   - Payment mode (CASH, UPI, ONLINE)
- *   - Payment date
- *   - Status (PAID or PENDING)
- *
- * One student can have MANY payments (one per month).
- * This is a @ManyToOne relationship with StudentProfile.
+ * UPI Payment Flow:
+ *   1. Student pays via UPI deep-link
+ *   2. Student uploads payment screenshot (mandatory)
+ *   3. Status = VERIFICATION_PENDING
+ *   4. Admin verifies screenshot → Approve (PAID) or Reject (REJECTED)
  */
 @Entity
 @Table(name = "rent_payments")
@@ -38,13 +33,30 @@ public class RentPayment {
 
     private int year;                   // 2026
 
-    private LocalDate paymentDate;      // when payment was made
+    private LocalDate paymentDate;      // when payment was submitted
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 30)
     private PaymentMode paymentMode;    // CASH, UPI, ONLINE
 
     @Enumerated(EnumType.STRING)
-    private PaymentStatus status;       // PAID, PENDING
+    @Column(length = 30)
+    private PaymentStatus status;       // PAID, PENDING, VERIFICATION_PENDING, REJECTED
+
+    // ===== NEW FIELDS FOR UPI VERIFICATION =====
+
+    // Path to uploaded payment screenshot (relative to uploads dir)
+    private String screenshotPath;
+
+    // Optional UPI transaction reference ID entered by student
+    private String upiTransactionId;
+
+    // Admin remarks (reason for rejection, etc.)
+    @Column(length = 500)
+    private String adminRemarks;
+
+    // Date when admin approved/rejected
+    private LocalDate verifiedAt;
 
     // =====================
     // GETTERS & SETTERS
@@ -73,4 +85,16 @@ public class RentPayment {
 
     public PaymentStatus getStatus() { return status; }
     public void setStatus(PaymentStatus status) { this.status = status; }
+
+    public String getScreenshotPath() { return screenshotPath; }
+    public void setScreenshotPath(String screenshotPath) { this.screenshotPath = screenshotPath; }
+
+    public String getUpiTransactionId() { return upiTransactionId; }
+    public void setUpiTransactionId(String upiTransactionId) { this.upiTransactionId = upiTransactionId; }
+
+    public String getAdminRemarks() { return adminRemarks; }
+    public void setAdminRemarks(String adminRemarks) { this.adminRemarks = adminRemarks; }
+
+    public LocalDate getVerifiedAt() { return verifiedAt; }
+    public void setVerifiedAt(LocalDate verifiedAt) { this.verifiedAt = verifiedAt; }
 }
